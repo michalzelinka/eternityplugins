@@ -1,0 +1,30 @@
+Microsoft Visual Studio Solution File, Format Version 9.00
+# Visual Studio 2005
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "icqoscar8_bm_s7_sss_mod", "icqoscar8.vcproj", "{8BAA8998-A967-4935-8220-3673DBF425A7}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "xstatus_icons", "icons_pack\ICONS.vcproj", "{47204E10-B438-4DFD-B115-E0F5A3F8A05E}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release(static)|Win32 = Release(static)|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{8BAA8998-A967-4935-8220-3673DBF425A7}.Debug|Win32.ActiveCfg = Debug|Win32
+		{8BAA8998-A967-4935-8220-3673DBF425A7}.Debug|Win32.Build.0 = Debug|Win32
+		{8BAA8998-A967-4935-8220-3673DBF425A7}.Release(static)|Win32.ActiveCfg = Release(static)|Win32
+		{8BAA8998-A967-4935-8220-3673DBF425A7}.Release(static)|Win32.Build.0 = Release(static)|Win32
+		{8BAA8998-A967-4935-8220-3673DBF425A7}.Release|Win32.ActiveCfg = Release|Win32
+		{8BAA8998-A967-4935-8220-3673DBF425A7}.Release|Win32.Build.0 = Release|Win32
+		{47204E10-B438-4DFD-B115-E0F5A3F8A05E}.Debug|Win32.ActiveCfg = Release|Win32
+		{47204E10-B438-4DFD-B115-E0F5A3F8A05E}.Debug|Win32.Build.0 = Release|Win32
+		{47204E10-B438-4DFD-B115-E0F5A3F8A05E}.Release(static)|Win32.ActiveCfg = Release(static)|Win32
+		{47204E10-B438-4DFD-B115-E0F5A3F8A05E}.Release(static)|Win32.Build.0 = Release(static)|Win32
+		{47204E10-B438-4DFD-B115-E0F5A3F8A05E}.Release|Win32.ActiveCfg = Release|Win32
+		{47204E10-B438-4DFD-B115-E0F5A3F8A05E}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

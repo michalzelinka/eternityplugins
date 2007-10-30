@@ -1,0 +1,69 @@
+Verison 1.3.0.3 [28-09-2007]
+
+[+] contact settings update when coming from Offline (in testing O:)..)
+[+] fixed short item text limit for SLO (in testing x)..)
+
+
+Verison 1.3.0.2 [07-09-2007]
+
+[+] right click refreshes contact info :)
+
+
+Verison 1.3.0.1 [25-08-2007]
+
+[+] IcoLib included :)
+[*] code fixes
+
+
+Verison 1.3.0.0 [25-02-2007]
+
+[*] merged with ContactsEx (by jarvis)
+
+
+Verison 1.2.1.11 [25-02-2007]
+
+[*] icon fixes (from ghazan)
+
+
+Verison 1.2.1.10 [12-01-2007]
+
+[+] Option "Show alpha icon" for "Hide from list" menu item
+[+] Option "Copy MirVer"
+
+
+Verison 1.2.1.9
+
+[+] Option "Show alpha icons"
+
+
+Verison 1.2.1.8
+
+[*] add more icons
+
+
+Verison 1.2.1.7
+
+[+] Option "Copy IP"
+
+
+Verison 1.2.1.6
+
+[+] Option "Add protocol name"
+
+
+Verison 1.2.1.3
+
+[+] Option "Copy Status Message", need SMR plugin
+
+
+Verison 1.2.1.2
+
+[+] Updater support
+
+
+Verison 1.2.1.1
+
+[+] New icons
+[+] Option "Copy ID"
+[+] Option "Browse Received Files"
+

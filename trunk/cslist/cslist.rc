@@ -1,0 +1,232 @@
+// Microsoft Visual C++ generated resource script.
+//
+#include "resource.h"
+
+#define APSTUDIO_READONLY_SYMBOLS
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 2 resource.
+//
+#include "afxres.h"
+
+/////////////////////////////////////////////////////////////////////////////
+#undef APSTUDIO_READONLY_SYMBOLS
+
+/////////////////////////////////////////////////////////////////////////////
+// English (U.S.) resources
+
+#if !defined(AFX_RESOURCE_DLL) || defined(AFX_TARG_ENU)
+#ifdef _WIN32
+LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
+#pragma code_page(1252)
+#endif //_WIN32
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog
+//
+
+IDD_CSLIST DIALOGEX 0, 0, 206, 224
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Custom Status List"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_CSLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,3,7,200,192
+    CONTROL         "A",IDC_ADD,"MButtonClass",WS_TABSTOP,6,204,16,14
+    CONTROL         "M",IDC_MODIFY,"MButtonClass",WS_TABSTOP,26,204,16,14
+    CONTROL         "D",IDC_DELETE,"MButtonClass",WS_TABSTOP,46,204,16,14
+    CONTROL         "P",IDC_APPLY,"MButtonClass",WS_TABSTOP,184,204,16,14
+    CONTROL         "E",IDC_EXIT,"MButtonClass",WS_TABSTOP,164,204,16,14
+    CONTROL         "I",IDC_IMPORT,"MButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,75,204,16,14
+    CONTROL         "W",IDC_WATCH,"MButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,95,204,16,14
+    CONTROL         "N",IDC_NOCHNG,"MButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,144,204,16,14
+END
+
+IDD_ADDMODIFY DIALOGEX 100, 100, 205, 105
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Add/Modify Custom Status"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Add/Modify",IDC_AM_OK,49,85,50,14
+    PUSHBUTTON      "Cancel",IDC_AM_CN,102,85,50,14
+    LTEXT           "Title:",IDC_ST_XTITLE,97,1,43,8
+    LTEXT           "Message:",IDC_ST_XMESSAGE,5,24,85,8
+    LTEXT           "Icon:",IDC_ST_XICON,5,0,44,8
+    EDITTEXT        IDC_XTITLE,97,11,104,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_XMESSAGE,5,33,195,46,ES_MULTILINE | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
+    CONTROL         "",IDC_CB_ICON,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,5,11,89,80
+END
+
+IDD_DEL DIALOGEX 0, 0, 139, 62
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Confirm"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CTEXT           "Are you sure?",IDC_STATIC,16,15,105,8
+    DEFPUSHBUTTON   "Yes, delete",IDOK,13,37,50,14
+    PUSHBUTTON      "No, leave",IDCANCEL,75,37,50,14
+END
+
+IDD_RELNOTES DIALOGEX 100, 100, 192, 211
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "CSList About/Release Notes"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    DEFPUSHBUTTON   "Close",IDOK,137,193,50,14
+    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,104,184,27
+    RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
+    RTEXT           "Version:",IDC_RNVER,7,14,53,8
+    LTEXT           "Custom Status List",IDC_RLNPLGNM2,66,4,98,8
+    LTEXT           "0.0.0.15 alpha",IDC_RNVER2,66,14,98,8
+    LTEXT           "- code revision",IDC_STATIC,19,116,150,8
+    GROUPBOX        "Notice",IDC_RNNOTICE,4,55,184,49
+    LTEXT           "IMPORTANT: Plugin development is currently in ""Alpha"" stage - it's NOT RECOMMENDED to generally use. First stable release will be available as soon as possible x) ;)",IDC_STATIC,20,65,150,34
+    RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
+    LTEXT           "jarvis (original idea by HANAX)",IDC_RNAUTH2,66,24,115,8
+    RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
+    LTEXT           "© 2007 eternity crew ..\n© 2006 HANAX Software",IDC_RNCPR2,66,34,115,18
+    ICON            IDI_ADD,IDC_RNCSICON,163,3,20,20
+    GROUPBOX        "Special Thanks",IDC_THX,4,131,184,58
+    EDITTEXT        IDC_TXHTEXT,7,142,176,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,195,118,10
+END
+
+IDD_OPTIONS DIALOGEX 0, 0, 301, 222
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Placement of Menu Item",IDC_MIP,23,42,120,108
+    LTEXT           "TODO :)",IDC_TODO,133,156,28,8
+    CONTROL         "Global Status Menu",IDC_MIP_G,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,31,59,77,10
+    CONTROL         "On the top",IDC_MIP_GUP,"Button",BS_AUTORADIOBUTTON,41,69,51,10
+    CONTROL         "At the bottom",IDC_MIP_GDN,"Button",BS_AUTORADIOBUTTON,41,81,61,10
+    CONTROL         "Main Menu",IDC_MIP_M,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,31,93,50,10
+    CONTROL         "Tray Menu",IDC_MIP_T,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,31,104,50,10
+    GROUPBOX        "ICQ Integration",IDC_ICQIGR,147,42,120,108
+    CONTROL         "Follow Extended Statuses set by ICQ Custom Status Menu (TODO)",IDC_IGR_FOLLOW,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,155,54,102,27
+    CONTROL         "Replace ICQ Custom Status Menu (TODO)",IDC_CHECK5,
+                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,155,83,104,18
+    LTEXT           "NOTE: Some of these features are only implemented and available in ICQ eternity/PlusPlus++ Mod.",IDC_IGR_NOTE,155,109,105,36,WS_DISABLED
+    LTEXT           "NOTE: Placement in Global Status Menu is available in ICQJ 0.3.7.0 and newer.",IDC_MIP_NOTE,31,117,105,31,WS_DISABLED
+END
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// DESIGNINFO
+//
+
+#ifdef APSTUDIO_INVOKED
+GUIDELINES DESIGNINFO 
+BEGIN
+    IDD_CSLIST, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 198
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 217
+    END
+
+    IDD_RELNOTES, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 185
+        TOPMARGIN, 7
+        BOTTOMMARGIN, 204
+    END
+END
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Version
+//
+
+VS_VERSION_INFO VERSIONINFO
+ FILEVERSION 0,0,0,14
+ PRODUCTVERSION 0,0,0,14
+ FILEFLAGSMASK 0x17L
+#ifdef _DEBUG
+ FILEFLAGS 0x1L
+#else
+ FILEFLAGS 0x0L
+#endif
+ FILEOS 0x4L
+ FILETYPE 0x2L
+ FILESUBTYPE 0x0L
+BEGIN
+    BLOCK "StringFileInfo"
+    BEGIN
+        BLOCK "040904b0"
+        BEGIN
+            VALUE "Comments", "Offers List of your Custom Statuses. All acclaims go to HANAX, original publisher and inventor of this idea."
+            VALUE "FileDescription", "Custom Status List"
+            VALUE "FileVersion", "0, 0, 0, 14"
+            VALUE "InternalName", "CSList"
+            VALUE "LegalCopyright", "© 2007 eternity crew .., © 2006 HANAX"
+            VALUE "OriginalFilename", "cslist.dll"
+            VALUE "ProductName", "Custom Status List"
+            VALUE "ProductVersion", "0, 0, 0, 14"
+        END
+    END
+    BLOCK "VarFileInfo"
+    BEGIN
+        VALUE "Translation", 0x409, 1200
+    END
+END
+
+
+#ifdef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// TEXTINCLUDE
+//
+
+1 TEXTINCLUDE 
+BEGIN
+    "resource.h\0"
+END
+
+3 TEXTINCLUDE 
+BEGIN
+    "\r\n"
+END
+
+2 TEXTINCLUDE 
+BEGIN
+    "#include ""afxres.h""\r\n"
+END
+
+#endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Icon
+//
+
+// Icon with lowest ID value placed first to ensure application icon
+// remains consistent on all systems.
+IDI_CSLIST              ICON                    "res\\list.ico"
+IDI_ADD                 ICON                    "res\\add.ico"
+IDI_EXIT                ICON                    "res\\cancel.ico"
+IDI_DELETE              ICON                    "res\\delete.ico"
+IDI_MODIFY              ICON                    "res\\edit.ico"
+IDI_APPLY               ICON                    "res\\ok.ico"
+#endif    // English (U.S.) resources
+/////////////////////////////////////////////////////////////////////////////
+
+
+
+#ifndef APSTUDIO_INVOKED
+/////////////////////////////////////////////////////////////////////////////
+//
+// Generated from the TEXTINCLUDE 3 resource.
+//
+
+
+/////////////////////////////////////////////////////////////////////////////
+#endif    // not APSTUDIO_INVOKED
+
