@@ -1,9 +1,11 @@
 /*
+astyle	--force-indent=tab=4 --brackets=linux --indent-switches
+		--pad=oper --one-line=keep-blocks  --unpad=paren
 
 Miranda IM: the free IM client for Microsoft* Windows*
 
-Copyright 2000-2003 Miranda ICQ/IM project, 
-all portions of this codebase are copyrighted to the people 
+Copyright 2000-2003 Miranda ICQ/IM project,
+all portions of this codebase are copyrighted to the people
 listed in contributors.txt.
 
 This program is free software; you can redistribute it and/or
@@ -19,6 +21,8 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
+
+$Id: srmm.c 7113 2008-01-20 01:01:22Z nightwish2004 $
 */
 
 #include "commonheaders.h"
@@ -36,13 +40,14 @@ HINSTANCE g_hInst;
 extern MYGLOBALS myGlobals;
 struct MM_INTERFACE mmi;
 struct UTF8_INTERFACE utfi;
-int bNewDbApi = FALSE;
 
 pfnSetMenuInfo fnSetMenuInfo = NULL;
 
 /*/ eternity changelog
-
-2.0.0.100 - SVN merge, ended support for < 0.7 cores, icons and sounds for your comfort :)
+2.0.0.31 - svn merge, no time to fix/create somethin' x)
+2.0.0.21 - svn merge
+2.0.0.11 - translation fixes, something more I forgot x)
+2.0.0.10 - SVN merge, ended support for < 0.7 cores, icons and sounds for your comfort :)
 1.1.1.204 - fixed statusbar button click fix, typing sounds in Chat module :)
 1.1.1.203 - added new xstatus support (if your icq plugin supports it of course :]), Status bar Typing sounds button, Code revision x).. min mirver: 0.7.0.44 (pr8)
 1.1.1.202 - 0.7 PR 8/0.8 alpha #1 SVN merge..
@@ -71,53 +76,52 @@ pfnSetMenuInfo fnSetMenuInfo = NULL;
 
 // eternity mod versioning */
 PLUGININFOEX pluginInfo = {
-    sizeof(PLUGININFOEX),
+	sizeof(PLUGININFOEX),
 #ifdef _UNICODE
-    #ifdef __GNUWIN32__
-        "tabSRMM eternity mod (Unicode - MINGW32)",
-    #else    
-        "tabSRMM eternity mod (Unicode)",
-    #endif    
+#ifdef __GNUWIN32__
+	"tabSRMM eternity mod (Unicode - MINGW32)",
 #else
-    #ifdef __GNUWIN32__
-        "tabSRMM eternity mod (ANSI - MINGW32)",
-    #else    
-        "tabSRMM eternity mod (ANSI)",
-    #endif    
+	"tabSRMM eternity mod (Unicode)",
 #endif
-    PLUGIN_MAKE_VERSION(2, 0, 0, 200),
-    "Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
-    "The Miranda developers team",
-    "mike.taussick@seznam.cz, silvercircle@gmail.com",
-    "© 2000-2007 Miranda Project",
-    "http://dev.mirandaim.ru/jarvis/, http://tabsrmm.sourceforge.net/",
-    UNICODE_AWARE,
-    DEFMOD_SRMESSAGE,            // replace internal version (if any)
-    #ifdef _UNICODE
-    {0xa4f2d0d4, 0x2c38, 0x439a, { 0xbd, 0xfb, 0x0b, 0x3e, 0xf1, 0x06, 0x2d, 0x7d }} //{a4f2d0d4-2c38-439a-bdfb-0b3ef1062d7d}
-    #else    
-    {0xeb96173f, 0x56cb, 0x46f4, { 0xb2, 0xfa, 0xa3, 0xe4, 0x6e, 0x19, 0xed, 0xff }} //{eb96173f-56cb-46f4-b2fa-a3e46e19edff}
-    #endif    
+#else
+#ifdef __GNUWIN32__
+	"tabSRMM eternity mod (ANSI - MINGW32)",
+#else
+	"tabSRMM eternity mod (ANSI)",
+#endif
+#endif
+	PLUGIN_MAKE_VERSION(2, 0, 1, 0),
+	"Chat module for instant messaging and group chat, offering a tabbed interface and many advanced features.",
+	"The Miranda developers team",
+	"mike.taussick@seznam.cz, silvercircle@gmail.com",
+	"© 2000-2008 Miranda Project",
+	"http://dev.mirandaim.ru/jarvis/, http://tabsrmm.sourceforge.net/",
+	UNICODE_AWARE,
+	DEFMOD_SRMESSAGE,            // replace internal version (if any)
+#ifdef _UNICODE
+	{0xa4f2d0d4, 0x2c38, 0x439a, { 0xbd, 0xfb, 0x0b, 0x3e, 0xf1, 0x06, 0x2d, 0x7d }} //{a4f2d0d4-2c38-439a-bdfb-0b3ef1062d7d}
+#else
+  {0xeb96173f, 0x56cb, 0x46f4, { 0xb2, 0xfa, 0xa3, 0xe4, 0x6e, 0x19, 0xed, 0xff }} //{eb96173f-56cb-46f4-b2fa-a3e46e19edff}
+#endif  
 };
 
 BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 {
-    g_hInst = hinstDLL;
-    return TRUE;
+	g_hInst = hinstDLL;
+	return TRUE;
 }
 
-__declspec(dllexport)
-     PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
+__declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-    g_mirandaVersion = mirandaVersion;
+  g_mirandaVersion = mirandaVersion;
 	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 44))
-        return NULL;
-    return &pluginInfo;
+    return NULL;
+  return &pluginInfo;
 }
 
 static const MUUID interfaces[] = {MIID_SRMM, MIID_CHAT, MIID_LAST};
-__declspec(dllexport) 
-     const MUUID* MirandaPluginInterfaces(void)
+
+__declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 {
 	return interfaces;
 }
@@ -134,13 +138,15 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 	}
 #endif
 
-	mir_getMMI( &mmi );
-	mir_getUTFI( &utfi );
+	mir_getMMI(&mmi);
+	mir_getUTFI(&utfi);
 
-	if ( ServiceExists( MS_DB_EVENT_GETTEXT ))
-		bNewDbApi = TRUE;
+	if (!ServiceExists(MS_DB_EVENT_GETTEXT)) {
+		MessageBox(0, _T("tabSRMM"), _T("Critical error. Unsupported database driver found. tabSRMM will be disabled"), MB_OK);
+		return 1;
+	}
 
-	fnSetMenuInfo = ( pfnSetMenuInfo )GetProcAddress( GetModuleHandleA( "USER32.DLL" ), "GetMenuInfo" );
+	fnSetMenuInfo = (pfnSetMenuInfo)GetProcAddress(GetModuleHandleA("USER32.DLL"), "SetMenuInfo");
 
 	Chat_Load(pluginLink);
 	return LoadSendRecvMessageModule();
@@ -148,53 +154,70 @@ int __declspec(dllexport) Load(PLUGINLINK * link)
 
 int __declspec(dllexport) Unload(void)
 {
-    Chat_Unload();
+	Chat_Unload();
 	return SplitmsgShutdown();
 }
 
-#ifdef _DEBUG
 #if defined(_UNICODE)
 int _DebugTraceW(const wchar_t *fmt, ...)
 {
-    wchar_t debug[2048];
-    int     ibsize = 2047;
-    va_list va;
-    va_start(va, fmt);
+	wchar_t debug[2048];
+	int     ibsize = 2047;
+	va_list va;
+	va_start(va, fmt);
 
 	lstrcpyW(debug, L"TABSRMM: ");
 
-    _vsnwprintf(&debug[9], ibsize - 10, fmt, va);
-    OutputDebugStringW(debug);
+	_vsnwprintf(&debug[9], ibsize - 10, fmt, va);
+#ifdef _DEBUG
+	OutputDebugStringW(debug);
+#else
+	{
+		char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
+		FILE *f;
+
+		CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
+		mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
+		f = fopen(szLogFileName, "a+");
+		if (f) {
+			char *szDebug = Utf8_Encode(debug);
+			fputs(szDebug, f);
+			fputs("\n", f);
+			fclose(f);
+			if (szDebug)
+				free(szDebug);
+		}
+	}
+#endif
 	return 0;
 }
-#endif
 #endif
 
 int _DebugTraceA(const char *fmt, ...)
 {
-    char    debug[2048];
-    int     ibsize = 2047;
-    va_list va;
-    va_start(va, fmt);
+	char    debug[2048];
+	int     ibsize = 2047;
+	va_list va;
+	va_start(va, fmt);
 
 	lstrcpyA(debug, "TABSRMM: ");
 	_vsnprintf(&debug[9], ibsize - 10, fmt, va);
 #ifdef _DEBUG
-    OutputDebugStringA(debug);
+	OutputDebugStringA(debug);
 #else
-    {
-        char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
-        FILE *f;
+	{
+		char szLogFileName[MAX_PATH], szDataPath[MAX_PATH];
+		FILE *f;
 
-        CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
-        mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
-        f = fopen(szLogFileName, "a+");
-        if(f) {
-            fputs(debug, f);
-            fputs("\n", f);
-            fclose(f);
-        }
-    }
+		CallService(MS_DB_GETPROFILEPATH, MAX_PATH, (LPARAM)szDataPath);
+		mir_snprintf(szLogFileName, MAX_PATH, "%s\\%s", szDataPath, "tabsrmm_debug.log");
+		f = fopen(szLogFileName, "a+");
+		if (f) {
+			fputs(debug, f);
+			fputs("\n", f);
+			fclose(f);
+		}
+	}
 #endif
 	return 0;
 }
@@ -208,82 +231,87 @@ int _DebugTraceA(const char *fmt, ...)
  * popup plugin.
  */
 
-int _DebugPopup(HANDLE hContact, const char *fmt, ...)
+int _DebugPopup(HANDLE hContact, const TCHAR *fmt, ...)
 {
-    va_list va;
-    char    debug[1024];
-    int     ibsize = 1023;
+	va_list	va;
+	TCHAR		debug[1024];
+	int			ibsize = 1023;
 
-    va_start(va, fmt);
-    _vsnprintf(debug, ibsize, fmt, va);
-    
-    if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
-        MIRANDASYSTRAYNOTIFY tn;
-        char szTitle[128];
-        
-        tn.szProto = NULL;
-        tn.cbSize = sizeof(tn);
-        _snprintf(szTitle, sizeof(szTitle), Translate("tabSRMM Message (%s)"), (hContact != 0) ? (char *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, 0) : Translate("Global"));
-        tn.szInfoTitle = szTitle;
-        tn.szInfo = debug;
-        tn.dwInfoFlags = NIIF_INFO;
-        tn.uTimeout = 1000 * 4;
-        CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
-    }
-    return 0;
+	va_start(va, fmt);
+	_vsntprintf(debug, ibsize, fmt, va);
+
+	if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
+		MIRANDASYSTRAYNOTIFY tn;
+		TCHAR	szTitle[128];
+
+		tn.szProto = NULL;
+		tn.cbSize = sizeof(tn);
+		mir_sntprintf(szTitle, safe_sizeof(szTitle), TranslateT("tabSRMM Message (%s)"), (hContact != 0) ? (TCHAR *)CallService(MS_CLIST_GETCONTACTDISPLAYNAME, (WPARAM)hContact, GCDNF_TCHAR) : TranslateT("Global"));
+#if defined(_UNICODE)
+		tn.tszInfoTitle = szTitle;
+		tn.tszInfo = debug;
+#else
+		tn.szInfoTitle = szTitle;
+		tn.szInfo = debug;
+#endif
+		tn.dwInfoFlags = NIIF_INFO;
+#if defined(_UNICODE)
+		tn.dwInfoFlags |= NIIF_INTERN_UNICODE;
+#endif
+		tn.uTimeout = 1000 * 4;
+		CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & tn);
+	}
+	return 0;
 }
 
 BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-    COLORREF url_visited = RGB(128, 0, 128);
-    COLORREF url_unvisited = RGB(0, 0, 255);
-    
-    switch (msg)
-	{
+	COLORREF url_visited = RGB(128, 0, 128);
+	COLORREF url_unvisited = RGB(0, 0, 255);
+
+	switch (msg) {
 		case WM_INITDIALOG:
 			TranslateDialogDefault(hwndDlg);
-			{	int h;
-                HFONT hFont;
+			{
+				int h;
+				HFONT hFont;
 				LOGFONT lf;
-                
-				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_GETFONT,0,0);
-				GetObject(hFont,sizeof(lf),&lf);
-                h=lf.lfHeight;
-				lf.lfHeight=(int)(lf.lfHeight*1.5);
-				lf.lfWeight=FW_BOLD;
-				hFont=CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_SETFONT,(WPARAM)hFont,0);
-				lf.lfHeight=h;
-				hFont=CreateFontIndirect(&lf);
-				SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,(WPARAM)hFont,0);
+
+				hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_GETFONT, 0, 0);
+				GetObject(hFont, sizeof(lf), &lf);
+				h = lf.lfHeight;
+				lf.lfHeight = (int)(lf.lfHeight * 1.5);
+				lf.lfWeight = FW_BOLD;
+				hFont = CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_SETFONT, (WPARAM)hFont, 0);
+				lf.lfHeight = h;
+				hFont = CreateFontIndirect(&lf);
+				SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, (WPARAM)hFont, 0);
 			}
-			{	char str[64];
-                DWORD v = pluginInfo.version;
+			{
+				char str[64];
+				DWORD v = pluginInfo.version;
 				char szVersion[512], *found = NULL, buildstr[50] = "";
 				UINT build_nr = 0;
 
 				CallService(MS_SYSTEM_GETVERSIONTEXT, 500, (LPARAM)szVersion);
-				if((found = strchr(szVersion, '#')) != NULL) {
+				if ((found = strchr(szVersion, '#')) != NULL) {
 					build_nr = atoi(found + 1);
 					mir_snprintf(buildstr, 50, "[Build #%d]", build_nr);
 				}
 #if defined(_UNICODE)
-				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
+				mir_snprintf(str, sizeof(str), "%s %d.%d.%d.%d (Unicode) %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
 #else
-				mir_snprintf(str,sizeof(str),"%s %d.%d.%d.%d %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
-#endif                
-				SetDlgItemTextA(hwndDlg,IDC_VERSION,str);
-				mir_snprintf(str,sizeof(str),Translate("Built %s %s"),__DATE__,__TIME__);
-				SetDlgItemTextA(hwndDlg,IDC_BUILDTIME,str);
+				mir_snprintf(str, sizeof(str), "%s %d.%d.%d.%d %s", Translate("Version"), HIBYTE(HIWORD(v)), LOBYTE(HIWORD(v)), HIBYTE(LOWORD(v)), LOBYTE(LOWORD(v)), buildstr);
+#endif
+				SetDlgItemTextA(hwndDlg, IDC_VERSION, str);
+				mir_snprintf(str, sizeof(str), Translate("Built %s %s"), __DATE__, __TIME__);
+				SetDlgItemTextA(hwndDlg, IDC_BUILDTIME, str);
 			}
-            //hIcon = LoadIcon(GetModuleHandleA("miranda32.exe"), MAKEINTRESOURCE(102));
-            //SendDlgItemMessage(hwndDlg, IDC_LOGO, STM_SETICON, (WPARAM)hIcon, 0);
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)myGlobals.g_iconContainer);
-            //DestroyIcon(hIcon);
 			return TRUE;
 		case WM_COMMAND:
-			switch(LOWORD(wParam))
-			{
+			switch (LOWORD(wParam)) {
 				case IDOK:
 				case IDCANCEL:
 					DestroyWindow(hwndDlg);
@@ -295,49 +323,51 @@ BOOL CALLBACK DlgProcAbout(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 			break;
 		case WM_CTLCOLOREDIT:
 		case WM_CTLCOLORSTATIC:
-			if((HWND)lParam==GetDlgItem(hwndDlg,IDC_WHITERECT)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_TABSRMM)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_BUILDTIME)
-                    || (HWND)lParam==GetDlgItem(hwndDlg,IDC_COPYRIGHT)
-                    || (HWND)lParam==GetDlgItem(hwndDlg,IDC_SUPPORT)
-					|| (HWND)lParam==GetDlgItem(hwndDlg,IDC_LOGO)) {
-                if((HWND)lParam==GetDlgItem(hwndDlg,IDC_TABSRMM))
-				    SetTextColor((HDC)wParam,RGB(180,10,10));
-                else if((HWND)lParam==GetDlgItem(hwndDlg,IDC_VERSION))
-				    SetTextColor((HDC)wParam,RGB(70,70,70));
-                else
-				    SetTextColor((HDC)wParam,RGB(0,0,0));
-				SetBkColor((HDC)wParam,RGB(255,255,255));
+			if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_WHITERECT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_TABSRMM)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_VERSION)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_BUILDTIME)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_COPYRIGHT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_SUPPORT)
+					|| (HWND)lParam == GetDlgItem(hwndDlg, IDC_LOGO)) {
+				if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_TABSRMM))
+					SetTextColor((HDC)wParam, RGB(180, 10, 10));
+				else if ((HWND)lParam == GetDlgItem(hwndDlg, IDC_VERSION))
+					SetTextColor((HDC)wParam, RGB(70, 70, 70));
+				else
+					SetTextColor((HDC)wParam, RGB(0, 0, 0));
+				SetBkColor((HDC)wParam, RGB(255, 255, 255));
 				return (BOOL)GetStockObject(WHITE_BRUSH);
 			}
 			break;
-		case WM_DESTROY:
-			{	HFONT hFont;
-            
-				hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_GETFONT,0,0);
-				SendDlgItemMessage(hwndDlg,IDC_TABSRMM,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
-				DeleteObject(hFont);				
-                hFont=(HFONT)SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_GETFONT,0,0);
-                SendDlgItemMessage(hwndDlg,IDC_VERSION,WM_SETFONT,SendDlgItemMessage(hwndDlg,IDOK,WM_GETFONT,0,0),0);
-                DeleteObject(hFont);				
-			}
-			break;
+		case WM_DESTROY: {
+			HFONT hFont;
+
+			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_GETFONT, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_TABSRMM, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
+			DeleteObject(hFont);
+			hFont = (HFONT)SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_GETFONT, 0, 0);
+			SendDlgItemMessage(hwndDlg, IDC_VERSION, WM_SETFONT, SendDlgItemMessage(hwndDlg, IDOK, WM_GETFONT, 0, 0), 0);
+			DeleteObject(hFont);
+
+		}
+		break;
 	}
 	return FALSE;
 }
 
+#define _DBG_STR_LENGTH_MAX 2048
 int _DebugMessage(HWND hwndDlg, struct MessageWindowData *dat, const char *fmt, ...)
 {
-    va_list va;
-    char    debug[1024];
-    int     ibsize = 1023;
+	va_list	va;
+	char		szDebug[_DBG_STR_LENGTH_MAX];
 
-    va_start(va, fmt);
-    _vsnprintf(debug, ibsize, fmt, va);
+	va_start(va, fmt);
+	_vsnprintf(szDebug, _DBG_STR_LENGTH_MAX, fmt, va);
+	szDebug[_DBG_STR_LENGTH_MAX - 1] = '\0';
 
-    LogErrorMessage(hwndDlg, dat, -1, debug);
-    return 0;
+	LogErrorMessage(hwndDlg, dat, -1, szDebug);
+	return 0;
 }
 
 // eternity: Release Notes Procedure

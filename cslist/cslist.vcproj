@@ -1,8 +1,8 @@
 <?xml version="1.0" encoding="windows-1250"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
-	Name="cslist"
+	Version="8.00"
+	Name="custom_status_list"
 	ProjectGUID="{28A1D26D-55DB-41AD-AEA5-AD7558E421C6}"
 	RootNamespace="cslist"
 	>
@@ -170,7 +170,7 @@
 			/>
 			<Tool
 				Name="VCLinkerTool"
-				OutputFile="$(OutDir)/$(ProjectName).dll"
+				OutputFile="$(OutDir)/cslist.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
 				GenerateDebugInformation="false"
@@ -258,7 +258,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\cancel.ico"
+				RelativePath=".\res\apply.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\clear.ico"
 				>
 			</File>
 			<File
@@ -266,19 +270,35 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\delete.ico"
+				RelativePath=".\res\fav.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\edit.ico"
+				RelativePath=".\res\import.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\list.ico"
+				RelativePath=".\res\main.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\ok.ico"
+				RelativePath=".\res\modify.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\nochng.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\options.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\remove.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\watch.ico"
 				>
 			</File>
 		</Filter>

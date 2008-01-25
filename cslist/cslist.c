@@ -6,7 +6,7 @@
   Custom Status List plugin for Miranda-IM (www.miranda-im.org)
   Follower of Custom Status History List by HANAX
   Copyright © 2006,2007 HANAX
-  Copyright © 2007 jarvis
+  Copyright © 2007,2008 jarvis
    
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -31,27 +31,36 @@
 
   ----------------------------------------------------------------------------  
 
+
   DESCRIPTION:
 
   Offers List of your Custom Statuses.
 
   ----------------------------------------------------------------------------  
 
+
   HISTORY:
 
-  0.0.0.15 -
+  0.0.0.17 - I become to be useful :)
   --------
-  - code revision
-  - Options dialog (in development) :)
+  /- stage 2 of code revision
   /- CSList menu item can be placed instead of Xstatus menu (currently ICQ eternity/PlusPlus++ mod only)
+  - loading statuses from database (ICQ key)
+  - list sorting (Procedure + calls)
+
+  0.0.0.16 - rework
+  --------
+  - code redesigned
+  - fix for Windows Vista crash (free) and ANSI Windows crash (init extended controls)
+  - preimplementation for new features that will come (favourites, ...)
+  
+  0.0.0.15 - make me nice
+  --------
+  - stage 1 of code revision
+  - Options dialog (in development) :)
   - IcoLib group renamed to CSLIST_MODULE_LONG_NAME
   - status titles in Add/Modify ComboBox were strangely corrected x)
   - possibility to turn off "Release Notes" dialog
-
-heading to 0.0.0.15
-----------------------------
-- stage 1 of code revision
-- preimplementation for new features that will come
 
   0.0.0.14 - will you use me? :)
   --------
@@ -108,12 +117,11 @@ heading to 0.0.0.15
   0.0.0.6 - resource testing
   -------
   - basic resources modeling
-  
-  
+
+
   TODO:
   - exactly, CSList-like system
   - optionally set Away/NA/DND/Occ
-  - list sorting (Procedure + calls)
   - saving dialog positions
   - all TODOs listed in this source x)
   - feature requests maybe ..
@@ -122,6 +130,7 @@ heading to 0.0.0.15
 // ############################ INCLUDES & DEFINITIONS ###################### */
 
 #include "cslist.h"
+
 
 // ############################### MAIN ########################################
 
@@ -142,10 +151,12 @@ static int PluginMenuCommand( WPARAM wParam, LPARAM lParam ) {
 // ############################# PLUGIN INFO ###################################
 
 __declspec( dllexport ) PLUGININFOEX* MirandaPluginInfoEx( DWORD mirandaVersion ) {
+  gMirandaVersion = mirandaVersion;
   return &pluginInfoEx;
 }
 
 __declspec( dllexport ) PLUGININFO* MirandaPluginInfo( DWORD mirandaVersion ) {
+  gMirandaVersion = mirandaVersion;
 	return &pluginInfo;
 }
 
@@ -175,6 +186,12 @@ int __declspec( dllexport ) Load( PLUGINLINK *link ) {
   
   HookEvent( ME_SYSTEM_MODULESLOADED, onPluginsLoaded );
   HookEvent( ME_OPT_INITIALISE, onOptionsInit );
+  { // fix for ANSI Windows - Add and Modify dialogs not loaded when clicking - troubles with not loaded ComboBoxEx
+    INITCOMMONCONTROLSEX icc;
+    icc.dwSize = sizeof( icc );
+    icc.dwICC = ICC_USEREX_CLASSES;
+    InitCommonControlsEx( &icc );
+  }
   return 0;
 }
 
@@ -196,23 +213,25 @@ static int onPluginsLoaded( WPARAM wparam, LPARAM lparam )
     
 //#if defined(_UNICODE)
 	  static char szCurrentVersion[30];
-	  static char *szVersionUrl = "http://dev.mirandaim.ru/jarvis/";
-	  static char *szUpdateUrl = "http://mirandapack.ic.cz/eternity_plugins/cslist.zip";
+	  static char *szVersionUrl = CSLIST_UPD_VERURL;
+	  static char *szUpdateUrl = CSLIST_UPD_UPDURL;
 	  // todo: complete FL updating
-	  static char *szFLVersionUrl = "http://addons.miranda-im.org/details.php?action=viewfile&id=3483";
-	  static char *szFLUpdateurl = "http://addons.miranda-im.org/feed.php?dlfile=3483";
+	  static char *szFLVersionUrl = CSLIST_UPD_FLVERURL;
+	  static char *szFLUpdateurl = CSLIST_UPD_FLUPDURL;
 //#endif    
-	  static char *szPrefix = "Custom Status List</a> ";
+	  static char *szPrefix = CSLIST_UPD_SZPREFIX;
   	
 	  upd.cbSize = sizeof(upd);
 	  upd.szComponentName = pluginInfo.shortName;
-	  //upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFO *)&pluginInfo, szCurrentVersion); // TODO: updater support for < 0.7 core
-    upd.pbVersion = (BYTE *)CreateVersionStringPluginEx((PLUGININFOEX *)&pluginInfoEx, szCurrentVersion);
+	  if (gMirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 0)) 
+		  upd.pbVersion = (BYTE *)CreateVersionStringPlugin((PLUGININFO *)&pluginInfo, szCurrentVersion); // updater support for < 0.7 core
+	  else
+		  upd.pbVersion = (BYTE *)CreateVersionStringPluginEx((PLUGININFOEX *)&pluginInfoEx, szCurrentVersion);
 	  upd.cpbVersion = strlen((char *)upd.pbVersion);
 	  //upd.szVersionURL = szFLVersionUrl;
 	  //upd.szUpdateURL = szFLUpdateurl;
 //#if defined(_UNICODE)
-	  upd.pbVersionPrefix = (BYTE *)"Custom Status List</a> ";
+	  upd.pbVersionPrefix = (BYTE *)CSLIST_UPD_SZPREFIX;
 //#endif
 	  upd.cpbVersionPrefix = strlen((char *)upd.pbVersionPrefix);
 
@@ -269,6 +288,8 @@ int onOptionsInit( WPARAM wparam, LPARAM lparam )
 INT_PTR CALLBACK CSListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam)
 {
   NMHDR* pnmh	= 0;
+  hDlg = hwndDlg;
+  cslist_clear_selection();
   switch (uMsg)
   {
     case WM_NOTIFY: // some notifying message is sent
@@ -277,12 +298,13 @@ INT_PTR CALLBACK CSListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
 // ######################## DBLCLICKING THE LIST ###############################
       if (pnmh->code == NM_DBLCLK) {
         cslist_set_status(hwndDlg);
-        cslist_clear_selection();
+        //cslist_clear_selection();
         goto savenexit; // stick #1 - edit: not needed ;) so TODO
         // EndDialog(hwndDlg, LOWORD(wParam)); // OPTIONALLY: end dialog when ListItem is DblClk'd?
       }
 // #################### CLICKING TO SORT THE LIST ##############################
       else if (pnmh->code == LVN_COLUMNCLICK && pnmh->idFrom == IDC_CSLIST) {
+        cslist_sort_list();
       }
 // ######################## CLICKING THE LIST ##################################
       switch(LOWORD(wParam))
@@ -293,6 +315,8 @@ INT_PTR CALLBACK CSListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
             flag = 0;
           else
             flag = 1;
+          EnableWindow( GetDlgItem( hDlg, IDC_MODIFY ), flag );
+          EnableWindow( GetDlgItem( hDlg, IDC_DELETE ), flag );
           break;
       }
     }
@@ -318,20 +342,21 @@ INT_PTR CALLBACK CSListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
       LvCol.mask = LVCF_TEXT | LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM;
       LvCol.fmt = LVCFMT_LEFT;
       LvCol.cx = 0x00;
-      LvCol.pszText = "Ico";
-      LvCol.cx = 0x1c;
+      LvCol.pszText = " ";
+      LvCol.cx = 0x16;
       ListView_SetExtendedListViewStyle(hList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP);
       SendMessage(hList, LVM_INSERTCOLUMN , 0, (LPARAM)&LvCol);
       LvCol.pszText = "Title";
-      LvCol.cx = 0x60;
+      LvCol.cx = 0x64;
       SendMessage(hList, LVM_INSERTCOLUMN, 1, (LPARAM)&LvCol);
       LvCol.pszText = "Message";
-      LvCol.cx = 0x9d;
+      LvCol.cx = 0xa8;
       SendMessage(hList, LVM_INSERTCOLUMN, 2, (LPARAM)&LvCol);
       memset(&LvItem, 0, sizeof(LvItem));
 
-      // ....................................................... load list items
+      // ................................................ load + sort list items
       cslist_initialize_list_content(hwndDlg);
+      cslist_sort_list();
 
       // ............................................. creating iconized buttons
 			for (i = 0; i < SIZEOF(buttons); ++i)
@@ -349,10 +374,11 @@ INT_PTR CALLBACK CSListProc(HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPara
         //case IDC_CSLIST: TODO: deselection
 // ------------------------- EXITING THE LIST ----------------------------------
 savenexit: // stick #1
-        case IDCANCEL:  // save, no status change and close
-        case IDOK:      // not used
-        case IDC_APPLY: // save, set selected and close
-        case IDC_EXIT:  // save, set nulled status and close
+        case IDC_NOCHNG: // save, no status change and close
+        case IDCANCEL:   // save, no status change and close
+        case IDOK:       // not used
+        case IDC_APPLY:  // save, set selected and close
+        case IDC_EXIT:   // save, set nulled status and close
           if ((LOWORD(wParam)) == IDC_APPLY) //set selected status
             cslist_set_status(hwndDlg);
           else if ((LOWORD(wParam)) == IDC_EXIT)
@@ -385,6 +411,7 @@ savenexit: // stick #1
               AMResult = 0;
               bChanged = 1;
             }
+            cslist_sort_list();
           }
           break;
 // ----------------- MODIFYING ITEM FROM THE LIST ------------------------------
@@ -402,6 +429,7 @@ savenexit: // stick #1
               bChanged = 1;
             }
             action = 0;
+            cslist_sort_list();
           }
           break;
 // ----------------- REMOVING ITEM FROM THE LIST -------------------------------
@@ -410,6 +438,9 @@ savenexit: // stick #1
             cslist_remove_item();
             bChanged = 1;
           }
+          break;
+        case IDC_IMPORT:
+          cslist_import_statuses_from_icq();
           break;
       }
     break;
@@ -561,8 +592,24 @@ BOOL CALLBACK CSListOptionsProc( HWND hdlg, UINT msg, WPARAM wparam, LPARAM lpar
 // ############################# LIST SORT PROCEDURE ###########################
 // #############################################################################
 
-static int CALLBACK CSListSortProc(LPARAM lparam1, LPARAM lparam2, LPARAM lparamSort)
+static int CALLBACK CSListSortProc(LPARAM lParam1, LPARAM lParam2, LPARAM lParamSort)
 {
+  LVITEM first, second;
+  
+  first.mask = LVIF_IMAGE;
+  first.iItem = lParam1;
+  first.iSubItem = lParamSort;
+
+  second.mask = LVIF_IMAGE;
+  second.iItem = lParam2;
+  second.iSubItem = lParamSort;
+
+  ListView_GetItem( hList, &first );
+  ListView_GetItem( hList, &second );
+
+  if ( first.iImage > second.iImage ) return 1;
+  else if ( first.iImage < second.iImage ) return -1;
+  else return 0;
 }
 
 
@@ -590,8 +637,8 @@ INT_PTR CALLBACK RelNotesProc(HWND hwndRNDlg, UINT uMsg, WPARAM wParam, LPARAM l
         {
           int showit;
           showit = IsDlgButtonChecked( hwndRNDlg, IDC_SHOWIT ) ? 1 : 0;
-          if (showit == 1) MessageBox(hwndRNDlg, "clicked - disabled" ,"", MB_OK);
-          else  MessageBox(hwndRNDlg, "enabled .." ,"", MB_OK);
+          //if (showit == 1) MessageBox(hwndRNDlg, "clicked - disabled" ,"", MB_OK);
+          //else  MessageBox(hwndRNDlg, "enabled .." ,"", MB_OK);
           DBWriteContactSettingByte( NULL, CSLIST_MODULE_SHORT_NAME, "ShowRelNotes", !showit );
           DBWriteContactSettingWord( NULL, CSLIST_MODULE_SHORT_NAME, "RelNotes", CSLIST_RELNOTES );
           EndDialog(hwndRNDlg, LOWORD(wParam));
@@ -634,19 +681,27 @@ void InitMenuItem( BOOL bAllowStatus, int menuItemPlacement ) // TODO: merge wit
   CLISTMENUITEM mi;
   ZeroMemory(&mi, sizeof(mi));
   mi.cbSize = sizeof(mi);
-  mi.position = -0x7FFFFFFF;
+  mi.position = -0x7FFFFFFF; // top
+  //mi.position = 2000040000; // bottom
   mi.flags = 0;
   //mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
   mi.hIcon = LoadIconExEx( "csl_icon", IDI_CSLIST );
   mi.pszName = "Custom Status List...";
   mi.pszService = "CSList/ShowList";
-  /*mi.pszContactOwner = "ICQ";
-  mi.pszPopupName = mi.pszName;
-  mi.popupPosition= 500084000;
-  mi.position = 2000040000;*/
+  mi.pszContactOwner = "ICQ";
+  mi.pszPopupName = "ICQ";
+  mi.popupPosition= 500084001;
   switch ( menuItemPlacement ) {
     case 0 : // add to status menu
-      CallService(MS_CLIST_ADDSTATUSMENUITEM, 0, (LPARAM)&mi);
+      {
+        //ICQ_CUSTOM_STATUS helpStatus;
+        // PS_ICQ_SETCUSTOMSTATUSEX and flag CSSF_DISABLE_UI - thx to Joe@Whale :)
+        //helpStatus.cbSize = sizeof(ICQ_CUSTOM_STATUS);
+        //helpStatus.flags = CSSF_DISABLE_UI;
+        //helpStatus.wParam = (WPARAM *) 0;
+        //CallService(PS_ICQ_SETCUSTOMSTATUSEX, 0, (LPARAM)&helpStatus);
+        CallService(MS_CLIST_ADDSTATUSMENUITEM, 0, (LPARAM)&mi);
+      }
       break;
     case 1: // add to main menu
       CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
@@ -689,6 +744,7 @@ int cslist_add_item()
 // --------------------------------------------------------------------- end ---
 //  helpItem.ItemTitle = "";
 //  helpItem.ItemMessage = "";
+  cslist_clear_help_item();
   cslist_clear_selection();
   return 0;
 }
@@ -730,6 +786,36 @@ void cslist_clear_help_item() {
   ZeroMemory(&helpItem, sizeof(helpItem));
 }
 
+void cslist_sort_list() {
+  ListView_SortItemsEx( hList, CSListSortProc, (LPARAM)0 );
+}
+
+void cslist_import_statuses_from_icq() {
+  int i, result;
+  result = MessageBox( hDlg, "Do you want to delete those DB entries after Import?", "Custom Status List", MB_YESNO | MB_DEFBUTTON2 | MB_ICONQUESTION );
+  for ( i = 0; i < 37; i++ )
+  {
+    DBVARIANT dbv = { 0 };
+    char bufName[64], bufMsg[64];
+    mir_snprintf( bufName, 32, "XStatus%luName", i );
+    mir_snprintf( bufMsg, 32, "XStatus%luMsg", i );
+    helpItem.ItemIcon = i - 1;
+    DBGetContactSettingString( NULL, "ICQ", bufName, &dbv );
+    lstrcpy( helpItem.ItemTitle, dbv.pszVal );
+    DBGetContactSettingString( NULL, "ICQ", bufMsg, &dbv );
+    lstrcpy( helpItem.ItemMessage, dbv.pszVal );
+    if ( strlen( helpItem.ItemTitle ) || strlen( helpItem.ItemMessage ) )
+      cslist_add_item();
+    if ( result == IDYES )
+    {
+      DBDeleteContactSetting( NULL, "ICQ", bufName );
+      DBDeleteContactSetting( NULL, "ICQ", bufMsg );
+    }
+  }
+  cslist_sort_list();
+  bChanged = 1;
+}
+
 // ################## DB - LOAD AND SAVE #######################################
 int cslist_initialize_list_content(HWND hwndDlg)
 {
@@ -737,7 +823,7 @@ int cslist_initialize_list_content(HWND hwndDlg)
   DBVARIANT dbv = { DBVT_ASCIIZ };
   int parseResult;
   int dbLoadResult;
-  char rowDelim[] = ""; // new line
+  const char rowDelim[] = ""; // new line
   char *row = NULL;
 
   dbLoadResult = DBGetContactSetting(NULL, CSLIST_MODULE_SHORT_NAME, "listhistory", &dbv);
@@ -752,8 +838,8 @@ int cslist_initialize_list_content(HWND hwndDlg)
       row = strtok(NULL, rowDelim);
     }
   }
-  free(rowDelim);
-  free(row);
+  //free(rowDelim);
+  //free(row);
   return 0;
 }
 
@@ -762,7 +848,8 @@ int cslist_parse_row(char *row) // parse + helpItem
   //const char line[] = *row;
   int pIconInt;
   char pIcon[4], pTitle[CSLIST_XTITLE_LIMIT+2], pMsg[CSLIST_XMESSAGE_LIMIT+2], pFav[4];
-  if (sscanf(row, "%2[^]%64[^]%2048[^]%2[^]", pIcon, pTitle, pMsg, pFav) == 4) // PLEASE!! x) use DEFs xO
+  //if (sscanf(row, "%2[^]%64[^]%2048[^]%2[^]", pIcon, pTitle, pMsg, pFav) == 4) // PLEASE!! x) use DEFs xO
+  if (sscanf(row, "%2[^]%64[^]%2048[^]%2[^]", &pIcon, &pTitle, &pMsg, &pFav) == 4) // PLEASE!! x) use DEFs xO
   {
     pIconInt = atoi(pIcon);
     helpItem.ItemIcon = pIconInt;
@@ -783,24 +870,24 @@ int cslist_parse_row(char *row) // parse + helpItem
     lstrcpy(helpItem.ItemTitle, pTitle);
     lstrcpy(helpItem.ItemMessage, "");
   }
-  /*else if(sscanf(row, "%2[^]%2[^]", pIcon, pFav) == 2)
-  {
-    lstrcpy(helpItem.ItemTitle, "");
-    lstrcpy(helpItem.ItemMessage, "");
-  } // why allow empty xstatuses? O_o */
+  //else if(sscanf(row, "%2[^]%2[^]", pIcon, pFav) == 2)
+  //{
+  //  lstrcpy(helpItem.ItemTitle, "");
+  //  lstrcpy(helpItem.ItemMessage, "");
+  //} // why allow empty xstatuses? O_o
   else {
-    free(row);
-    free(pIcon);
-    free(pTitle);
-    free(pMsg);
-    free(pFav);
+    //free(row);
+    //free(pIcon);
+    //free(pTitle);
+    //free(pMsg);
+    //free(pFav);
     return FALSE;
   }
-  free(row);
-  free(pIcon);
-  free(pTitle);
-  free(pMsg);
-  free(pFav);
+  //free(row);
+  //free(pIcon);
+  //free(pTitle);
+  //free(pMsg);
+  //free(pFav);
   return TRUE;
 }
 
@@ -847,13 +934,9 @@ int cslist_set_status(HWND hwndDlg)
   helpStatus.cbSize = sizeof(ICQ_CUSTOM_STATUS);
   helpStatus.flags = CSSF_MASK_STATUS | CSSF_MASK_NAME | CSSF_MASK_MESSAGE;
   iSelect = SendMessage(hList, LVM_GETNEXTITEM, -1, LVNI_FOCUSED | LVNI_SELECTED); // set which row is selected
-  if (iSelect == -1) // if no selection
-  {
-    //MessageBox(hwndDlg, "No status selected.", "Error", MB_OK | MB_ICONINFORMATION);
+  if (iSelect == -1) // no status selected
     flag = 0;
-  }
-  else {
-    // else get values from selection..
+  else { // else get values from selection
     LvItem.iItem = iSelect;
     LvItem.iSubItem = 0;
     ListView_GetItem(hList, &LvItem);
@@ -914,6 +997,14 @@ HICON LoadIconExEx( const char* IcoLibName, int NonIcoLibIcon )
   else
     return ( HICON )LoadImage( hInst, MAKEINTRESOURCE( NonIcoLibIcon ), IMAGE_ICON, 0, 0, 0 );
 }
+
+/*void DBDeleteContactSetting( char Module[64], char Setting[64] )
+{
+  DBCONTACTGETSETTING dbgcs;
+  dbgcs.szModule = Module;
+  dbgcs.szSetting = Setting;
+  CallService(MS_DB_CONTACT_DELETESETTING, (WPARAM)NULL, (LPARAM)&dbgcs);
+}*/
 
 
 /* ########################################################################## 80
