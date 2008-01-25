@@ -509,28 +509,26 @@ BEGIN
     CTEXT           "Skinning is only available when running under Windows 2000 or later",IDC_SKIN_WIN9XWARN,17,39,270,20,NOT WS_VISIBLE
 END
 
-IDD_RELNOTES DIALOGEX 100, 100, 192, 185
+IDD_RELNOTES DIALOGEX 100, 100, 192, 151
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "tabSRMM About/Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Close",IDOK,137,166,50,14
-    GROUPBOX        "eternity Mod - Latest Changes",IDC_RNMODCHNGS,4,89,184,72
+    DEFPUSHBUTTON   "Close",IDOK,137,132,50,14
+    GROUPBOX        "eternity Mod - Latest Changes",IDC_RNMODCHNGS,4,89,184,40
     RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
     RTEXT           "Version:",IDC_RNVER,7,14,53,8
     LTEXT           "tabSRMM eternity Mod",IDC_RLNPLGNM2,66,4,98,8
-    LTEXT           "2.0.0.1 (100)",IDC_RNVER2,66,14,98,8
-    LTEXT           "- not sure now x)",IDC_STATIC,20,68,150,8
-    LTEXT           "- fixed statusbar Typing Sounds button behaviour",IDC_STATIC,20,103,150,16
-    LTEXT           "- Typing Sounds in Chat module :)",IDC_STATIC,20,122,150,11
+    LTEXT           "2.0.0.1 (101)",IDC_RNVER2,66,14,98,8
+    LTEXT           "- bump to 2.x (core 0.7+)",IDC_STATIC,20,68,150,8
+    LTEXT           "- Translation fixes",IDC_STATIC,19,102,150,11
     GROUPBOX        "Latest Changes",IDC_ORGLNTS,4,55,184,33
     RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
     LTEXT           "jarvis, Nightwish",IDC_RNAUTH2,66,24,115,8
     RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
     LTEXT           "© 2007 eternity crew ..\n© 2000 - 2007 Miranda Project",IDC_RNCPR2,66,34,115,18
     ICON            IDI_TREEVIEWEXPAND,IDC_RNCSICON,163,3,20,20
-    LTEXT           "- SVN merge (2.0 bump :] ..)",IDC_STATIC,20,132,150,11
-    LTEXT           "- icons and sounds for your comfort :)",IDC_STATIC,20,142,150,11
+    LTEXT           "- something more I forgot x)",IDC_STATIC,19,113,150,11
 END
 
 
@@ -597,7 +595,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 185
         TOPMARGIN, 7
-        BOTTOMMARGIN, 178
+        BOTTOMMARGIN, 144
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -947,9 +945,9 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_TREEVIEWEXPAND      ICON                    "res/expand.ico"
-IDI_TREEVIEWCHECKED     ICON                    "res/checked.ico"
-IDI_TREEVIEWUNCHECKED   ICON                    "res/unchecked.ico"
+// IDI_TREEVIEWEXPAND      ICON    DISCARDABLE     "res/expand.ico"
+// IDI_TREEVIEWCHECKED     ICON    DISCARDABLE     "res/checked.ico"
+// IDI_TREEVIEWUNCHECKED   ICON    DISCARDABLE     "res/unchecked.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 

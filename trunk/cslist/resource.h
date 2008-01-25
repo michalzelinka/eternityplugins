@@ -8,11 +8,17 @@
 #define IDI_CSLIST                      104
 #define IDD_RELNOTES                    105
 #define IDD_OPTIONS                     106
+#define IDI_FAV                         107
+#define IDI_NOCHNG                      108
+#define IDI_IMPORT                      109
+#define IDI_WATCH                       110
 #define IDI_ADD                         501
 #define IDI_DELETE                      502
+#define IDI_REMOVE                      502
 #define IDI_MODIFY                      503
 #define IDI_APPLY                       504
 #define IDI_EXIT                        505
+#define IDI_CLEAR                       505
 #define IDC_CSLIST                      1001
 #define IDC_CB_ICON                     1002
 #define IDC_XTITLE                      1003
@@ -25,10 +31,11 @@
 #define IDC_ST_XMESSAGE                 1009
 #define IDC_WATCH                       1009
 #define IDC_ST_XICON                    1010
+#define IDC_WATCH2                      1010
+#define IDC_FAV                         1010
 #define IDC_APPLY                       1011
 #define IDC_EXIT                        1012
 #define IDC_AM_OK                       1013
-#define IDC_EXIT2                       1013
 #define IDC_AM_CN                       1014
 #define IDC_RNCHNGS                     1017
 #define IDC_RNNOTICE                    1018
@@ -59,14 +66,16 @@
 #define IDC_IGR_NOTE                    1045
 #define IDC_MIP_NOTE                    1046
 #define IDC_NOCHNG                      1046
+#define IDC_HOTKEY1                     1050
+#define IDC_DESELECTOR                  1051
 
 // Next default values for new objects
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        107
+#define _APS_NEXT_RESOURCE_VALUE        111
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1047
+#define _APS_NEXT_CONTROL_VALUE         1052
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

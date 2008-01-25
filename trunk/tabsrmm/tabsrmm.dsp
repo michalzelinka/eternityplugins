@@ -1,30 +1,37 @@
 # Microsoft Developer Studio Project File - Name="tabSRMM" - Package Owner=<4>
 # Microsoft Developer Studio Generated Build File, Format Version 6.00
-# ** DO NOT EDIT **
+# ** NICHT BEARBEITEN **
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
 CFG=tabSRMM - Win32 Debug Unicode
-!MESSAGE This is not a valid makefile. To build this project using NMAKE,
-!MESSAGE use the Export Makefile command and run
+!MESSAGE Dies ist kein gültiges Makefile. Zum Erstellen dieses Projekts mit NMAKE
+!MESSAGE verwenden Sie den Befehl "Makefile exportieren" und führen Sie den Befehl
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak".
 !MESSAGE 
-!MESSAGE You can specify a configuration when running NMAKE
-!MESSAGE by defining the macro CFG on the command line. For example:
+!MESSAGE Sie können beim Ausführen von NMAKE eine Konfiguration angeben
+!MESSAGE durch Definieren des Makros CFG in der Befehlszeile. Zum Beispiel:
 !MESSAGE 
 !MESSAGE NMAKE /f "tabsrmm.mak" CFG="tabSRMM - Win32 Debug Unicode"
 !MESSAGE 
-!MESSAGE Possible choices for configuration are:
+!MESSAGE Für die Konfiguration stehen zur Auswahl:
 !MESSAGE 
+<<<<<<< .mine
 !MESSAGE "tabSRMM - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "tabSRMM - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
+=======
+!MESSAGE "tabSRMM - Win32 Debug" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Release" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "tabSRMM - Win32 Debug Unicode" (basierend auf  "Win32 (x86) Dynamic-Link Library")
+>>>>>>> .r7119
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda/miranda/plugins/tabsrmm", JLIAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -84,6 +91,37 @@ LINK32=link.exe
 # ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /base:"0x6a540000" /subsystem:windows /dll /map /debug /machine:IX86 /out:"..\..\Bin\Release\Plugins\tabsrmm.dll" /implib:".\Release/srmm.lib" /pdbtype:sept /opt:NOWIN98
 # SUBTRACT LINK32 /pdb:none
 
+<<<<<<< .mine
+=======
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir ".\Debug_Unicode"
+# PROP BASE Intermediate_Dir ".\Debug_Unicode"
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir ".\Debug_Unicode"
+# PROP Intermediate_Dir ".\Debug_Unicode"
+# PROP Ignore_Export_Lib 1
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /GX /ZI /Od /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR /Fp".\Debug_Unicode/srmm.pch" /YX /GZ /c
+# ADD CPP /nologo /MDd /W3 /GX /ZI /Od /I "../" /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_USRDLL" /D "SRMM_EXPORTS" /D "UNICODE" /D "_MBCS" /FR /Fp".\Debug_Unicode/srmm.pch" /Yu"commonheaders.h" /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG" /d "UNICODE"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib /nologo /subsystem:windows /dll /incremental:no /pdb:".\Debug_Unicode\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug\Plugins\tabsrmm_unicode.dll" /implib:".\Debug_Unicode/srmm.lib" /pdbtype:sept
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib comctl32.lib msimg32.lib shlwapi.lib /nologo /subsystem:windows /dll /pdb:".\Debug_Unicode\srmm.pdb" /debug /machine:IX86 /out:"..\..\Bin\Debug Unicode\Plugins\tabsrmm.dll" /implib:".\Debug_Unicode/srmm.lib" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none /incremental:no
+
+>>>>>>> .r7119
 !ENDIF 
 
 # Begin Target
@@ -112,12 +150,42 @@ SOURCE=.\chat\chatprototypes.h
 
 SOURCE=.\chat\clist.c
 DEP_CPP_CLIST=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -125,7 +193,6 @@ DEP_CPP_CLIST=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -158,18 +225,66 @@ DEP_CPP_CLIST=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\colorchooser.c
 DEP_CPP_COLOR=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -177,7 +292,6 @@ DEP_CPP_COLOR=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -210,18 +324,66 @@ DEP_CPP_COLOR=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\log.c
 DEP_CPP_LOG_C=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -230,7 +392,6 @@ DEP_CPP_LOG_C=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -263,7 +424,25 @@ DEP_CPP_LOG_C=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
@@ -273,12 +452,42 @@ SOURCE=.\chat\m_chat.h
 
 SOURCE=.\chat\main.c
 DEP_CPP_MAIN_=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -286,7 +495,6 @@ DEP_CPP_MAIN_=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -319,18 +527,66 @@ DEP_CPP_MAIN_=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\manager.c
 DEP_CPP_MANAG=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -338,7 +594,6 @@ DEP_CPP_MANAG=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -371,18 +626,66 @@ DEP_CPP_MANAG=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\message.c
 DEP_CPP_MESSA=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -390,7 +693,6 @@ DEP_CPP_MESSA=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -423,18 +725,66 @@ DEP_CPP_MESSA=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\options.c
 DEP_CPP_OPTIO=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -443,7 +793,6 @@ DEP_CPP_OPTIO=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -476,18 +825,66 @@ DEP_CPP_OPTIO=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\services.c
 DEP_CPP_SERVI=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -496,7 +893,6 @@ DEP_CPP_SERVI=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -529,18 +925,66 @@ DEP_CPP_SERVI=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\tools.c
 DEP_CPP_TOOLS=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -548,7 +992,6 @@ DEP_CPP_TOOLS=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -581,18 +1024,66 @@ DEP_CPP_TOOLS=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # Begin Source File
 
 SOURCE=.\chat\window.c
 DEP_CPP_WINDO=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -601,7 +1092,6 @@ DEP_CPP_WINDO=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -634,19 +1124,67 @@ DEP_CPP_WINDO=\
 	"\miranda\miranda\include\statusmodes.h"\
 	"\miranda\miranda\include\win2k.h"\
 	
+
+!IF  "$(CFG)" == "tabSRMM - Win32 Debug"
+
 # ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release Unicode"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Release"
+
+# ADD CPP /Yu"../commonheaders.h"
+
+!ELSEIF  "$(CFG)" == "tabSRMM - Win32 Debug Unicode"
+
+# ADD CPP /Yu"commonheaders.h"
+
+!ENDIF 
+
 # End Source File
 # End Group
 # Begin Source File
 
 SOURCE=.\container.c
 DEP_CPP_CONTA=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -655,7 +1193,6 @@ DEP_CPP_CONTA=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -703,12 +1240,42 @@ DEP_CPP_CONTA=\
 
 SOURCE=.\containeroptions.c
 DEP_CPP_CONTAI=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -716,7 +1283,6 @@ DEP_CPP_CONTAI=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -763,12 +1329,43 @@ DEP_CPP_CONTAI=\
 
 SOURCE=eventpopups.c
 DEP_CPP_EVENT=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_icq.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -776,7 +1373,6 @@ DEP_CPP_EVENT=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -824,12 +1420,42 @@ DEP_CPP_EVENT=\
 
 SOURCE=.\formatting.cpp
 DEP_CPP_FORMA=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -838,7 +1464,6 @@ DEP_CPP_FORMA=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -889,12 +1514,42 @@ DEP_CPP_FORMA=\
 
 SOURCE=.\generic_msghandlers.c
 DEP_CPP_GENER=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -902,7 +1557,6 @@ DEP_CPP_GENER=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -949,12 +1603,42 @@ DEP_CPP_GENER=\
 
 SOURCE=.\hotkeyhandler.c
 DEP_CPP_HOTKE=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -962,7 +1646,6 @@ DEP_CPP_HOTKE=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1010,13 +1693,43 @@ DEP_CPP_HOTKE=\
 
 SOURCE=ImageDataObject.cpp
 DEP_CPP_IMAGE=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
 	".\ImageDataObject.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1024,7 +1737,6 @@ DEP_CPP_IMAGE=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1074,12 +1786,42 @@ DEP_CPP_IMAGE=\
 
 SOURCE=msgdialog.c
 DEP_CPP_MSGDI=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1088,7 +1830,6 @@ DEP_CPP_MSGDI=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1138,12 +1879,42 @@ DEP_CPP_MSGDI=\
 
 SOURCE=msgdlgutils.c
 DEP_CPP_MSGDL=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1152,7 +1923,6 @@ DEP_CPP_MSGDL=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1199,12 +1969,42 @@ DEP_CPP_MSGDL=\
 
 SOURCE=msglog.c
 DEP_CPP_MSGLO=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1213,7 +2013,6 @@ DEP_CPP_MSGLO=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1262,12 +2061,42 @@ DEP_CPP_MSGLO=\
 
 SOURCE=msgoptions.c
 DEP_CPP_MSGOP=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1276,7 +2105,6 @@ DEP_CPP_MSGOP=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1328,12 +2156,42 @@ NODEP_CPP_MSGOP=\
 
 SOURCE=msgs.c
 DEP_CPP_MSGS_=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1342,7 +2200,6 @@ DEP_CPP_MSGS_=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\m_toptoolbar.h"\
 	".\m_updater.h"\
@@ -1394,12 +2251,42 @@ DEP_CPP_MSGS_=\
 
 SOURCE=.\selectcontainer.c
 DEP_CPP_SELEC=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1407,7 +2294,6 @@ DEP_CPP_SELEC=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1454,12 +2340,42 @@ DEP_CPP_SELEC=\
 
 SOURCE=sendqueue.c
 DEP_CPP_SENDQ=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1467,7 +2383,6 @@ DEP_CPP_SENDQ=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1515,12 +2430,42 @@ DEP_CPP_SENDQ=\
 
 SOURCE=srmm.c
 DEP_CPP_SRMM_=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1528,7 +2473,6 @@ DEP_CPP_SRMM_=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1577,12 +2521,42 @@ DEP_CPP_SRMM_=\
 
 SOURCE=.\tabctrl.c
 DEP_CPP_TABCT=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1590,7 +2564,6 @@ DEP_CPP_TABCT=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1637,12 +2610,42 @@ DEP_CPP_TABCT=\
 
 SOURCE=templates.c
 DEP_CPP_TEMPL=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1650,7 +2653,6 @@ DEP_CPP_TEMPL=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1697,12 +2699,42 @@ DEP_CPP_TEMPL=\
 
 SOURCE=.\themes.c
 DEP_CPP_THEME=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1710,7 +2742,6 @@ DEP_CPP_THEME=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1757,12 +2788,42 @@ DEP_CPP_THEME=\
 
 SOURCE=trayicon.c
 DEP_CPP_TRAYI=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1770,7 +2831,6 @@ DEP_CPP_TRAYI=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\m_toptoolbar.h"\
 	".\msgdlgutils.h"\
@@ -1818,12 +2878,42 @@ DEP_CPP_TRAYI=\
 
 SOURCE=TSButton.c
 DEP_CPP_TSBUT=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1831,7 +2921,6 @@ DEP_CPP_TSBUT=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\
@@ -1878,12 +2967,42 @@ DEP_CPP_TSBUT=\
 
 SOURCE=userprefs.c
 DEP_CPP_USERP=\
+<<<<<<< .mine
+=======
+	"..\..\include\m_addcontact.h"\
+	"..\..\include\m_avatars.h"\
+	"..\..\include\m_button.h"\
+	"..\..\include\m_chat.h"\
+	"..\..\include\m_clc.h"\
+	"..\..\include\m_clist.h"\
+	"..\..\include\m_clui.h"\
+	"..\..\include\m_contacts.h"\
+	"..\..\include\m_database.h"\
+	"..\..\include\m_file.h"\
+	"..\..\include\m_history.h"\
+	"..\..\include\m_icolib.h"\
+	"..\..\include\m_langpack.h"\
+	"..\..\include\m_message.h"\
+	"..\..\include\m_options.h"\
+	"..\..\include\m_plugins.h"\
+	"..\..\include\m_popup.h"\
+	"..\..\include\m_protocols.h"\
+	"..\..\include\m_protomod.h"\
+	"..\..\include\m_protosvc.h"\
+	"..\..\include\m_skin.h"\
+	"..\..\include\m_stdhdr.h"\
+	"..\..\include\m_system.h"\
+	"..\..\include\m_userinfo.h"\
+	"..\..\include\m_utils.h"\
+	"..\..\include\newpluginapi.h"\
+	"..\..\include\statusmodes.h"\
+	"..\..\include\win2k.h"\
+>>>>>>> .r7119
 	".\chat\chat.h"\
 	".\chat\chatprototypes.h"\
 	".\commonheaders.h"\
 	".\functions.h"\
 	".\generic_msghandlers.h"\
-	".\m_avatars.h"\
 	".\m_cln_skinedit.h"\
 	".\m_fingerprint.h"\
 	".\m_flash.h"\
@@ -1891,7 +3010,6 @@ DEP_CPP_USERP=\
 	".\m_metacontacts.h"\
 	".\m_nudge.h"\
 	".\m_smileyadd.h"\
-	".\m_Snapping_windows.h"\
 	".\m_spellchecker.h"\
 	".\msgdlgutils.h"\
 	".\msgs.h"\

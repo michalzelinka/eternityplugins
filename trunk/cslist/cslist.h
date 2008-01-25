@@ -15,21 +15,35 @@
 #include <m_langpack.h>
 #include <m_button.h>
 #include <m_options.h>
+//#include <stdio.h>
 
 #include "resource.h"
 
 #define MIID_STATUSLIST               { 0x8b86253, 0xec6e, 0x4d09, { 0xb7, 0xa9, 0x64, 0xac, 0xdf, 0x6, 0x27, 0xb8 } }
 
-#define CSLIST_RELNOTES               14 // actual eternity relnotes
+#define CSLIST_RELNOTES               17 // actual eternity relnotes
 #define CSLIST_XTITLE_LIMIT           64 // limit of chars for x-status title
 #define CSLIST_XMESSAGE_LIMIT         2048 // limit of chars for x-status message
 
 #define CSLIST_MODULE_LONG_NAME       "Custom Status List"
 #define CSLIST_MODULE_SHORT_NAME      "CSList"
 
+// updater strings
+
+#define CSLIST_UPD_VERURL           "http://dev.mirandaim.ru/jarvis/"
+#define CSLIST_UPD_UPDURL           "http://mirandapack.ic.cz/eternity_plugins/cslist.zip"
+#define CSLIST_UPD_FLVERURL         "http://addons.miranda-im.org/details.php?action=viewfile&id=3483"
+#define CSLIST_UPD_FLUPDURL         "http://addons.miranda-im.org/feed.php?dlfile=3483"
+#define CSLIST_UPD_SZPREFIX         "Custom Status List</a> "
+
+// services
+
 #define MS_CLIST_ADDSTATUSMENUITEM    "CList/AddStatusMenuItem"
 #define ME_CLIST_PREBUILDSTATUSMENU   "CList/PreBuildStatusMenu"
 #define PS_ICQ_SETCUSTOMSTATUSEX      "ICQ/SetXStatusEx"
+
+// status flags
+
 #define CSSF_MASK_STATUS      0x0001  // status member valid for set/get
 #define CSSF_MASK_NAME        0x0002  // pszName member valid for set/get
 #define CSSF_MASK_MESSAGE     0x0004  // pszMessage member valid for set/get
@@ -83,12 +97,16 @@ static struct
     HANDLE hIconLibItem;
 } iconList[] =
 {
-  { LPGEN( "Custom Status List Main Icon" ), "csl_icon", IDI_CSLIST },
-  { LPGEN( "Add new status" ), "csl_add", IDI_ADD },
-  { LPGEN( "Modify selected status" ), "csl_modify", IDI_MODIFY },
-  { LPGEN( "Delete selected status" ), "csl_delete", IDI_DELETE },
-  { LPGEN( "Set selected and close" ), "csl_apply", IDI_APPLY },
-  { LPGEN( "Set None and close" ), "csl_exit", IDI_EXIT },
+  { LPGEN( "Main Icon" ), "csl_icon", IDI_CSLIST },
+  { LPGEN( "Add" ), "csl_add", IDI_ADD },
+  { LPGEN( "Modify" ), "csl_modify", IDI_MODIFY },
+  { LPGEN( "Remove" ), "csl_remove", IDI_REMOVE },
+  { LPGEN( "Import" ), "csl_import", IDI_IMPORT },
+  { LPGEN( "Watch" ), "csl_watch", IDI_WATCH },
+  { LPGEN( "Favorite" ), "csl_fav", IDI_FAV },
+  { LPGEN( "No change" ), "csl_nochng", IDI_NOCHNG },
+  { LPGEN( "Set" ), "csl_apply", IDI_APPLY },
+  { LPGEN( "Clear" ), "csl_clear", IDI_CLEAR },
 };
 
 static struct
@@ -101,11 +119,13 @@ static struct
 {
   { IDC_ADD, _T( "Add new item" ), "csl_add", IDI_ADD },
 	{ IDC_MODIFY, _T( "Modify selected item" ), "csl_modify", IDI_MODIFY },
-	{ IDC_DELETE, _T( "Delete selected item" ), "csl_delete", IDI_DELETE },
-  { IDC_IMPORT, _T( "Import statuses from database" ), "csl_import", NULL },
-  { IDC_WATCH, _T( "Watch custom status changes and add them to the list" ), "csl_watch", NULL },
+	{ IDC_DELETE, _T( "Delete selected item" ), "csl_remove", IDI_REMOVE },
+  { IDC_IMPORT, _T( "Import statuses from database" ), "csl_import", IDI_IMPORT },
+  { IDC_WATCH, _T( "Whether or not watch custom status changes and add them into list" ), "csl_watch", IDI_WATCH },
+  { IDC_FAV, _T( "Set/unset current item as favorite" ), "csl_fav", IDI_FAV },
+  { IDC_NOCHNG, _T( "Close without changing custom status" ), "csl_nochng", IDI_NOCHNG },
   { IDC_APPLY, _T( "Set custom status to selected one and close" ), "csl_apply", IDI_APPLY },
-  { IDC_EXIT, _T( "Clear custom status (reset to None) and close" ), "csl_exit", IDI_EXIT },
+  { IDC_EXIT, _T( "Clear custom status (reset to None) and close" ), "csl_clear", IDI_CLEAR },
 };
 
 
@@ -173,12 +193,15 @@ static struct
 HINSTANCE hInst;
 PLUGINLINK *pluginLink;
 
+DWORD gMirandaVersion;
+
 char *rnthanks = "induction - for his cool iconset :)\r\nfaith_healer - moral support :]\r\nCriS - project hosting @ http://dev.mirandaim.ru/ \r\nRobyer, kaye_styles, dEMoniZaToR, Drugwash, FREAK_THEMIGHTY - useful hints ;)\r\nplugin users, of course :) for their tolerance x) ;)\r\nMiranda IM Project Team - for their work on the best Instant Messenger I ever known :)";
 
 int action = 0;
 int AMResult = 0;
 int ModifiedPos = -1;
 
+static HWND hDlg = NULL;  // List View identifier
 static HWND hList = NULL;  // List View identifier
 HIMAGELIST hIml;
 HWND hXCombo = NULL;
@@ -195,11 +218,11 @@ BOOL bStatusMenu = FALSE;
 PLUGININFOEX pluginInfoEx = {
   sizeof( PLUGININFOEX ),
   CSLIST_MODULE_LONG_NAME,
-  PLUGIN_MAKE_VERSION( 0,0,0,15 ),
+  PLUGIN_MAKE_VERSION( 0,0,0,17 ),
   "Offers list of your Custom Statuses.",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
-  "© 2007 eternity crew .., © 2006 HANAX Software",
+  "© 2007-2008 eternity crew .., © 2006-2007 HANAX Software",
   "http://dev.mirandaim.ru/jarvis/",
   0,  //not transient
   0,  //doesn't replace anything built-in
@@ -210,13 +233,13 @@ PLUGININFOEX pluginInfoEx = {
 };
 
 PLUGININFO pluginInfo = {
-  sizeof(PLUGININFO),
+  sizeof( PLUGININFO ),
   CSLIST_MODULE_LONG_NAME,
-  PLUGIN_MAKE_VERSION(0,0,0,15),
+  PLUGIN_MAKE_VERSION( 0,0,0,17 ),
   "Offers list of your Custom Statuses.",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
-  "© 2007 eternity crew .., © 2006 HANAX Software",
+  "© 2007-2008 eternity crew .., © 2006-2007 HANAX Software",
   "http://dev.mirandaim.ru/jarvis/",
   0,  //not transient
   0
@@ -243,7 +266,7 @@ int onOptionsInit( WPARAM wparam, LPARAM lparam );
 INT_PTR CALLBACK CSListProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 INT_PTR CALLBACK CSListAddModifyProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 BOOL CALLBACK CSListOptionsProc( HWND hdlg, UINT msg, WPARAM wparam, LPARAM lparam );
-static int CALLBACK CSListSortProc( LPARAM lparam1, LPARAM lparam2, LPARAM lparamSort );
+static int CALLBACK CSListSortProc( LPARAM, LPARAM, LPARAM );
 INT_PTR CALLBACK RelNotesProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lParam );
 
 // ############################# HELP FUNCTIONS ################################
@@ -262,6 +285,8 @@ int cslist_AM_set_help_item( HWND hwndAMDlg );
 
 void cslist_clear_selection();
 void cslist_clear_help_item();
+void cslist_sort_list();
+void cslist_import_statuses_from_icq();
 
 // ################## DB - LOAD AND SAVE #######################################
 
@@ -278,6 +303,7 @@ void cslist_init_icons( void );
 // ######################### OTHER FUNCTIONS ###################################
 
 HICON LoadIconExEx( const char* IcoLibName, int NonIcoLibIcon );
+//void DBDeleteContactSetting( char Module[64], char Setting[64] );
 
 // ############################## EXTERNS ######################################
 
