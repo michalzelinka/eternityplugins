@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -57,6 +58,7 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 
 	switch (uMsg) {
 		case WM_INITDIALOG:
+		  ICQTranslateDialog(hWnd);
 			hContact = (HANDLE)lParam;
 			if (!hContact) {
 				EndDialog(hWnd, 0);
@@ -99,6 +101,9 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 			if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_TZER_COMBO) {
 				curSel = SendDlgItemMessage(hWnd, IDC_TZER_COMBO, CB_GETCURSEL, 0, 0);
 				switch(curSel) {
+          // eternity TODO: czech & slovak equivalents
+          // slovak: common > distId/18113
+          // czech:  not available? x))
 					case 0:
 						txt = "Gangsta";
 						break;
@@ -146,9 +151,6 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				if (txt) {
 					SendDlgItemMessage(hWnd, IDC_TZER_NAME, WM_GETTEXT, (WPARAM)(len + 1), (LPARAM)txt);
 					switch(curSel) {
-          // eternity TODO: czech & slovak equivalents
-          // slovak: common > distId/18113
-          // czech:  not available? x))
 						case 0:
 							tzid = "gangSh";
 							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/gangsterSheep.swf";

@@ -85,8 +85,8 @@ void handleAuthorizationFam(unsigned char *pBuffer, WORD wBufferLength, snac_hea
 void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure);
 void requestImage();
 void registerUin(char* password, char* image);
-void handleRegImage(pBuffer, wBufferLength, info);
-void handleIcqNewUin(pBuffer, wBufferLength, info);
+//void handleRegImage(pBuffer, wBufferLength, info);
+//void handleIcqNewUin(pBuffer, wBufferLength, info);
 void handleLoginReply(unsigned char *buf, WORD datalen, serverthread_info *info);
 
 void handleServUINSettings(int nPort, serverthread_info *info);

@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -6,7 +7,8 @@
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -44,88 +46,13 @@ extern int pendingAvatarsStart;
 extern WORD wListenPort;
 extern CRITICAL_SECTION modeMsgsMutex;
 extern const capstr capXStatus[];
+extern const int moodXStatus[];
 
 extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 void setUserInfo();
 
 char* calcMD5Hash(char* szFile);
-
-int bSecureIM()
-{
-  if (ServiceExists("SecureIM/IsContactSecured"))
-	  return 1;
-  else
-	  return 0;
-}
-
-WORD icq_ver()
-{
-	int ver = 0;
-	if (gbVerEnabled)
-	{
-		ver = (DBGetContactSettingWord(NULL,gpszICQProtoName,"setVersion", 0));
-	}
-	else
-	{
-		switch (DBGetContactSettingWord(NULL,gpszICQProtoName,"CurrentID",0)) //client change version
-		{
-		case 1:						//unknown
-			ver = 66;
-			break;
-		case 23:
-		case 24:
-		case 2:						//qip
-		case 3:						//ysm
-		case 7:						//trillian
-		case 46:                   //qip infium
-			ver = 11;
-			break;
-		case 6:						//Jimm
-			ver = 5;
-			break;
-		case 9:						//Kopete
-		case 52:                  //NanoICQ
-			ver = 10;
-			break;
-		case 11:
-			ver = 13;
-			break;
-		case 4:						//icq lite
-		case 5:						//&RQ
-		case 12:					//rambler
-		case 13:						//icq 5.1
-		case 14:
-		case 15:
-		case 16:
-		case 17:
-		case 26:         //icq6
-		case 44:        //QNEXT
-		case 45:         //pyICQ
-			ver = 9;
-			break;
-		case 21:                 //stICQ
-			ver = 2;
-			break;
-		case 36:       //ICQ99   
-			ver = 6;
-			break;
-		case 37:               //WebICQ
-			ver = 7;
-			break;
-		case 35:          //GAIM
-			ver = 0;
-			break;           
-		default :						//miranda
-			ver = 8;
-			break;
-		}
-	}
-	DBWriteContactSettingWord(NULL,gpszICQProtoName,"setVersion",(WORD)ver);
-	return ver;
-}
-
-
 
 void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
@@ -210,8 +137,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #ifdef _DEBUG
       NetLog_Server("Requesting roster rights");
 #endif
-      serverPacketInit(&packet, 10);
+      serverPacketInit(&packet, 16);
       packFNACHeader(&packet, ICQ_LISTS_FAMILY, ICQ_LISTS_CLI_REQLISTS);
+      packTLVWord(&packet, 0x0B, 0x000F); // mimic ICQ 6
       sendServPacket(&packet);
 
       if (!wRecordCount) // CLI_REQROSTER
@@ -263,7 +191,7 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
       }
     }
 
-    // CLI_REALOCATION
+    // CLI_REQLOCATION
 #ifdef _DEBUG
     NetLog_Server("Requesting Location rights");
 #endif
@@ -275,8 +203,9 @@ void handleServiceFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* p
 #ifdef _DEBUG
     NetLog_Server("Requesting Client-side contactlist rights");
 #endif
-    serverPacketInit(&packet, 10);
+    serverPacketInit(&packet, 16);
     packFNACHeader(&packet, ICQ_BUDDY_FAMILY, ICQ_USER_CLI_REQBUDDY);
+    packTLVWord(&packet, 0x05, 0x0003); // mimic ICQ 6
     sendServPacket(&packet);
 
     // CLI_REQICBM
@@ -887,21 +816,30 @@ void setUserInfo()
 { // CLI_SETUSERINFO
   icq_packet packet;
   WORD wAdditionalData = 0;
-  BYTE bXStatus = gbXStatusEnabled?ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0):0;
+  BYTE bXStatus = ICQGetContactXStatus(NULL);
   BYTE cID = DBGetContactSettingWord(NULL, gpszICQProtoName, "CurrentID", 0);
   BYTE cICQModID = DBGetContactSettingWord(NULL, gpszICQProtoName, "CurrentICQModID", 0); // eternity BYTE
 
-// eternity :: added last six 4s for new custom caps
-  static char wID[] = { 4, 1, 8, 0, 4, 1, 1, 1, 1, 1, 1, 4,//12
+// eternity :: added last entries for new custom caps
+  static char wID[] ={ 4, 1, 8, 0, 4, 1, 1, 1, 1, 1, 1, 4,//12
 					   10, 10, 10, 10, 1, 1, 2, 0, 1, 0, 0, 6,//24
 					   6, 1, 12, 2, 1, 0, 0, 0, 0, 0, 1, 4,//36
-					   0, 0, 0, 0, 1, 3, 2, 2, 1, 0, 8, 0,//48
+					   0, 0, 0, 0, 1, 3, 2, 2, 1, 1, 8, 0,//48
 					   0, 1, 3, 0, 0, 0,//54
 					   4}; // eternity : 55 xo) last is MirandaMobile
 
-
+// eternity : fix for setting alpha build flag
+  {
+    char szVer[MAX_PATH];
+    CallService(MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, (LPARAM)szVer);
+    _strlwr(szVer); // make sure it is lowercase
+    if (strstr(szVer, "alpha") != NULL) // Are we running under Alpha Core
+      MIRANDA_VERSION |= 0x80000000;
+  }
+// eternity : fix for setting alpha build flag - END
+ 
   if(!cID||cID==11||cID==54) 
-  { // if miranda or as 'miranda' or as 'mirandamobile'
+  { // if miranda, as 'miranda' or as 'mirandamobile'
 #ifdef DBG_XTRAZ_MUC
 	wAdditionalData += 16;
 #endif
@@ -919,6 +857,9 @@ void setUserInfo()
         wAdditionalData += 16;
 	if(bXStatus)
 		wAdditionalData += 16;
+#ifdef DBG_AIMCONTACTSEND
+  wAdditionalData += 16;
+#endif
   }
   else if(gbHideIdEnabled)
 	  wAdditionalData += 16;
@@ -946,18 +887,18 @@ void setUserInfo()
 
   /* TLV(5): capability data */
   packWord(&packet, 0x0005);
-  packWord(&packet, (WORD)(wAdditionalData+32));
+  packWord(&packet, (WORD)(32 + wAdditionalData));
   packBuffer(&packet, capNewCap, 0x10);
+#ifdef DBG_CAPHTML
+  packBuffer(&packet, capHtmlMsgs, 0x10);  
+#endif
   if(gbHideIdEnabled&&cID!=11)
   {
-    /* sending my cap is useless when no support x)
+    /* sending my cap here is useless when no support x)
 	  packBuffer(&packet, capIcqJen, 4); // send eternity cap
 	  packDWord(&packet, MIRANDA_VERSION); // add mirver
 	  packDWord(&packet, ICQ_THISPLUG_VERSION); // add icqplug ver
-	  if (bSecureIM()!=0)
-		  packDWord(&packet, 0x5AFEC0DE);
-	  else
-		  packDWord(&packet, 0x00000000);
+	  packDWord(&packet, bSecureIM()?0x5AFEC0DE:0x00000000);
     */
     packBuffer(&packet, capMirandaIm, 8);
     packDWord(&packet, MIRANDA_VERSION);
@@ -966,25 +907,14 @@ void setUserInfo()
   switch (cID) //client change caps
   {
   case 11:
-	  if(gbHideIdEnabled)
-	  {
-		  packBuffer(&packet, capIcqJen, 4);
-		  packBuffer(&packet, "\x06\x06\x06\x00\x06\x06\x06\x00",8);
-	    if (bSecureIM()!=0)
-		    packDWord(&packet, 0x5AFEC0DE);
-	    else
-		    packDWord(&packet, 0x00000000);
-	  }
-	  else
-	  {
-		  packBuffer(&packet, capMirandaIm, 8); 
-		  packBuffer(&packet, "\x06\x06\x06\x00\x06\x06\x06\x00",8);
-	  }
+	  packBuffer(&packet, gbHideIdEnabled?capIcqJp:capMirandaIm, gbHideIdEnabled?4:8); 
+	  packBuffer(&packet, "\x06\x06\x06\x00\x06\x06\x06\x00",8);
+	  gbHideIdEnabled?packDWord(&packet, gbSecureIM?0x5AFEC0DE:0x00000000):0;
   case 0:								//miranda
 	  {
 		  if(!cID && !gbHideIdEnabled)
-		  { // Miranda Signature - eternity : added customization of various ICQ Mods
-        switch (cICQModID) {
+		  { // Miranda Signature - eternity : added customization of various ICQ Mods - needs revision
+		    switch (cICQModID) {
           default:
           case 0:
             packBuffer(&packet, capMirandaIm, 8);
@@ -1016,14 +946,17 @@ void setUserInfo()
             packDWord(&packet, MIRANDA_VERSION);
             packDWord(&packet, ICQ_THISPLUG_VERSION);
             break;
-        }
-        if (cICQModID > 1 && cICQModID < 6) // send SecureIM or not for Mods
-        {
-	      if (bSecureIM()!=0)
-		      packDWord(&packet, 0x5AFEC0DE);
-	      else
-		      packDWord(&packet, 0x00000000);
-        }
+		    }
+  		  switch (cICQModID) { // send SecureIM or not for Mods
+  		    case 2: // s7sss,
+  		    case 3: // sin,
+  		    case 4: // plus and
+  		    case 5: // eternity mods may decode SecureIM flag
+  		      packDWord( &packet, gbSecureIM ? 0x5AFEC0DE : 0x00000000 );
+		      case 0: // icqj and bm mod
+		      case 1: // packets are already full
+		      default : break;
+  		  }
       } // eternity : added customization of various ICQ Mods END
 		  AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING|CAPF_SRV_RELAY|(gbRTFEnabled?CAPF_RTF:0)|(gbXStatusEnabled?CAPF_XTRAZ:0)
 			  |(gbUtfEnabled?CAPF_UTF:0)|(gbAvatarsEnabled?CAPF_ICQ_DEVIL:0)|CAPF_AIM_FILE|CAPF_DIRECT);
@@ -1031,6 +964,11 @@ void setUserInfo()
 			  packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
 		  if (gbAimEnabled)
 			  packBuffer(&packet, capAimIcq, 0x10); 
+#ifdef DBG_AIMCONTACTSEND
+  {
+    packBuffer(&packet, capAimSendbuddylist, 0x10);
+  }
+#endif			  
 		  if (gbTzerEnabled)
 		      packBuffer(&packet, captZers, 16);
 #ifdef DBG_CAPXTRAZ_MUC
@@ -1050,6 +988,7 @@ void setUserInfo()
 	  break;
   case 46:  //QIP Infium
 	  packBuffer(&packet, capQipInfium, 0x10);
+	  packBuffer(&packet, capQipPlugins, 0x10);
 	  break; 
   case 4:								//icq 
 	  AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_AIM_FILE|CAPF_XTRAZ_CHAT|CAPF_PUSH2TALK|CAPF_VOICE_CHAT|CAPF_UTF);
@@ -1250,12 +1189,23 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   {
     WORD wStatus;
     DWORD dwDirectCookie = rand() ^ (rand() << 16);
-
+    BYTE bXStatus = ICQGetContactXStatus(NULL);
+    char szMoodId[32];
+    WORD cbMoodId = 0;
+    WORD cbMoodData = 0;
+    DWORD dwFT1, dwFT2, dwFT3;
 
     // Get status
     wStatus = MirandaStatusToIcq(icqGoingOnlineStatus);
 
-    serverPacketInit(&packet, 71);
+    if (bXStatus && moodXStatus[bXStatus-1] != -1)
+    { // prepare mood id
+      null_snprintf(szMoodId, SIZEOF(szMoodId), "icqmood%d", moodXStatus[bXStatus-1]);
+      cbMoodId = strlennull(szMoodId);
+      cbMoodData = 8;
+    }
+
+    serverPacketInit(&packet, (WORD)(71 + cbMoodId + cbMoodData));
     packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
     packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
     packWord(&packet, GetMyStatusFlags());      // Status flags
@@ -1265,15 +1215,26 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     packDWord(&packet, ICQGetContactSettingDword(NULL, "RealIP", 0));
     packDWord(&packet, nPort);
     packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
-	  packWord(&packet, (WORD)icq_ver());
+    packWord(&packet, (WORD)GetProtoVersion());
     packDWord(&packet, dwDirectCookie);         // DC Cookie
     packDWord(&packet, WEBFRONTPORT);           // Web front port
   	packDWord(&packet, CLIENTFEATURES);         // Client features
-  	packDWord(&packet, ICQGetContactSettingDword(NULL,"dwFT1", 0));
-  	packDWord(&packet, ICQGetContactSettingDword(NULL,"dwFT2", 0));
-  	packDWord(&packet, ICQGetContactSettingDword(NULL,"dwFT3", 0));
+  	SetTimeStamps(&dwFT1, &dwFT2, &dwFT3);
+  	packDWord(&packet, dwFT1);
+  	packDWord(&packet, dwFT2);
+  	packDWord(&packet, dwFT3);
     packWord(&packet, 0x0000);                  // Unknown
     packTLVWord(&packet, 0x001F, 0x0000);
+
+    if (cbMoodId)
+    { // Pack mood data
+      packWord(&packet, 0x1D);              // TLV 1D
+      packWord(&packet, (WORD)(cbMoodId + 4)); // TLV length
+      packWord(&packet, 0x0E);              // Item Type
+      packWord(&packet, cbMoodId);          // Flags + Item Length
+      packBuffer(&packet, szMoodId, cbMoodId); // Mood
+    }
+
     sendServPacket(&packet);
   }
 	{
@@ -1291,10 +1252,8 @@ void handleServUINSettings(int nPort, serverthread_info *info)
 			char bClient=0;
 			WORD bufsize = dbv.cpbVal;
 			BYTE *buf = dbv.pbVal;
-			dwFT1 = DBGetContactSettingDword(NULL,gpszICQProtoName,"dwFT1",0);
-			dwFT2 = DBGetContactSettingDword(NULL,gpszICQProtoName,"dwFT2",0);
-			dwFT3 = DBGetContactSettingDword(NULL,gpszICQProtoName,"dwFT3",0);
-			szClient = detectUserClient(NULL, 0, icq_ver(), dwFT1, dwFT2, dwFT3, 0, 0, 0, 0, buf, bufsize, &bClient, szStrBuf);
+			SetTimeStamps(&dwFT1, &dwFT2, &dwFT3);
+			szClient = detectUserClient(NULL, 0, GetProtoVersion(), dwFT1, dwFT2, dwFT3, 0, 0, 0, 0, buf, bufsize, &bClient, szStrBuf);
 			if (!szClient||szClient<0)
 				szClient = "Unknown";
 			ICQWriteContactSettingUtf(NULL,   "MirVer",       szClient);
@@ -1317,27 +1276,27 @@ void handleServUINSettings(int nPort, serverthread_info *info)
   serverPacketInit(&packet, 98);
   packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_READY);
   packDWord(&packet, 0x00220001); // imitate ICQ 6 behaviour
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00010004);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00130004);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00020001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00030001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00150001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00040001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00060001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x00090001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x000A0001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
   packDWord(&packet, 0x000B0001);
-  packDWord(&packet, 0x0110157f);
+  packDWord(&packet, 0x0110161b);
 
   sendServPacket(&packet);
 
@@ -1351,14 +1310,20 @@ void handleServUINSettings(int nPort, serverthread_info *info)
 
   if (!info->isMigrating)
   { /* Get Offline Messages Reqeust */
-    serverPacketInit(&packet, 24);
-    packFNACHeaderFull(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ, 0, 0x00020001);
-    packDWord(&packet, 0x0001000a);    /* TLV */
-    packLEWord(&packet, 8);            /* bytes remaining */
-    packLEDWord(&packet, dwLocalUIN);
-    packDWord(&packet, 0x3c000200);    /* get offline msgs */
+    offline_message_cookie *ack;
 
-    sendServPacket(&packet);
+    ack = (offline_message_cookie*)SAFE_MALLOC(sizeof(offline_message_cookie));
+    if (ack)
+    {
+      DWORD dwCookie = AllocateCookie(CKT_OFFLINEMESSAGE, ICQ_MSG_CLI_REQ_OFFLINE, 0, ack);
+
+      serverPacketInit(&packet, 10);
+      packFNACHeaderFull(&packet, ICQ_MSG_FAMILY, ICQ_MSG_CLI_REQ_OFFLINE, 0, dwCookie);
+
+      sendServPacket(&packet);
+    }
+    else
+      icq_LogMessage(LOG_WARNING, "Failed to request offline messages. They may be received next time you log in.");
 
     // Update our information from the server
     sendOwnerInfoRequest();

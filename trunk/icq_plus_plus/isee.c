@@ -6,7 +6,7 @@
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin ÷berg, Sam Kothari, Robert Rainwater, Bi0
 // Copyright © 2004,2005,2006,2007 Joe Kucera, Bi0
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Thief, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -29,6 +29,10 @@
 // Last change on : $Date: 2007-08-24 14:45:13 +0300 (–ü—Ç, 24 –∞–≤–≥ 2007) $
 // Last change by : $Author: redeemerXx $
 
+
+// œ≈–≈œ»—¿“‹ ›“” ‘»√Õﬁ Õ¿ƒŒ!
+// ITS SHIT MUST BE REWRITTEN! (c) persei
+
 #include "icqoscar.h"
 #include "resource.h"
 #include "isee.h"
@@ -45,7 +49,7 @@ extern void setUserInfo();
 #define ME_ICQ_POPUP "/IcqPopUp"
 static HANDLE hHookIcqPopUp = NULL;
 static HANDLE hPopUpFix = NULL;
-static BOOL bPopUpService = 0;
+//static BOOL bPopUpService = 0;
 static void PopUpMsg(HANDLE hContact, BYTE bType);
 
 
@@ -55,7 +59,7 @@ static void PopUpMsg(HANDLE hContact, BYTE bType);
 static CRITICAL_SECTION slistmutex;
 static HANDLE hQueueEventS = NULL;
 static HANDLE hDummyEventS = NULL;
-static HANDLE hStatusMenu = NULL;
+HANDLE hStatusMenu = NULL;
 static HANDLE hHookPrivacyBuild = NULL;
 
 static int LastContactID = 0;
@@ -76,6 +80,7 @@ static WORD nSpeed;
 typedef struct s_checkstatus {
 	DWORD dwUin;
 	DWORD dwCookie;
+	BYTE bManualCheck;
 } checkstatus;
 
 static checkstatus StatusList[LISTSIZE];
@@ -83,6 +88,15 @@ static HANDLE hPrivacy[8] = {0}; // Def, 1, 2, 3, 4, 5, 6, Old
 
 static void RebuildMenu();
 
+//Auth 
+
+static HANDLE hSendAuthRequestToAllUnauthorized = NULL; 
+static int icq_SendAuthRequestToAllUnauthorized(WPARAM wParam,LPARAM lParam);
+
+//ASD
+
+static HANDLE hASD = NULL;
+static int icq_ASD(WPARAM wParam,LPARAM lParam);
 
 // webaware
 static HANDLE hWebAware = NULL;
@@ -92,7 +106,52 @@ static int icq_WebAware(WPARAM wParam,LPARAM lParam);
 //static HANDLE hTools = NULL;
 //static HANDLE hVisTools = NULL;
 
+void detectViaAuth(HANDLE hContact, DWORD dwCookie)
+{
+	DWORD dwUin, dwMyUin;
+    uid_str szUid, szMyUid;
+	icq_packet packet;
+	DWORD dwID1;
+	DWORD dwID2;
 
+    if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
+      return; // Invalid contact
+	
+	ICQGetContactSettingUID(NULL, &dwMyUin, &szMyUid);
+	
+	dwID1 = time(NULL);
+	dwID2 = RandRange(0, 0x00FF);
+
+	packServMsgSendHeader(&packet, dwCookie, dwID1, dwID2, dwUin, NULL, 0x0004, 17);
+	packWord(&packet, 0x0005);      // TLV(5)
+	packWord(&packet, 0x0009);
+	packLEDWord(&packet, dwMyUin);
+	packByte(&packet, MTYPE_ADDED);
+	packByte(&packet, 0);           // msg-flags
+	packEmptyMsg(&packet);          // NTS
+	packDWord(&packet, 0x00060000); // TLV(6)
+
+	sendServPacket(&packet);
+}
+
+void SendAuthRequestToAllUnauthorized() 
+{ 
+  HANDLE hContact; 
+  DWORD dwUin; 
+  uid_str szUid; 
+  if(!icqOnline) 
+    return; 
+  hContact = ICQFindFirstContact(); 
+  if(hContact){ 
+    do{ 
+ 	    ICQGetContactSettingUID(hContact, &dwUin, &szUid); 
+ 	    if(!(dwUin && szUid)) 
+ 	      break; 
+ 	    if (ICQGetContactSettingByte(hContact, "Auth", 1))                               
+ 	      icq_sendAuthReqServ(dwUin, szUid, Translate("Automated authorization request")); 
+ 	  }while(hContact = ICQFindNextContact(hContact)); 
+ 	} 
+} 
 
 BOOL PopUpErrMsg(char* aMsg)
 {
@@ -136,14 +195,14 @@ void icq_GetUserStatus(HANDLE hContact, WORD wEvent)
 // ToDo: Check for events & options
 // ToDo: Check for duplicate uins ?!
 
-if(!(invis_for(0,hContact) && bNoASD)){
+	if(!(bNoASDInInvisible && gnCurrentStatus == ID_STATUS_INVISIBLE)){
 
     DWORD dwUin = 0;
 
     if (hContact && hContact != INVALID_HANDLE_VALUE)
     	dwUin = ICQGetContactSettingDword(hContact, UNIQUEIDSETTING, 0);
 
-    if (!ASD || !dwUin) return;
+	if (!gbASD || !dwUin) return;
 
     if ((wEvent == 2) &&
             (DBGetContactSettingByte(hContact, "CList", "Hidden", 0) /*||
@@ -151,7 +210,7 @@ if(!(invis_for(0,hContact) && bNoASD)){
                 return;
 
   	if ((wEvent == 3) &&
-		ICQGetContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE) != ID_STATUS_OFFLINE)
+		ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE)
                 return;
 
 	if (nCount < LISTSIZE)
@@ -189,7 +248,7 @@ if(!(invis_for(0,hContact) && bNoASD)){
 
             StatusList[c].dwUin = dwUin;
             StatusList[c].dwCookie = 0x100;
-
+			StatusList[c].bManualCheck = (wEvent == 1);
             LeaveCriticalSection(&slistmutex);
 
 #ifdef _DEBUG
@@ -285,7 +344,7 @@ void icq_SetUserStatus(DWORD dwUin, DWORD dwCookie, signed nStatus, HANDLE hCont
 #endif
 	if (!gbSetStatus) return;
 
-	if (!dwUin && ASD)
+	if (!dwUin && gbASD)
 	{
 
         int i;
@@ -336,7 +395,7 @@ void icq_SetUserStatus(DWORD dwUin, DWORD dwCookie, signed nStatus, HANDLE hCont
 
         NickFromHandleStatic(hContact, name, sizeof(name));
 
-        if ((nStatus < 0) && ASD) { // user is not here 8-(
+        if ((nStatus < 0) && gbASD) { // user is not here 8-(
 
             Netlib_Logf(ghServerNetlibUser, "%s (%d) is not here 8-(", name, dwUin);
 
@@ -368,6 +427,21 @@ void icq_SetUserStatus(DWORD dwUin, DWORD dwCookie, signed nStatus, HANDLE hCont
 				}
 
                 SetContactCapabilities(hContact, WAS_FOUND);
+				{
+					CHECKCONTACT chk;
+					chk.dbeventflag=DBEF_READ;
+					chk.dwUin=dwUin;
+					chk.hContact=hContact;
+					chk.historyevent=chk.logtofile=TRUE;
+					chk.icqeventtype=ICQEVENTTYPE_WAS_FOUND;
+					if(nStatus < 20 && nStatus > 0)
+						chk.msg="detected via ASD";
+					else if(nStatus > 20)
+						chk.msg="detected via PSD";
+					chk.PSD=-1;
+					CheckContact(chk);
+				}
+
 				ClearContactCapabilities(hContact, CAPF_SRV_RELAY); // for compability
 
 				// dim icon
@@ -477,12 +551,12 @@ static DWORD __stdcall icq_StatusCheckThread(void* arg)
         case WAIT_TIMEOUT:
             // Time to check for users status
         	if (icqOnline) {
+				HANDLE hContact = NULL;
 #ifdef _DEBUG
             	Netlib_Logf(ghServerNetlibUser, "Users statuses %u", nCount);
 #endif
-				HANDLE hContact = NULL;
 				hContact = HContactFromUIN(StatusList[nPointer].dwUin, 0);
-				if (nCount > 0&&!ICQGetContactSettingByte(hContact, "NoASD", 0))
+				if (nCount > 0 && !(gnCurrentStatus == ID_STATUS_INVISIBLE && bNoASDInInvisible))
                 {
                 	//icq_packet p;
 					//int iRes = FALSE;
@@ -495,22 +569,29 @@ static DWORD __stdcall icq_StatusCheckThread(void* arg)
                     Netlib_Logf(ghServerNetlibUser, "Request user %u status", StatusList[nPointer].dwUin);
 #endif
 					
+					StatusList[nPointer].dwCookie = GenerateCookie(0);
+
 					if(CheckContactCapabilities(hContact, WAS_FOUND))
 	                      makeUserOffline(hContact); // ensure that contact was made offline, before beeing checked
 
                 
-					// getting invisibility via status message
-					icq_sendGetAwayMsgServ(hContact, StatusList[nPointer].dwUin, MTYPE_AUTOAWAY, (WORD)(ICQGetContactSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
-
-					// getting invisibility via xtraz notify request
-					sendDetectionPacket(hContact); //detect icq6 invisibility (added by [sin])
-
-					// getting invisibility via malformed url message
-					icq_sendGetAwayMsgServ(hContact, StatusList[nPointer].dwUin, MTYPE_URL, (WORD)(ICQGetContactSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); //detect miranda invisibility (added by [sin])
-
-
-                    StatusList[nPointer].dwCookie = GenerateCookie(0);
-
+					if(!bASDForOffline || bASDForOffline && (ICQGetContactStatus(hContact) == ID_STATUS_INVISIBLE || ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE)) // maybe better use CheckContactCapabilities(hContact, WAS_FOUND) here ?
+					{
+						// getting invisibility via status message
+						if(bASDViaAwayMsg)
+							icq_sendGetAwayMsgServ(hContact, StatusList[nPointer].dwUin, MTYPE_AUTOAWAY, (WORD)(ICQGetContactSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); // Success
+						// getting invisibility via xtraz notify request
+						if(bASDViaXtraz)
+							sendDetectionPacket(hContact); //detect icq6 invisibility (added by [sin])
+						// getting invisibility via malformed url message
+  					if(bASDViaURL)
+							icq_sendGetAwayMsgServ(hContact, StatusList[nPointer].dwUin, MTYPE_URL, (WORD)(ICQGetContactSettingWord(hContact, "Version", 0)==9?9:ICQ_VERSION)); //detect miranda invisibility (added by [sin])
+						if(bASDUnauthorized)
+							icq_sendGetLocationInfo(hContact ,StatusList[nPointer].dwUin, 0); //method reported by D@rkNeo
+						if(bASDViaAuth && StatusList[nPointer].bManualCheck) //
+							detectViaAuth(hContact, StatusList[nPointer].dwCookie);
+					}
+                  
 					// use common and well documented thing. it now works!
 					// seems AOL always leave something or fix in one place add bug to another :)
                     // icq_GetCaps(StatusList[nPointer].dwUin, (WORD)(StatusList[nPointer].dwCookie));
@@ -658,11 +739,11 @@ static void CALLBACK TimeToCheckVIP(HWND hwnd, UINT message, UINT idTimer, DWORD
 
 static void CALLBACK TimeToCheckAll(HWND hwnd, UINT message, UINT idTimer, DWORD dwTime)
 {
- if((gnCurrentStatus == ID_STATUS_INVISIBLE)&& bNoASD)
-    {
-	 KillTimer(NULL, hCAUSTimer);
-	 return;
-    }
+  if((gnCurrentStatus == ID_STATUS_INVISIBLE)&& bNoASDInInvisible)
+  {
+    KillTimer(NULL, hCAUSTimer);
+    return;
+  }
 
  else
  {
@@ -1031,18 +1112,18 @@ static void PopUpMsg(HANDLE hContact, BYTE bType)
 
 void icq_ISeeCleanup()
 {
-    if (ASD)
-    {
-        if (hHidTimer) KillTimer(NULL, hHidTimer);
+	if (gbASD)
+	{
+		if (hHidTimer) KillTimer(NULL, hHidTimer);
         if (hFavTimer) KillTimer(NULL, hFavTimer);
         if (hVIPTimer) KillTimer(NULL, hVIPTimer);
         DeleteCriticalSection(&slistmutex);
         CloseHandle(hQueueEventS);
         CloseHandle(hDummyEventS);
-    }
+	}
 }
 
-void icq_BuildPrivacyMenu()
+int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 {
 	BOOL bStausMenu = FALSE; //ServiceExists(MS_CLIST_ADDSTATUSMENUITEM);
 	HANDLE hPrivacyRoot;
@@ -1054,25 +1135,31 @@ void icq_BuildPrivacyMenu()
 	gbVisibility = DBGetContactSettingByte(NULL, gpszICQProtoName, "Privacy", DEFAULT_VISIBILITY);
 	if (gbVisibility > 6) gbVisibility = DEFAULT_VISIBILITY;
 
-	mir_snprintf(pszName, sizeof(pszName), "%s (%s)", Translate("Advanced Features"), Translate(gpszICQProtoName));
+	mir_snprintf(pszName, sizeof(pszName), "%s", Translate("Advanced Features"));
 
 	mi.pszPopupName = pszName;
 	mi.flags = 0;
 	mi.popupPosition=500084000;//400059000;
-	// icon for menu
-	mi.hIcon = IconLibGetIcon("privacy");
+	// icon for menu	
+	mi.hIcon = IconLibGetIcon("dot");
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR0");
 	CreateServiceFunction(pszServiceName, icq_Privacy0);
 
-	mi.position = 2000000000;
+	mi.position = 1000010000;
 	mi.pszName = Translate("Default, corresponding to status");
 	mi.pszService = pszServiceName;
 	
-	hPrivacy[0] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
-	IconLibReleaseIcon("privacy");
+	hPrivacy[0] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	
+	{
+		CLISTMENUITEM miTmp = {0};
+		miTmp.cbSize = sizeof(miTmp);
+		miTmp.flags = CMIM_ICON|CMIM_FLAGS;
+		miTmp.hIcon = IconLibGetIcon("privacy");
+		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hPrivacyRoot, (LPARAM)&miTmp);
+		IconLibReleaseIcon("privacy");
+	}
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR1");
 	CreateServiceFunction(pszServiceName, icq_Privacy1);
@@ -1083,9 +1170,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2000010000;
 	mi.pszName = Translate("Allow all users to see you");
 	mi.pszService = pszServiceName;
-	hPrivacy[1] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[1] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR2");
 	CreateServiceFunction(pszServiceName, icq_Privacy2);
@@ -1093,9 +1178,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2000020000;
 	mi.pszName = Translate("Block all users from seeing you");
 	mi.pszService = pszServiceName;
-	hPrivacy[2] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[2] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR3");
 	CreateServiceFunction(pszServiceName, icq_Privacy3);
@@ -1103,9 +1186,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2000030000;
 	mi.pszName = Translate("Allow only users in the Visible list to see you");
 	mi.pszService = pszServiceName;
-	hPrivacy[3] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[3] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR4");
 	CreateServiceFunction(pszServiceName, icq_Privacy4);
@@ -1113,9 +1194,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2000040000;
 	mi.pszName = Translate("Block only users in the Invisible list from seeing you");
 	mi.pszService = pszServiceName;
-	hPrivacy[4] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[4] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR5");
 	CreateServiceFunction(pszServiceName, icq_Privacy5);
@@ -1123,9 +1202,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2000050000;
 	mi.pszName = Translate("Allow only users in the Contact list to see you");
 	mi.pszService = pszServiceName;
-	hPrivacy[5] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[5] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR6");
 	CreateServiceFunction(pszServiceName, icq_Privacy6);
@@ -1133,9 +1210,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2000060000;
 	mi.pszName = Translate("Allow only users in the Contact list to see you, except Invisible list users");
 	mi.pszService = pszServiceName;
-	hPrivacy[6] = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[6] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	IconLibReleaseIcon("dot");
 
@@ -1149,16 +1224,30 @@ void icq_BuildPrivacyMenu()
 
 	hPrivacy[7] = hPrivacy[gbVisibility];
 
-	// fix first menu item icon
-	if (gbVisibility != 0)
-	{
-		// mi.flags = CMIM_ICON;
-		mi.hIcon = IconLibGetIcon("dot");
-		CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hPrivacy[0], (LPARAM)&mi);
-		IconLibReleaseIcon("dot");
-	}
-
 	mi.flags = 0;
+
+ 	//Auth 
+ 	mi.hIcon = IconLibGetIcon("proto"); 
+ 	
+  strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_AUTH"); 
+ 	CreateServiceFunction(pszServiceName, icq_SendAuthRequestToAllUnauthorized); 
+ 	
+  mi.position = 2090000000; 
+ 	mi.pszName = Translate("Send global authorization request to all users, who haven't authorized you yet"); 
+ 	mi.pszService = pszServiceName; 
+ 	hSendAuthRequestToAllUnauthorized = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi); 
+
+	//ASD
+	mi.hIcon = IconLibGetIcon(gbASD?"check":"dot");
+
+	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_ASD");
+	CreateServiceFunction(pszServiceName, icq_ASD);
+
+	mi.position = 2100000000;
+	mi.pszName = Translate("ASD");
+	mi.pszService = pszServiceName;
+	hASD = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+
 
 	// webaware
 	mi.hIcon = IconLibGetIcon(gbWebAware?"check":"dot");
@@ -1169,9 +1258,7 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2100000000;
 	mi.pszName = Translate("WebAware");
 	mi.pszService = pszServiceName;
-	hWebAware = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hWebAware = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	// Remove option
 /*	mi.hIcon = IconLibGetIcon(gbTools?"check":"dot");
@@ -1208,17 +1295,21 @@ void icq_BuildPrivacyMenu()
 	mi.position = 2107000000;
 	mi.pszName = Translate("Manage server's list...");
 	mi.pszService = pszServiceName;
-	CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 	IconLibReleaseIcon("servlist");
-}
-
-int icq_OnBuildStatusMenu(WPARAM wParam, LPARAM lParam)
-{
-	icq_BuildPrivacyMenu();
 	return 0;
 }
+
+static HANDLE hhkPrebuildStatusMenu = NULL;
+void icq_BuildPrivacyMenu()
+{
+	hhkPrebuildStatusMenu = HookEvent( ME_CLIST_PREBUILDSTATUSMENU, icq_PrivacyMenu );
+}
+void icq_DestroyPrivacyMenu()
+{
+	UnhookEvent(hhkPrebuildStatusMenu);
+}
+
 
 void icq_InitISee()
 {
@@ -1254,12 +1345,11 @@ void icq_InitISee()
 
 #endif
 */
-	ASD = 0;
 
-    switch (ICQGetContactSettingByte(NULL, "ASD", 2)) {
+    switch (gbASD) {
 
-    case 2: ICQWriteContactSettingByte(NULL, "ASD", (BYTE)(ASD?1:0));
-            if (!ASD) break;
+/*    case 2: ICQWriteContactSettingByte(NULL, "ASD", (BYTE)(ASD?1:0));
+            if (!ASD) break;*/
     case 1:
             hQueueEventS = CreateEvent(NULL, FALSE, FALSE, NULL);
             hDummyEventS = CreateEvent(NULL, FALSE, FALSE, NULL);
@@ -1272,8 +1362,6 @@ void icq_InitISee()
 				strcat(szSndName, "/ScanComplete");
 
 				_snprintf(szName, sizeof(szName), "%s: %s", gpszICQProtoName, Translate("Status Scan Complete"));
-
-		    	SkinAddNewSound(szSndName, szName, "scancomplete.wav");
 		    }
 
             defSpeed = ICQGetContactSettingWord(NULL, "_defSpeed", 3000);
@@ -1297,53 +1385,42 @@ void icq_InitISee()
 
 			if(ICQGetContactSettingByte(NULL, "ASDStartup", 0))
             if (TRUE) hCAUSTimer = SetTimer(NULL, 1, 15000, TimeToCheckAll);
+			{
+				strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_CUS");
+				CreateServiceFunction(pszServiceName, icq_CheckUserStatus);
 
-            ASD = 1;
-            break;
-    case 0:
-            ASD = 0;
+				mi.position = 1000055000;
+				mi.flags = 0;
+				mi.hIcon = IconLibGetIcon("scan");
+				mi.pszContactOwner = gpszICQProtoName;
+				mi.pszName = Translate("Us&er Status");
+				mi.pszService = pszServiceName;
+				hUserMenuStatus = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
+				IconLibReleaseIcon("scan");
+
+				mir_snprintf(pszName, sizeof(pszName), "%s (%s)", Translate("&Users Status Scan"), Translate(gpszICQProtoName));
+				strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_CAUS");
+				CreateServiceFunction(pszServiceName, icq_CheckAllUsersStatus);
+
+				mi.position = 400060000;
+				mi.pszName = pszName;
+				mi.pszService = pszServiceName;
+				hStatusMenu = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
+				RebuildMenu();
+			}
+			break;
+	case 0:
             break;
     }
 
-	if (ASD)
-	{
-		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_CUS");
-		CreateServiceFunction(pszServiceName, icq_CheckUserStatus);
 
-		mi.position = 1000055000;
-		mi.flags = 0;
-		mi.hIcon = IconLibGetIcon("scan");
-		mi.pszContactOwner = gpszICQProtoName;
-		mi.pszName = Translate("Us&er Status");
-		mi.pszService = pszServiceName;
-		hUserMenuStatus = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
-		IconLibReleaseIcon("scan");
-
-		mir_snprintf(pszName, sizeof(pszName), "%s (%s)", Translate("&Users Status Scan"), Translate(gpszICQProtoName));
-		strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_CAUS");
-		CreateServiceFunction(pszServiceName, icq_CheckAllUsersStatus);
-
-		mi.position = 400060000;
-		mi.pszName = pszName;
-		mi.pszService = pszServiceName;
-	    hStatusMenu = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
-	    RebuildMenu();
-	}
-
-	if (DBGetContactSettingByte(NULL, gpszICQProtoName, "PrivacyMenu", DEFAULT_PRIVACY_ENABLED))
-	{
-		if (ServiceExists(MS_CLIST_ADDSTATUSMENUITEM))
-			HookEvent(ME_CLIST_PREBUILDSTATUSMENU, icq_OnBuildStatusMenu);
-		else
-			icq_BuildPrivacyMenu();
-	}
-	
 	// Added by BM
 	SkinAddNewSoundEx("AuthRequest", Translate(gpszICQProtoName), Translate("Authorization Request"));
 	SkinAddNewSoundEx("AuthDenied", Translate(gpszICQProtoName), Translate("Authorization Denied"));
 	SkinAddNewSoundEx("AuthGranted", Translate(gpszICQProtoName), Translate("Authorization Granted"));
 	SkinAddNewSoundEx("YouWereAdded", Translate(gpszICQProtoName), Translate("You Were Added"));
 	SkinAddNewSoundEx("ContactRemovedSelf", Translate(gpszICQProtoName), Translate("Contact Removed Self"));
+	SkinAddNewSoundEx("ASDScanComplete", Translate(gpszICQProtoName), Translate("Status Scan Complete"));
 }
 
 
@@ -1370,11 +1447,28 @@ void SetWebAware(BYTE bSend)
 
 		SAFE_FREE(&buf);
 
-		icq_setstatus(MirandaStatusToIcq(gnCurrentStatus));
+		icq_setstatus(MirandaStatusToIcq(gnCurrentStatus),0);
 	}
 }
 
+static int icq_ASD(WPARAM wParam,LPARAM lParam)
+{
+	CLISTMENUITEM mi = {0};
 
+	mi.cbSize = sizeof(mi);
+	mi.flags = CMIM_ICON;
+	gbASD?(gbASD=0):(gbASD=1);
+	ICQWriteContactSettingByte(NULL,"ASD",gbASD);
+	gbASD?icq_InitISee():icq_ISeeCleanup();
+	mi.hIcon = IconLibGetIcon(gbASD?"check":"dot");
+	CallService(MS_CLIST_MODIFYMENUITEM, (WPARAM)hASD, (LPARAM)&mi);
+	return 0;
+}
+static int icq_SendAuthRequestToAllUnauthorized(WPARAM wParam,LPARAM lParam) 
+{ 
+ 	SendAuthRequestToAllUnauthorized(); 
+  return 0; 
+} 
 static int icq_WebAware(WPARAM wParam,LPARAM lParam)
 {
    	gbWebAware = !gbWebAware;

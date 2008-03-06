@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msgs.c 7054 2008-01-05 20:40:17Z ghazan $
+$Id: msgs.c 7272 2008-02-14 14:18:13Z nightwish2004 $
 
 */
 #include "commonheaders.h"
@@ -36,9 +36,10 @@ $Id: msgs.c 7054 2008-01-05 20:40:17Z ghazan $
 
 /*static char *relnotes[] = {
 	"{\\rtf1\\ansi\\deff0\\pard\\li%u\\fi-%u\\ri%u\\tx%u}",
-	"\\par\t\\b\\ul1 Release notes for version 2.0.0.5\\b0\\ul0\\par ",
-	"*\tIncreased timer for info panel tooltips to 1 sec (from 500msec).\\par",
-	"*\tRequires Miranda 0.7.x now, lots of legacy code has been removed.\\par",
+	"\\par\t\\b\\ul1 Release notes for version 2.1.0.0\\b0\\ul0\\par ",
+	"*\tOnly compatible with Miranda 0.8 alpha/dev. Do not run this version with Miranda 0.7!.\\par",
+	"*\tReworked message log options. Please see http://miranda.or.at/Blog:tabsrmm_changes_2_1_0_0.\\par",
+	"*\tGroup chats: Clickable nicknames can now be colorized. Patch sent by theMiron.\\par",
 	NULL
 };*/
 
@@ -83,7 +84,7 @@ PAB MyAlphaBlend = 0;
 PGF MyGradientFill = 0;
 
 extern      struct ContainerWindowData *pFirstContainer;
-extern      BOOL CALLBACK DlgProcUserPrefs(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+extern      BOOL CALLBACK DlgProcUserPrefsFrame(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 extern      int g_chat_integration_enabled;
 extern      struct SendJob *sendJobs;
 extern      struct MsgLogIcon msgLogIcons[NR_LOGICONS * 3];
@@ -190,7 +191,7 @@ static int SetUserPrefs(WPARAM wParam, LPARAM lParam)
 		SetFocus(hWnd);
 		return 0;
 	}
-	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS), 0, DlgProcUserPrefs, (LPARAM)wParam);
+	CreateDialogParam(g_hInst, MAKEINTRESOURCE(IDD_USERPREFS_FRAME), 0, DlgProcUserPrefsFrame, (LPARAM)wParam);
 	return 0;
 }
 
@@ -888,7 +889,7 @@ TCHAR  *mathModDelimiter = NULL;
 static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 {
 	CLISTMENUITEM mi;
-	PROTOCOLDESCRIPTOR **protocol;
+	PROTOACCOUNT **accs;
 	int protoCount, i;
 	DBVARIANT dbv;
 	MENUITEMINFOA mii = {0};
@@ -936,12 +937,10 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	}
 	mi.pszName = LPGEN("&Message");
 	mi.pszService = MS_MSG_SENDMESSAGE;
-	CallService(MS_PROTO_ENUMPROTOCOLS, (WPARAM) & protoCount, (LPARAM) & protocol);
+	ProtoEnumAccounts( &protoCount, &accs );
 	for (i = 0; i < protoCount; i++) {
-		if (protocol[i]->type != PROTOTYPE_PROTOCOL)
-			continue;
-		if (CallProtoService(protocol[i]->szName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
-			mi.pszContactOwner = protocol[i]->szName;
+		if ( CallProtoService( accs[i]->szModuleName, PS_GETCAPS, PFLAGNUM_1, 0) & PF1_IMSEND) {
+         mi.pszContactOwner = accs[i]->szModuleName;
 			hMsgMenuItem = realloc(hMsgMenuItem, (hMsgMenuItemCount + 1) * sizeof(HANDLE));
 			hMsgMenuItem[hMsgMenuItemCount++] = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 		}
@@ -1044,7 +1043,7 @@ static int SplitmsgModulesLoaded(WPARAM wParam, LPARAM lParam)
 	mi.position = -500050005;
 	mi.hIcon = myGlobals.g_iconContainer;
 	mi.pszContactOwner = NULL;
-	mi.pszName = LPGEN("&tabSRMM settings");
+	mi.pszName = LPGEN("&Messaging settings...");
 	mi.pszService = MS_TABMSG_SETUSERPREFS;
 	myGlobals.m_UserMenuItem = (HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 	PreTranslateDates();

@@ -47,7 +47,7 @@ int InitChangeDetails(WPARAM wParam, LPARAM lParam)
 
   ZeroMemory(&odp,sizeof(odp));
   odp.cbSize = sizeof(odp);
-  mir_snprintf( szTmp, sizeof( szTmp ), "%s %s", gpszICQProtoName, LPGEN("Details"));
+  mir_snprintf( szTmp, sizeof( szTmp ), Translate("%s Details"), gpszICQProtoName);
   odp.hIcon = NULL;
   odp.hInstance = hInst;  
   odp.position = -1899999999;

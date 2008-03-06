@@ -35,51 +35,20 @@
 //
 // -----------------------------------------------------------------------------
 
-/*#define DEFAULT_POPUPS_ENABLED      1
-#define DEFAULT_LOG_POPUPS_ENABLED  1
-#define DEFAULT_LOG0_TEXT_COLORS    RGB(0,0,0)  // LOG_NOTE
-#define DEFAULT_LOG0_BACK_COLORS    RGB(255,255,255)
-//#define DEFAULT_LOG0_TIMEOUT        0
-#define DEFAULT_LOG1_TEXT_COLORS    RGB(0,0,0)  // LOG_WARNING
-#define DEFAULT_LOG1_BACK_COLORS    RGB(255,255,255)
-//#define DEFAULT_LOG1_TIMEOUT        0
-#define DEFAULT_LOG2_TEXT_COLORS    RGB(0,0,0)  // LOG_ERROR
-#define DEFAULT_LOG2_BACK_COLORS    RGB(255,255,255)
-//#define DEFAULT_LOG2_TIMEOUT        0
-#define DEFAULT_LOG3_TEXT_COLORS    RGB(0,0,0)  // LOG_FATAL
-#define DEFAULT_LOG3_BACK_COLORS    RGB(255,255,255)
-//#define DEFAULT_LOG3_TIMEOUT        0
-#define DEFAULT_LOG4_TEXT_COLORS    RGB(0,0,0)  // LOG_FOUND
-#define DEFAULT_LOG4_BACK_COLORS    RGB(255,255,255)
-//#define DEFAULT_LOG4_TIMEOUT        0
-#define DEFAULT_LOG5_TEXT_COLORS    RGB(0,0,0)  // LOG_SCAN
-#define DEFAULT_LOG5_BACK_COLORS    RGB(255,255,255)
-//#define DEFAULT_LOG5_TIMEOUT        0
-#define DEFAULT_SPAM_TEXT_COLORS    RGB(193,0,38)
-#define DEFAULT_SPAM_BACK_COLORS    RGB(213,209,208)
-//#define DEFAULT_SPAM_TIMEOUT        0
-#define DEFAULT_UNKNOWN_TEXT_COLORS    RGB(193,0,38)
-#define DEFAULT_UNKNOWN_BACK_COLORS    RGB(213,209,208)
-//#define DEFAULT_UNKNOWN_TIMEOUT        0
-#define DEFAULT_VIS_TEXT_COLORS    RGB(255,255,255)
-#define DEFAULT_VIS_BACK_COLORS    RGB(0,0,0)
-//#define DEFAULT_VIS_TIMEOUT        0*/
-
-
-extern BOOL bPopUpService;
-extern BOOL bPopUpsEnabled;
-extern BOOL bSpamPopUp;
-extern BOOL bUnknownPopUp;
-extern BOOL bFoundPopUp;
-extern BOOL bScanPopUp;
-extern BOOL bClientChangePopUp;
-extern BOOL bVisPopUp;
-extern BOOL bPopUpForNotOnList;
-extern BOOL bIgnoreCheckPop;
-extern BOOL bPopSelfRem;
-extern BOOL bInfoRequestPopUp;
-extern BOOL bAuthPopUp;
-extern BOOL bUinPopup;
+BOOL bPopUpService;
+BOOL bPopUpsEnabled;
+BOOL bSpamPopUp;
+BOOL bUnknownPopUp;
+BOOL bFoundPopUp;
+BOOL bScanPopUp;
+BOOL bClientChangePopUp;
+BOOL bVisPopUp;
+BOOL bPopUpForNotOnList;
+BOOL bIgnoreCheckPop;
+BOOL bPopSelfRem;
+BOOL bInfoRequestPopUp;
+BOOL bAuthPopUp;
+BOOL bUinPopup;
 
 extern HANDLE hPopUpsList;
 
@@ -97,6 +66,7 @@ extern HANDLE hPopUpsList;
 #define POPTYPE_IGNORE_CHECK 249
 #define POPTYPE_SELFREMOVE 248
 #define POPTYPE_AUTH 247
+#define POPTYPE_XUPDATER 246
 
 
 #define POPTYPE_FOUND	   5

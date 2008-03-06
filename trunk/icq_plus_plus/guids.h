@@ -43,9 +43,10 @@
 typedef DWORD plugin_guid[4];
 
 // Message Capability GUIDs
-static plugin_guid MCAP_TLV2711_FMT      = {MCAP_TLV2711_FMT_s};
-static plugin_guid MCAP_REVERSE_REQ      = {MCAP_REVERSE_REQ_s};
-static plugin_guid MCAP_OSCAR_FT         = {MCAP_OSCAR_FT_s};
+static plugin_guid MCAP_SRV_RELAY_FMT    = {MCAP_SRV_RELAY_FMT_s};
+static plugin_guid MCAP_REVERSE_DC_REQ   = {MCAP_REVERSE_DC_REQ_s};
+static plugin_guid MCAP_FILE_TRANSFER    = {MCAP_FILE_TRANSFER_s};
+static plugin_guid MCAP_CONTACTS         = {MCAP_CONTACTS_s};
 
 // Plugin GUIDs
 static plugin_guid PSIG_MESSAGE          = {PSIG_MESSAGE_s};

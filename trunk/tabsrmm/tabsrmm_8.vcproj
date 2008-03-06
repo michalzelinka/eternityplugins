@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="Windows-1252"?>
 <VisualStudioProject
 	ProjectType="Visual C++"
-	Version="8,00"
+	Version="8.00"
 	Name="tabsrmm_mod"
 	ProjectGUID="{99D26CA1-BFD4-4E77-9A1E-919E54CF33F7}"
 	RootNamespace="srmm"
@@ -110,7 +110,7 @@
 			/>
 		</Configuration>
 		<Configuration
-			Name="Release Unicode|Win32"
+			Name="Release Unicode (Static)|Win32"
 			OutputDirectory="$(SolutionDir)$(ConfigurationName)/Plugins"
 			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
 			ConfigurationType="2"
@@ -426,6 +426,118 @@
 				Name="VCPostBuildEventTool"
 			/>
 		</Configuration>
+		<Configuration
+			Name="Release Unicode (SSE2 Fast optimalization)|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(SolutionDir)$(ConfigurationName)/Obj/$(ProjectName)"
+			ConfigurationType="2"
+			UseOfMFC="0"
+			ATLMinimizesCRunTimeLibraryUsage="false"
+			CharacterSet="1"
+			WholeProgramOptimization="1"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+				PreprocessorDefinitions="NDEBUG"
+				MkTypLibCompatible="true"
+				SuppressStartupBanner="true"
+				TargetEnvironment="1"
+				TypeLibraryName=".\Release_Unicode/srmm.tlb"
+				HeaderFileName=""
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="3"
+				InlineFunctionExpansion="1"
+				FavorSizeOrSpeed="1"
+				WholeProgramOptimization="true"
+				AdditionalIncludeDirectories="../../include;../;../include"
+				PreprocessorDefinitions="_CRT_SECURE_NO_DEPRECATE"
+				StringPooling="true"
+				ExceptionHandling="1"
+				RuntimeLibrary="0"
+				EnableFunctionLevelLinking="true"
+				EnableEnhancedInstructionSet="2"
+				FloatingPointModel="0"
+				RuntimeTypeInfo="false"
+				UsePrecompiledHeader="2"
+				PrecompiledHeaderThrough="commonheaders.h"
+				AssemblerListingLocation=""
+				BrowseInformation="0"
+				WarningLevel="3"
+				SuppressStartupBanner="true"
+				DebugInformationFormat="3"
+				DisableSpecificWarnings="4996"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="NDEBUG;UNICODE"
+				Culture="2057"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				IgnoreImportLibrary="true"
+				AdditionalDependencies="comctl32.lib shlwapi.lib"
+				OutputFile="$(OutDir)\tabsrmm.dll"
+				SuppressStartupBanner="true"
+				AdditionalManifestDependencies="type=&apos;Win32&apos; name=&apos;Microsoft.Windows.Common-Controls&apos; version=&apos;6.0.0.0&apos; processorArchitecture=&apos;X86&apos; publicKeyToken=&apos;6595b64144ccf1df&apos; language=&apos;*&apos;"
+				IgnoreAllDefaultLibraries="false"
+				DelayLoadDLLs=""
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile="$(TargetDir)$(TargetName).pdb"
+				GenerateMapFile="false"
+				MapFileName=""
+				OptimizeReferences="2"
+				EnableCOMDATFolding="2"
+				OptimizeForWindows98="1"
+				LinkTimeCodeGeneration="1"
+				BaseAddress="0x6a540000"
+				ImportLibrary="$(IntDir)/$(TargetName).lib"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
 	</Configurations>
 	<References>
 	</References>
@@ -450,7 +562,7 @@
 				RelativePath=".\formatting.cpp"
 				>
 				<FileConfiguration
-					Name="Release Unicode|Win32"
+					Name="Release Unicode (Static)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -459,6 +571,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -478,7 +598,7 @@
 				RelativePath="ImageDataObject.cpp"
 				>
 				<FileConfiguration
-					Name="Release Unicode|Win32"
+					Name="Release Unicode (Static)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -487,6 +607,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="0"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -526,7 +654,7 @@
 				RelativePath="srmm.c"
 				>
 				<FileConfiguration
-					Name="Release Unicode|Win32"
+					Name="Release Unicode (Static)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -535,6 +663,14 @@
 				</FileConfiguration>
 				<FileConfiguration
 					Name="Release|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						UsePrecompiledHeader="1"
+					/>
+				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 					>
 					<Tool
 						Name="VCCLCompilerTool"
@@ -597,7 +733,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -606,6 +742,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -625,7 +769,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -634,6 +778,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -653,7 +805,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -662,6 +814,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -681,7 +841,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -690,6 +850,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -709,7 +877,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -718,6 +886,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -737,7 +913,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -746,6 +922,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -765,7 +949,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -774,6 +958,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -793,7 +985,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -802,6 +994,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -821,7 +1021,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -830,6 +1030,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -849,7 +1057,7 @@
 						/>
 					</FileConfiguration>
 					<FileConfiguration
-						Name="Release Unicode|Win32"
+						Name="Release Unicode (Static)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -858,6 +1066,14 @@
 					</FileConfiguration>
 					<FileConfiguration
 						Name="Release|Win32"
+						>
+						<Tool
+							Name="VCCLCompilerTool"
+							PrecompiledHeaderThrough="../commonheaders.h"
+						/>
+					</FileConfiguration>
+					<FileConfiguration
+						Name="Release Unicode (SSE2 Fast optimalization)|Win32"
 						>
 						<Tool
 							Name="VCCLCompilerTool"
@@ -1053,7 +1269,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\src\res\cursor_drag_copy.cur"
+				>
+			</File>
+			<File
 				RelativePath="..\..\src\res\cursor_drop_user.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\cursor_drop_user.cur"
+				>
+			</File>
+			<File
+				RelativePath="..\..\src\res\cursor_hyperlink.cur"
 				>
 			</File>
 			<File
@@ -1073,11 +1301,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
+				RelativePath="..\..\src\res\dragcopy.cur"
 				>
 			</File>
 			<File
-				RelativePath="..\..\src\res\dragcopy.cur"
+				RelativePath="..\..\Miranda-IM\res\dragcopy.cur"
 				>
 			</File>
 			<File
@@ -1109,11 +1337,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\History.ico"
+				RelativePath="..\..\Miranda-IM\res\history.ico"
 				>
 			</File>
 			<File
-				RelativePath="..\..\Miranda-IM\res\history.ico"
+				RelativePath=".\res\angeli-icons\History.ico"
 				>
 			</File>
 			<File
@@ -1317,11 +1545,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\res\angeli-icons\Save.ico"
+				RelativePath=".\res\save.ico"
 				>
 			</File>
 			<File
-				RelativePath=".\res\save.ico"
+				RelativePath=".\res\angeli-icons\Save.ico"
 				>
 			</File>
 			<File

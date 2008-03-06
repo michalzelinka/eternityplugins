@@ -24,7 +24,7 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL$
+// File name      : $Source$
 // Revision       : $Revision: 36 $
 // Last change on : $Date: 2007-08-05 03:45:10 +0300 (Вс, 05 авг 2007) $
 // Last change by : $Author: sss123next $
@@ -75,5 +75,9 @@ HANDLE __stdcall ICQAddEvent(HANDLE hContact, WORD wType, DWORD dwTime, DWORD fl
 int __fastcall IsICQContact(HANDLE hContact);
 HANDLE __fastcall ICQFindFirstContact();
 HANDLE __fastcall ICQFindNextContact(HANDLE hContact);
+
+char* __stdcall ICQGetContactCListGroup(HANDLE hContact);
+int __stdcall ICQSetContactCListGroup(HANDLE hContact, const char *szGroup);
+
 
 #endif /* __ICQ_DB_H */

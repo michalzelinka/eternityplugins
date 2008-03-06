@@ -236,7 +236,7 @@ void icq_CancelFileTransfer(HANDLE hContact, filetransfer* ft)
 
   if (IsValidFileTransfer(ft))
   { // Transfer still out there, end it
-    NetLib_SafeCloseHandle(&ft->hConnection, FALSE);
+    NetLib_CloseConnection(&ft->hConnection, FALSE);
 
     ICQBroadcastAck(ft->hContact, ACKTYPE_FILE, ACKRESULT_FAILED, ft, 0);
 

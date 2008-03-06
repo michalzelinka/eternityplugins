@@ -15,13 +15,15 @@
 #include <m_langpack.h>
 #include <m_button.h>
 #include <m_options.h>
+#include <m_toolbar.h>
+#include <m_hotkeys.h>
 //#include <stdio.h>
 
 #include "resource.h"
 
 #define MIID_STATUSLIST               { 0x8b86253, 0xec6e, 0x4d09, { 0xb7, 0xa9, 0x64, 0xac, 0xdf, 0x6, 0x27, 0xb8 } }
 
-#define CSLIST_RELNOTES               17 // actual eternity relnotes
+#define CSLIST_RELNOTES               18 // actual eternity relnotes
 #define CSLIST_XTITLE_LIMIT           64 // limit of chars for x-status title
 #define CSLIST_XMESSAGE_LIMIT         2048 // limit of chars for x-status message
 
@@ -41,6 +43,7 @@
 #define MS_CLIST_ADDSTATUSMENUITEM    "CList/AddStatusMenuItem"
 #define ME_CLIST_PREBUILDSTATUSMENU   "CList/PreBuildStatusMenu"
 #define PS_ICQ_SETCUSTOMSTATUSEX      "ICQ/SetXStatusEx"
+#define MS_CSLIST_SHOWLIST            "CSList/ShowList"
 
 // status flags
 
@@ -104,6 +107,7 @@ static struct
   { LPGEN( "Import" ), "csl_import", IDI_IMPORT },
   { LPGEN( "Watch" ), "csl_watch", IDI_WATCH },
   { LPGEN( "Favorite" ), "csl_fav", IDI_FAV },
+  { LPGEN( "Options" ), "csl_opts", IDI_OPTIONS },
   { LPGEN( "No change" ), "csl_nochng", IDI_NOCHNG },
   { LPGEN( "Set" ), "csl_apply", IDI_APPLY },
   { LPGEN( "Clear" ), "csl_clear", IDI_CLEAR },
@@ -119,10 +123,11 @@ static struct
 {
   { IDC_ADD, _T( "Add new item" ), "csl_add", IDI_ADD },
 	{ IDC_MODIFY, _T( "Modify selected item" ), "csl_modify", IDI_MODIFY },
-	{ IDC_DELETE, _T( "Delete selected item" ), "csl_remove", IDI_REMOVE },
+	{ IDC_REMOVE, _T( "Delete selected item" ), "csl_remove", IDI_REMOVE },
   { IDC_IMPORT, _T( "Import statuses from database" ), "csl_import", IDI_IMPORT },
   { IDC_WATCH, _T( "Whether or not watch custom status changes and add them into list" ), "csl_watch", IDI_WATCH },
   { IDC_FAV, _T( "Set/unset current item as favorite" ), "csl_fav", IDI_FAV },
+  { IDC_OPTS, _T( "Options..." ), "csl_opts", IDI_OPTIONS },
   { IDC_NOCHNG, _T( "Close without changing custom status" ), "csl_nochng", IDI_NOCHNG },
   { IDC_APPLY, _T( "Set custom status to selected one and close" ), "csl_apply", IDI_APPLY },
   { IDC_EXIT, _T( "Clear custom status (reset to None) and close" ), "csl_clear", IDI_CLEAR },
@@ -171,7 +176,7 @@ static struct
   {32, _T("Love")},
   {33, _T("Searching")},
   {34, _T("Love")},       // I don't understand why this falls when 2 same named items appear O_o
-  {35, _T("Journal")},    // edit: I REALLY don't understand why it's working now x))
+  {35, _T("Journal")},    // edit: ..and now I REALLY don't understand why it's working now x))
   {36, _T("Sex")},
   {37, _T("Smoking")},    // -||-
 };
@@ -196,15 +201,18 @@ PLUGINLINK *pluginLink;
 DWORD gMirandaVersion;
 
 char *rnthanks = "induction - for his cool iconset :)\r\nfaith_healer - moral support :]\r\nCriS - project hosting @ http://dev.mirandaim.ru/ \r\nRobyer, kaye_styles, dEMoniZaToR, Drugwash, FREAK_THEMIGHTY - useful hints ;)\r\nplugin users, of course :) for their tolerance x) ;)\r\nMiranda IM Project Team - for their work on the best Instant Messenger I ever known :)";
+char *rnchanges = "";
 
 int action = 0;
 int AMResult = 0;
 int ModifiedPos = -1;
+int opened = 0;
 
 static HWND hDlg = NULL;  // List View identifier
 static HWND hList = NULL;  // List View identifier
 HIMAGELIST hIml;
 HWND hXCombo = NULL;
+int hMainIcon = 0;
 LVCOLUMN LvCol; // Make Coluom struct for ListView
 LVITEM LvItem;  // ListView Item struct
 COMBOBOXEXITEM CbItem;
@@ -218,7 +226,7 @@ BOOL bStatusMenu = FALSE;
 PLUGININFOEX pluginInfoEx = {
   sizeof( PLUGININFOEX ),
   CSLIST_MODULE_LONG_NAME,
-  PLUGIN_MAKE_VERSION( 0,0,0,17 ),
+  PLUGIN_MAKE_VERSION( 0, 0, 0, 18 ),
   "Offers list of your Custom Statuses.",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
@@ -235,7 +243,7 @@ PLUGININFOEX pluginInfoEx = {
 PLUGININFO pluginInfo = {
   sizeof( PLUGININFO ),
   CSLIST_MODULE_LONG_NAME,
-  PLUGIN_MAKE_VERSION( 0,0,0,17 ),
+  PLUGIN_MAKE_VERSION( 0, 0, 0, 18 ),
   "Offers list of your Custom Statuses.",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
@@ -278,6 +286,7 @@ void InitMenuItem( BOOL bAllowStatus, int menuItemPlacement );
 // ################## COMMANDS OF CSLIST #######################################
 
 int cslist_add_item();
+int cslist_modify_item();
 int cslist_remove_item();
 int cslist_AM_set_help_item( HWND hwndAMDlg );
 
@@ -287,6 +296,7 @@ void cslist_clear_selection();
 void cslist_clear_help_item();
 void cslist_sort_list();
 void cslist_import_statuses_from_icq();
+void cslist_KatysEasterEgg( WPARAM, LPARAM );
 
 // ################## DB - LOAD AND SAVE #######################################
 

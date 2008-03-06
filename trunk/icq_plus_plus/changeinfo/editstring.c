@@ -127,7 +127,7 @@ char *BinaryToEscapes(char *str)
     if(extra<3) 
     {
       extra+=8; len+=8;
-      pout=out=(char*)realloc(out,len);
+      pout=out=(char*)SAFE_REALLOC(out,len);
     }
     *pout++='\\';
     for(i=0;i<sizeof(escapes)/sizeof(escapes[0]);i+=2)

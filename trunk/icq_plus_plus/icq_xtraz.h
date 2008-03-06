@@ -47,6 +47,9 @@ void handleXtrazData(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char*
 DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int bForced);
 void SendXtrazNotifyResponse(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, char* szResponse, int nResponseLen, BOOL bThruDC);
 
+// helper functions
+BYTE __stdcall ICQGetContactXStatus(HANDLE hContact);
+
 // custom status support
 void InitXStatusItems(BOOL bAllowStatus);
 void InitXStatusEvents();
@@ -70,5 +73,6 @@ int IcqRequestXStatusDetails(WPARAM wParam, LPARAM lParam);
 int IcqRequestAdvStatusIconIdx(WPARAM wParam, LPARAM lParam);
 
 DWORD __stdcall icq_XStatusUpdaterThread(LPVOID lp);
+
 
 #endif /* __ICQ_XTRAZ_H */

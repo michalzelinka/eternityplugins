@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 
-$Id: msgdialog.c 7113 2008-01-20 01:01:22Z nightwish2004 $
+$Id: msgdialog.c 7387 2008-03-03 18:02:00Z nightwish2004 $
 */
 
 #include "commonheaders.h"
@@ -77,7 +77,7 @@ static DWORD CALLBACK StreamOut(DWORD_PTR dwCookie, LPBYTE pbBuff, LONG cb, LONG
 
 TCHAR *pszIDCSAVE_close = 0, *pszIDCSAVE_save = 0;
 
-static WNDPROC OldMessageEditProc, OldAvatarWndProc, OldMessageLogProc, OldIEViewProc = 0, OldHppProc = 0;
+static WNDPROC OldMessageEditProc = 0, OldAvatarWndProc = 0, OldMessageLogProc = 0, OldIEViewProc = 0, OldHppProc = 0;
 WNDPROC OldSplitterProc = 0;
 
 static const UINT infoLineControls[] = { IDC_PROTOCOL, /* IDC_PROTOMENU, */ IDC_NAME, /* IDC_INFOPANELMENU */};
@@ -789,6 +789,10 @@ static LRESULT CALLBACK MessageLogSubclassProc(HWND hwnd, UINT msg, WPARAM wPara
 			ShowPopupMenu(hwndParent, mwdat, IDC_LOG, hwnd, pt);
 			return TRUE;
 		}
+		case WM_NCDESTROY:
+			if(OldMessageLogProc)
+				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageLogProc);
+			break;
 	}
 	return CallWindowProc(OldMessageLogProc, hwnd, msg, wParam, lParam);
 }
@@ -1092,7 +1096,8 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 						ShowHideInfoPanel(hwndParent, mwdat);
 						return 0;
 					case 'B':
-						MsgWindowMenuHandler(hwndParent, mwdat, ID_LOGMENU_ACTIVATERTL, MENU_LOGMENU);
+						// TODO: update Alt-B shortcut !!
+						//MsgWindowMenuHandler(hwndParent, mwdat, ID_LOGMENU_ACTIVATERTL, MENU_LOGMENU);
 						return 0;
 					case 'M':
 						mwdat->sendMode ^= SMODE_MULTIPLE;
@@ -1174,7 +1179,10 @@ static LRESULT CALLBACK MessageEditSubclassProc(HWND hwnd, UINT msg, WPARAM wPar
 			ShowPopupMenu(hwndParent, mwdat, IDC_MESSAGE, hwnd, pt);
 			return TRUE;
 		}
-
+		case WM_NCDESTROY:
+			if(OldMessageEditProc)
+				SetWindowLong(hwnd, GWL_WNDPROC, (LONG) OldMessageEditProc);
+			break;
 	}
 	return CallWindowProc(OldMessageEditProc, hwnd, msg, wParam, lParam);
 }
@@ -1945,7 +1953,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->panelWidth = -1;
 			if (dat->hContact) {
 				dat->codePage = DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "ANSIcodepage", CP_ACP);
-				dat->dwFlags |= (myGlobals.m_RTLDefault == 0 ? (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) ? MWF_LOG_RTL : 0) : (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1) ? MWF_LOG_RTL : 0));
 				LoadPanelHeight(hwndDlg, dat);
 			}
 
@@ -2162,7 +2169,9 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 
 				ZeroMemory(&wndClass, sizeof(wndClass));
 				GetClassInfoA(g_hInst, "RichEdit20A", &wndClass);
-				OldMessageLogProc = wndClass.lpfnWndProc;
+
+				OldMessageLogProc = (WNDPROC)GetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC);
+				//OldMessageLogProc = wndClass.lpfnWndProc;
 				SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) MessageLogSubclassProc);
 			}
 
@@ -2303,10 +2312,11 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 		case DM_OPTIONSAPPLIED:
 			dat->szMicroLf[0] = 0;
 			if (wParam == 1) {      // 1 means, the message came from message log options page, so reload the defaults...
-				if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0) {
-					dat->dwFlags &= ~(MWF_LOG_ALL);
+				dat->dwFlags &= ~(MWF_LOG_ALL);
+				if (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "mwoverride", 0) == 0)
 					dat->dwFlags |= DBGetContactSettingDword(NULL, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
-				}
+				else
+					dat->dwFlags |= DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "mwflags", MWF_LOG_DEFAULT);
 				dat->panelWidth = -1;
 			}
 
@@ -2329,8 +2339,6 @@ BOOL CALLBACK DlgProcMessage(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lPara
 			dat->dwFlagsEx = DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SHOWURLS, SRMSGDEFSET_SHOWURLS) ? MWF_SHOW_URLEVENTS : 0;
 			dat->dwFlagsEx |= DBGetContactSettingByte(NULL, SRMSGMOD_T, SRMSGSET_SHOWFILES, SRMSGDEFSET_SHOWFILES) ? MWF_SHOW_FILEEVENTS : 0;
 			dat->dwFlagsEx |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "splitoverride", 0) ? MWF_SHOW_SPLITTEROVERRIDE : 0;
-			dat->dwFlagsEx |= DBGetContactSettingByte(NULL, SRMSGMOD_T, "log_bbcode", 1) ? MWF_SHOW_BBCODE : 0;
-			dat->dwFlagsEx |= DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", 0) ? MWF_SHOW_USELOCALTIME : 0;
 			dat->dwFlagsEx = GetInfoPanelSetting(hwndDlg, dat) ? dat->dwFlagsEx | MWF_SHOW_INFOPANEL : dat->dwFlagsEx & ~MWF_SHOW_INFOPANEL;
 
 			SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));
@@ -5622,10 +5630,8 @@ quote_from_last:
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_MSGINDICATOR), GWL_WNDPROC, (LONG) OldSplitterProc);
 
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_SPLITTER), GWL_WNDPROC, (LONG) OldSplitterProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_MESSAGE), GWL_WNDPROC, (LONG) OldMessageEditProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_CONTACTPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
 			SetWindowLong(GetDlgItem(hwndDlg, IDC_PANELPIC), GWL_WNDPROC, (LONG) OldAvatarWndProc);
-			SetWindowLong(GetDlgItem(hwndDlg, IDC_LOG), GWL_WNDPROC, (LONG) OldMessageLogProc);
 
 			/* remove temporary contacts... */
 

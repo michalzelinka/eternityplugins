@@ -33,35 +33,126 @@ ______________
 - Some wicked firewall software can cause HTML tags (e.g. <font> </font>) to be added to
   incoming messages.
 
+- With HTTP Proxy Mode in Connection settings, neither Avatars nor File Transfer can work.
+  This is partly a limitation of current Miranda's network module implementation. But
+  File Transfer cannot work with HTTP Proxy, that is a protocol limitation.
+
+
 TO-DO List
 __________
 
-0.3.9
-  Manage server-list dialog now groups requests - much faster
+0.3.10
+  Server-list support now groups requests - much more faster & reliable
   Full support for sub-groups in Manage server-list dialog
-  Real Level 1 rate management (will solve multi-recipient message problems)
+  Simple sub-groups support (optional)
+  New White-pages support (like ICQ 6)
   
 
 0.5
   Account management (together with Miranda core changes)
   Multi-user chat (Xtraz based)
+  Mid-NetLib module for HTTP gateway (for Avatars to work) [icq_net]
 
 
 
 Changes
 _______
 
-0.3.8.0 Devel builds
+0.3.10 Development
+
+Improvements:
+  URL events are now received as normal messages
+
+
+0.3.9.5
+
+Improvements:
+  Use new offline messages protocol (supports unicode)
+
+
+0.3.9.4
+
+Improvements:
+  Added ability to handle malformed UCS-2 encoded offline messages
+  Fixed possible local buffer overflow
+
+
+0.3.9.3
 
 Bugfixes:
-  Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
+  Fixed problem with utf-8 message API and some message plugins (weird chars)
+  Fixed double Avatar pages in User Details for newer Miranda IM
+
+
+0.3.9.2
+
+Bugfixes:
+  Fixed possible memory corruption caused by malformed langpack
+  Added support for new utf-8 message API (when available)
+  Fixed possible rare problems with Folders plug-in support
+  Other minor fixes merged from trunk (0.3.10.x Development)
+
+
+0.3.9.1
+
+Bugfixes:
+  Fixes several minor problems
+  
+Improvements:
+  Oscar File Transfers now fully handle directory transfers
+  
+
+0.3.9
+
+Bugfixes:
+  Fixed peer-to-peer session cookie checking (was working only due to coincidence)
+  Fixed SMS message handling, made message parsing more consistent
+  Applied fix for re-requesting authorization (thx Bio)
+  Fixed handling of message acks & status msg replies from ICQ 6
+  Fixed handling of malformed messages acks
+  Minor fixes for Popup plugin support
+  Minor protocol related tweaks
+  Fixed possible lags caused by typing notifications (on slow connections)
+  Fixed message handling (fixes bug used for stealth invisibility detection)
+  Several fixes to Rate Level 2 handling - more propper handling of message responses  
 
 New Features:
-  TODO: Oscar File Transfers - like icq5 (including transfer thru server)
+  Oscar File Transfers - like icq5 (including: transfer thru server, resume)
+
+Improvements:
+  Client detection improvements
+  Level 1 Rate management (global) - should solve problems with many contacts in list
+  Support for Custom Profile Folders plug-in - configurable avatars cache folder
+  Ability to send long offline messages (up to 4096 characters)
+  Messsage Error handling is now complete (no more disconnections on long msgs) 
+  Support for Aim contacts enhanced
+  Better support for Miranda Ignore module
+
+
+0.3.7.5
+
+Bugfixes:
+  Fixed possible crash in avatar queue
+  Fixed special character conversion in Custom Status messages
+  Minor changes to client detection
+
+
+0.3.7.4
+
+Bugfixes:
+  Some small fixes to Custom Status API
+  Fixed possible buffer overrun problem in status change packet handling
+  Some avatar related fixes
 
 Improvements:
   Added avatar validity checking
-  Client detection improvements
+
+
+0.3.7.3
+
+Bugfixes:
+  Fixed HTTP/HTTPS proxy support (removed useless gateway option), long messages are now sent properly
+  Improved status change handling (can handle broken packets)
 
 
 0.3.7.2
@@ -347,6 +438,8 @@ Database items (usually at Contact\ICQ):
 Database items for Main Contact (usually at Settings\ICQ):
 (BYTE)InfoUpdate - Threshold in DAYS for updating user info (restart is needed) - default is 14 days
 
+(DWORD)KeepAliveInterval - Period in which Keep-Alive packets are send if enabled - default is one minute
+
 (BYTE)PrivacyItems = 1 - adds more privacy tools to contact menu (e.g. Revoke Authorization)
 
 
@@ -361,7 +454,7 @@ Thanks to Angeli-Ka for nice custom status icons.
 License and Copyright
 _____________________
 
-Copyright (C) 2000-2006 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
+Copyright (C) 2000-2007 Joe Kucera, Martin Öberg, Richard Hughes, Jon Keating
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License

@@ -37,6 +37,7 @@
 
 #include "icqoscar.h"
 
+
 extern HANDLE hsmsgrequest;
 extern HANDLE hxstatuschanged;
 
@@ -51,7 +52,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
   szQuery = strstr(szMsg, "<QUERY>");
 
   hContact = HContactFromUIN(dwUin, NULL);
-  DBWriteContactSettingByte(hContact, gpszICQProtoName, "IsContactChecked", 0);
   if (hContact) // user sent us xtraz, he supports it
     SetContactCapabilities(hContact, CAPF_XTRAZ);
 
@@ -93,7 +93,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
             char *szResponse;
             int nResponseLen;
             char *szXName, *szXMsg, *tmp;
-            BYTE dwXId = ICQGetContactSettingByte(NULL, DBSETTING_XSTATUSID, 0);
+            BYTE dwXId = ICQGetContactXStatus(NULL);
 
             if (dwXId && validateStatusMessageRequest(hContact, MTYPE_SCRIPT_NOTIFY))
             { // apply privacy rules
@@ -119,8 +119,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
                 "<title>%s</title>"
                 "<desc>%s</desc></Root></val></srv></ret>",
                 dwLocalUIN, dwXId, szXName, szXMsg);
-//			  CheckContact(dwUin,hContact,0);
-//			  CheckContact(dwUin,hContact,0,0,0,0,0,0,0,0,1);
 			  {
 				  CHECKCONTACT chk = {0};
 				  chk.hContact=hContact;
@@ -132,7 +130,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
               SAFE_FREE(&szXName);
               SAFE_FREE(&szXMsg);
 
-              if (gbXStatusEnabled)
               {
                 rate_record rr = {0};
 
@@ -150,9 +147,7 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
                 if (bThruDC || !handleRateItem(&rr, TRUE))
                   SendXtrazNotifyResponse(dwUin, dwMID, dwMID2, wCookie, szResponse, nResponseLen, bThruDC);
               }
-			  else{
-                NetLog_Server("Error: XStatus Disabled");
-				{
+			  if(!gbXStatusEnabled){
 					CHECKCONTACT chk = {0};
 					chk.dbeventflag=DBEF_READ;
 					chk.dwUin=dwUin;
@@ -162,7 +157,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
 					chk.msg="(Xtraz notify when it's disabled)";
 					chk.popuptype=POPTYPE_VIS;
 					CheckContact(chk);
-				}
 			  }
             }
 			else if (dwXId){
@@ -205,9 +199,6 @@ void handleXtrazNotify(DWORD dwUin, DWORD dwMID, DWORD dwMID2, WORD wCookie, cha
     }
     else 
       NetLog_Server("Error: Missing PluginID in Xtraz message");
-
-//	CheckContact(dwUin,hContact,0);
-//	CheckContact(dwUin,hContact,0,0,0,0,0,0,0,0,1);
 	{
 		CHECKCONTACT chk = {0};
 		chk.dwUin=dwUin;
@@ -284,7 +275,7 @@ NextVal:
             {
               szNode += 7;
               *szEnd = '\0';
-              if (atoi(szNode) != ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0))
+              if (atoi(szNode) != ICQGetContactXStatus(hContact))
               { // this is strange - but go on
                 NetLog_Server("Warning: XStatusIds do not match!");
               }
@@ -488,11 +479,10 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int
   DWORD dwCookie;
   message_cookie_data* pCookieData;
 
- 
   if (ICQGetContactSettingUID(hContact, &dwUin, NULL))
     return 0; // Invalid contact
 
-  if (invis_for(0,hContact))
+  if (invis_for(dwUin,hContact))
 	   return 0; //we do not want be detected
 
   if (!CheckContactCapabilities(hContact, CAPF_XTRAZ) && !bForced)
@@ -515,7 +505,6 @@ DWORD SendXtrazNotifyRequest(HANDLE hContact, char* szQuery, char* szNotify, int
     icq_sendXtrazRequestDirect(hContact, dwCookie, szBody, nBodyLen, MTYPE_SCRIPT_NOTIFY);
   else
     icq_sendXtrazRequestServ(dwUin, dwCookie, szBody, nBodyLen, pCookieData);
-
 
   return dwCookie;
 }

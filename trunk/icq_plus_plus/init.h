@@ -40,12 +40,10 @@ void UpdateGlobalSettings(void);
 
 
 // Debug defines
-#define DBG_CAPCH2
-#define DBG_CAPUTF
-#undef DBG_CAPRTF
+#undef DBG_CAPHTML
 #define DBG_CAPMTN
 #define DBG_CAPXTRAZ
 #undef DBG_CAPXTRAZ_MUC
 #define DBG_NEWCAPS
 #define DBG_OSCARFT
-
+#define DBG_AIMCONTACTSEND

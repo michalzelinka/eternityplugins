@@ -151,7 +151,7 @@ void __fastcall packQWord(icq_packet* pPacket, DWORD64 qwValue)
 
 
 
-void packTLV(icq_packet* pPacket, WORD wType, WORD wLength, BYTE* pbyValue)
+void packTLV(icq_packet *pPacket, WORD wType, WORD wLength, const BYTE *pbyValue)
 {
   packWord(pPacket, wType);
   packWord(pPacket, wLength);
@@ -300,7 +300,7 @@ void __fastcall packLEDWord(icq_packet* pPacket, DWORD dwValue)
 
 void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 {
-  *buf=(PBYTE)realloc(*buf,1+*buflen);
+  *buf=(PBYTE)SAFE_REALLOC(*buf,1+*buflen);
   *(*buf+*buflen)=b;
   ++*buflen;
 }
@@ -309,7 +309,7 @@ void ppackByte(PBYTE *buf,int *buflen,BYTE b)
 
 void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 {
-  *buf=(PBYTE)realloc(*buf,2+*buflen);
+  *buf=(PBYTE)SAFE_REALLOC(*buf,2+*buflen);
   *(PWORD)(*buf+*buflen)=w;
   *buflen+=2;
 }
@@ -318,7 +318,7 @@ void ppackLEWord(PBYTE *buf,int *buflen,WORD w)
 
 void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 {
-  *buf = (PBYTE)realloc(*buf, 4 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 4 + *buflen);
   *(PDWORD)(*buf + *buflen) = d;
   *buflen += 4;
 }
@@ -329,7 +329,7 @@ void ppackLEDWord(PBYTE *buf, int *buflen, DWORD d)
 {
   WORD len = strlennull(str);
   ppackWord(buf, buflen, len);
-  *buf = (PBYTE)realloc(*buf, *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, *buflen + len);
   memcpy(*buf + *buflen, str, len);
   *buflen += len;
 }*/
@@ -340,7 +340,7 @@ void ppackLELNTS(PBYTE *buf, int *buflen, const char *str)
 {
   WORD len = strlennull(str);
   ppackLEWord(buf, buflen, len);
-  *buf = (PBYTE)realloc(*buf, *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, *buflen + len);
   memcpy(*buf + *buflen, str, len);
   *buflen += len;
 }
@@ -369,7 +369,7 @@ void ppackTLVByte(PBYTE *buf, int *buflen, BYTE b, WORD wType, BYTE always)
 {
   if (!always && !b) return;
 
-  *buf = (PBYTE)realloc(*buf, 5 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 5 + *buflen);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = 1;
   *(*buf + *buflen + 4) = b;
@@ -382,7 +382,7 @@ void ppackTLVWord(PBYTE *buf, int *buflen, WORD w, WORD wType, BYTE always)
 {
   if (!always && !w) return;
 
-  *buf = (PBYTE)realloc(*buf, 6 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = 2;
   *(PWORD)(*buf + *buflen + 4) = w;
@@ -395,7 +395,7 @@ void ppackTLVDWord(PBYTE *buf, int *buflen, DWORD d, WORD wType, BYTE always)
 {
   if (!always && !d) return;
 
-  *buf = (PBYTE)realloc(*buf, 8 + *buflen);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = 4;
   *(PDWORD)(*buf + *buflen + 4) = d;
@@ -423,7 +423,7 @@ void ppackTLVLNTS(PBYTE *buf, int *buflen, const char *str, WORD wType, BYTE alw
 
   if (!always && len < 2) return;
 
-  *buf = (PBYTE)realloc(*buf, 6 + *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 6 + *buflen + len);
   packTLVLNTS(buf, buflen, str, wType);
 }
 
@@ -435,7 +435,7 @@ void ppackTLVWordLNTS(PBYTE *buf, int *buflen, WORD w, const char *str, WORD wTy
 
   if (!always && len < 2 && !w) return;
 
-  *buf = (PBYTE)realloc(*buf, 8 + *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 8 + *buflen + len);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = len + 4;
   *(PWORD)(*buf + *buflen + 4) = w;
@@ -450,7 +450,7 @@ void ppackTLVLNTSByte(PBYTE *buf, int *buflen, const char *str, BYTE b, WORD wTy
 {
   int len = strlennull(str) + 1;
 
-  *buf = (PBYTE)realloc(*buf, 7 + *buflen + len);
+  *buf = (PBYTE)SAFE_REALLOC(*buf, 7 + *buflen + len);
   *(PWORD)(*buf + *buflen) = wType;
   *(PWORD)(*buf + *buflen + 2) = len + 3;
   *(PWORD)(*buf + *buflen + 4) = len;
@@ -658,21 +658,20 @@ void unpackWideString(unsigned char **buf, WCHAR *string, WORD len)
 
 
 
-void unpackTypedTLV(unsigned char **buf, int buflen, WORD type, WORD *ttype, WORD *tlen, char **tlv)
+void unpackTypedTLV(unsigned char *buf, int buflen, WORD type, WORD *ttype, WORD *tlen, char **tlv)
 {
   WORD wType, wLen;
-  unsigned char *tmp = *buf;
 
 NextTLV:
   // Unpack type and length
-  unpackWord(&tmp, &wType);
-  unpackWord(&tmp, &wLen);
+  unpackWord(&buf, &wType);
+  unpackWord(&buf, &wLen);
   buflen -= 4;
 
   if (wType != type && buflen >= wLen + 4)
   { // Not the right TLV, try next
     buflen -= wLen;
-    tmp += wLen;
+    buf += wLen;
     goto NextTLV;
   }
   // Check buffer size
@@ -681,14 +680,14 @@ NextTLV:
   // Make sure we have a good pointer
   if (tlv)
   {
-    // Unpack and save value
-    *tlv = (char *)SAFE_MALLOC(wLen + 1); // Add 1 for \0
-    unpackString(&tmp, *tlv, wLen);
-    *(*tlv + wLen) = '\0';
-  }
-  else
-  {
-    *tmp += wLen;
+    if (wLen)
+    { // Unpack and save value
+      *tlv = (char *)SAFE_MALLOC(wLen + 1); // Add 1 for \0
+      unpackString(&buf, *tlv, wLen);
+      *(*tlv + wLen) = '\0';
+    }
+    else
+      *tlv = NULL;
   }
 
   // Save type and length
@@ -696,9 +695,6 @@ NextTLV:
     *ttype = wType;
   if (tlen)
     *tlen = wLen;
-
-  // Increase source pointer
-  *buf = tmp;
 }
 
 

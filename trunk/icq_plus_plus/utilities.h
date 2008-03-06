@@ -99,6 +99,7 @@ size_t __fastcall strlennull(const char *string);
 int __fastcall strcmpnull(const char *str1, const char *str2);
 int null_snprintf(char *buffer, size_t count, const char* fmt, ...);
 char* __fastcall null_strdup(const char *string);
+size_t __fastcall null_strcut(char *string, size_t maxlen);
 
 void parseServerAddress(char *szServer, WORD* wPort);
 
@@ -133,10 +134,12 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType);
 
 void __fastcall SAFE_FREE(void** p);
 void* __fastcall SAFE_MALLOC(size_t size);
+void* __fastcall SAFE_REALLOC(void* p, size_t size);
 
 HANDLE NetLib_OpenConnection(HANDLE hUser, const char* szIdent, NETLIBOPENCONNECTION* nloc);
 HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwPort, DWORD* pdwIntIP);
-void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn);
+void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn);
+void NetLib_SafeCloseHandle(HANDLE *hConnection);
 int NetLog_Server(const char *fmt,...);
 int NetLog_Direct(const char *fmt,...);
 int NetLog_Uni(BOOL bDC, const char *fmt,...);
@@ -154,12 +157,12 @@ void ICQCreateThread(pThreadFuncEx AFunc, void* arg);
 char* GetUserPassword(BOOL bAlways);
 WORD GetMyStatusFlags();
 
-extern BOOL invis_for(DWORD dwUin, HANDLE hContact);
+BOOL invis_for(DWORD dwUin, HANDLE hContact);
 
 typedef struct{
 	DWORD dwUin; //contact uin (dword)
 	HANDLE hContact;  //(HANDLE)
-	int check; //value for calling setuserstatus (-1 for disable)
+	int PSD; //value for calling setuserstatus (-1 for disable)
 	BOOL popup; //set TRUE for show popup (BOOL)
 	int popuptype; //set popup event type (int)
 	BOOL historyevent; //set history event type (BOOL)
@@ -172,11 +175,11 @@ typedef struct{
 	BOOL foroffline; //work with offline contact (BOOL)
 	BOOL weofflinefor; //work with contact which we offline for (BOOL)
 }CHECKCONTACT;
-extern void CheckContact(CHECKCONTACT chk);
-extern BYTE bVisibility;
+void CheckContact(CHECKCONTACT chk);
+BYTE bVisibility;
 
 int IncognitoAwayRequest(WPARAM wParam, LPARAM lParam);
-extern BOOL bIncognitoRequest;
+BOOL bIncognitoRequest;
 
 /* Unicode FS utility functions */
 
@@ -206,5 +209,8 @@ HWND CreateDialogUtf(HINSTANCE hInstance, const char* lpTemplate, HWND hWndParen
 
 void HistoryLog(HANDLE hContact, DWORD dwUin, char *data, int event_type, int flag);
 void LogToFile(HANDLE hContact, DWORD dwUin, char *string, int event_type);
+void SetTimeStamps(DWORD *dwFT1, DWORD *dwFT2, DWORD *dwFT3);
+BOOL gbSecureIM;
+WORD GetProtoVersion();
 
 #endif /* __UTILITIES_H */

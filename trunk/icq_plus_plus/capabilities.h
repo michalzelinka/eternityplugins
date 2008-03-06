@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -102,6 +103,8 @@ extern const capstr capAndRQ;
 extern const capstr capRAndQ;
 extern const capstr capmChat;
 extern const capstr capJimm;
+extern const capstr capCorePager;
+extern const capstr capDiChat;
 extern const capstr capNaim;
 extern const capstr capAnastasia;
 extern const capstr capQip;
@@ -110,8 +113,11 @@ extern const capstr capQipSymbian;
 extern const capstr capQipPDA;
 extern const capstr capQipMobile;
 extern const capstr capVmICQ;
+extern const capstr capSmapeR;
+extern const capstr capIMPlus;
 extern const capstr capYapp;
 extern const capstr capQipInfium;
+extern const capstr capQipPlugins;
 extern const capstr capIm2;
 extern const capstr capMacIcq;
 extern const capstr capIs2001;
@@ -120,6 +126,7 @@ extern const capstr capComm20012;
 extern const capstr capStrIcq;
 extern const capstr capAimIcon; // CAP_AIM_BUDDYICON
 extern const capstr capAimDirect; // CAP_AIM_DIRECTIM
+extern const capstr capAimFileShare;
 extern const capstr capIcqLite;
 extern const capstr capAimChat;
 extern const capstr capUim;
@@ -142,6 +149,9 @@ extern const capstr capMipClient;
 extern const capstr capIMadering;
 extern const capstr capIMSecKey1;
 extern const capstr capIMSecKey2;
+extern const capstr capUnknown1;
+extern const capstr capAimSendbuddylist;
+extern const capstr capClimm;
 // -----------------------------------------------------------------------------
 extern const capstr capXStatus[37];
 extern const char* nameXStatus[37];

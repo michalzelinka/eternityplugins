@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: srmm.c 7113 2008-01-20 01:01:22Z nightwish2004 $
+$Id: srmm.c 7266 2008-02-13 16:01:10Z nightwish2004 $
 */
 
 #include "commonheaders.h"
@@ -113,10 +113,14 @@ BOOL WINAPI DllMain(HINSTANCE hinstDLL, DWORD fdwReason, LPVOID lpvReserved)
 
 __declspec(dllexport) PLUGININFOEX *MirandaPluginInfoEx(DWORD mirandaVersion)
 {
-  g_mirandaVersion = mirandaVersion;
-	if (mirandaVersion < PLUGIN_MAKE_VERSION(0, 7, 0, 44))
+	g_mirandaVersion = mirandaVersion;
+  if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 8, 0, 9 ) ) 
+  {
+    MessageBox( NULL, "tabSRMM plugin cannot be loaded. It requires Miranda IM 0.8 alpha build #9 or later.", "tabSRMM plugin", 
+      MB_OK | MB_ICONWARNING | MB_SETFOREGROUND | MB_TOPMOST );
     return NULL;
-  return &pluginInfo;
+  }
+	return &pluginInfo;
 }
 
 static const MUUID interfaces[] = {MIID_SRMM, MIID_CHAT, MIID_LAST};
