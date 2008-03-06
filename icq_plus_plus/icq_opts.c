@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -6,7 +7,8 @@
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -50,10 +52,12 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 static BOOL CALLBACK DlgProcIcqNewUINOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
+static BOOL CALLBACK DlgProcIcqASDOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam);
 
 extern BOOL bXstatusIconShow;
 
 extern void ShowSrvListDialog(HWND hwndCaller);
+extern void ShowCapsListDialog( HWND hwndCaller );
 extern void setUserInfo();
 
 static const char* szLogLevelDescr[] = {"Display all problems", "Display problems causing possible loss of data", "Display explanations for disconnection", "Display problems requiring user intervention", "Do not display problems"};
@@ -62,20 +66,24 @@ static BOOL (WINAPI *pfnEnableThemeDialogTexture)(HANDLE, DWORD) = 0;
 
 static HWND hwndRegUin = NULL;
 static HWND hwndPopUpsOpts = NULL;
+static HWND hwndASDOpts = NULL;
+
+extern char szHttpUserAgent[255];
 
 
 int IcqOptInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = { 0 };
 
+
 	odp.cbSize = sizeof(odp);
-	odp.position = 100000000;
+//	odp.position = 100000000;
 	odp.hInstance = hInst;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQ);
 	odp.pszTitle = gpszICQProtoName;
 	odp.pszGroup = LPGEN("Network");
 	odp.pszTab = LPGEN("Account");
-	odp.groupPosition = 910000000;
+//	odp.groupPosition = 910000000;
 	odp.flags=ODPF_BOLDGROUPS;
 	odp.pfnDlgProc = DlgProcIcqOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
@@ -95,13 +103,13 @@ int IcqOptInit(WPARAM wParam,LPARAM lParam)
 
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize = sizeof(odp);
-	odp.position = 100000000;
+//	odp.position = 100000000;
 	odp.hInstance = hInst;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQFEATURES);
 	odp.pszTitle = gpszICQProtoName;
 	odp.pszGroup = LPGEN("Network");
 	odp.pszTab = LPGEN("Main Features");
-	odp.groupPosition = 910000000;
+//	odp.groupPosition = 910000000;
 	odp.flags=ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pfnDlgProc = DlgProcIcqFeaturesOpts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
@@ -109,13 +117,13 @@ int IcqOptInit(WPARAM wParam,LPARAM lParam)
 
 	ZeroMemory(&odp,sizeof(odp));
 	odp.cbSize = sizeof(odp);
-	odp.position = 100000000;
+//	odp.position = 100000000;
 	odp.hInstance = hInst;
 	odp.pszTemplate = MAKEINTRESOURCE(IDD_OPT_ICQFEATURES2);
 	odp.pszTitle = gpszICQProtoName;
 	odp.pszGroup = LPGEN("Network");
 	odp.pszTab = LPGEN("Advanced Features");
-	odp.groupPosition = 910000000;
+//	odp.groupPosition = 910000000;
 	odp.flags=ODPF_BOLDGROUPS | ODPF_EXPERTONLY;
 	odp.pfnDlgProc = DlgProcIcqFeatures2Opts;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
@@ -194,18 +202,32 @@ static void OptDlgChanged(HWND hwndDlg)
 
 
 // standalone option pages
+static void IcqPasswordBox_Init(HWND hwndDlg, int idCtrl);
+
+char HttpUserAgents [][255] = 
+{
+  "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)",
+  "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
+  "Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9",
+  "Opera/9.23 (Windows NT 5.1; U; ru)",
+  "Opera/8.01 (J2ME/MIDP; Opera Mini/3.0.6306/1528; nb; U; ssr)",
+  "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1",
+  "Mozilla/5.0 (compatible; Konqueror/3.5; Linux 2.6.21-rc1; x86_64; cs, en_US) KHTML/3.5.6 (like Gecko)",
+  "Lynx/2.8.4rel.1 libwww-FM/2.14",
+  "Mozilla/4.08 [en] (WinNT; U ;Nav)"
+};
 
 static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  char DBModule[64], buf[64];
+  static char DBModule[64], buf[64];
   WORD SrvCount;
   int i, iIndex;
   switch (msg)
   {
   case WM_INITDIALOG:
     {
-      char pszPwd[16];
-      char szServer[MAX_PATH];
+      static char pszPwd[16];
+      static char szServer[MAX_PATH];
 
       ICQTranslateDialog(hwndDlg);
 
@@ -228,6 +250,12 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
 		SendDlgItemMessage(hwndDlg, IDC_ICQSERVER, CB_ADDSTRING, 0, (LPARAM)UniGetContactSettingUtf(NULL, DBModule, buf, 0));
 	  }
 
+	  SendDlgItemMessage(hwndDlg, IDC_HTTPUSERAGENT, CB_RESETCONTENT, 0, 0);
+	  for(i = 0; i < SIZEOF(HttpUserAgents); i++)
+	  {
+		  SendDlgItemMessage(hwndDlg, IDC_HTTPUSERAGENT, CB_ADDSTRING, 0, (LPARAM)HttpUserAgents[i]);
+	  }
+
       if (!ICQGetContactStaticString(NULL, "OscarServer", szServer, MAX_PATH))
       {
 		SetDlgItemText(hwndDlg, IDC_ICQSERVER, szServer);
@@ -236,6 +264,8 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       {
         SetDlgItemText(hwndDlg, IDC_ICQSERVER, DEFAULT_SERVER_HOST);
       }
+
+  	  SetDlgItemText(hwndDlg, IDC_HTTPUSERAGENT, szHttpUserAgent);
       
       SetDlgItemInt(hwndDlg, IDC_ICQPORT, ICQGetContactSettingWord(NULL, "OscarPort", DEFAULT_SERVER_PORT), FALSE);
       LoadDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive", 1);
@@ -245,7 +275,9 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)], szServer, MAX_PATH));
       ShowWindow(GetDlgItem(hwndDlg, IDC_RECONNECTREQD), SW_HIDE);
       LoadDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox", 0);
-	  LoadDBCheckState(hwndDlg, IDC_AUTOCHANGE, "ServerAutoChange", 1);
+	    LoadDBCheckState(hwndDlg, IDC_AUTOCHANGE, "ServerAutoChange", 1);
+	    
+	    IcqPasswordBox_Init(hwndDlg, IDC_PASSWORD);
       
       return TRUE;
     }
@@ -255,7 +287,7 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
       char str[MAX_PATH];
 
       SetDlgItemTextUtf(hwndDlg, IDC_LEVELDESCR, ICQTranslateUtfStatic(szLogLevelDescr[4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL,TBM_GETPOS, 0, 0)], str, MAX_PATH));
-      OptDlgChanged(hwndDlg);
+      OptDlgChanged( hwndDlg );
     }
     break;
     
@@ -263,6 +295,16 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
     {
       switch (LOWORD(wParam))
       {
+	  case IDC_PASSWORD:
+	    if ((HIWORD(wParam) == EN_CHANGE))
+	    {
+	      if (GetWindowTextLength(GetDlgItem(hwndDlg, IDC_PASSWORD)) > 8)
+	        SendDlgItemMessage(hwndDlg, IDC_PASSWORD, WM_APP, (WPARAM)Translate("Warning"), (LPARAM)Translate("ICQ servers do not accept passwords longer than 8 characters."));
+	      else
+	        SendDlgItemMessage(hwndDlg, IDC_PASSWORD, WM_APP, 0, 0);
+	    }
+		break;
+
 	  case IDC_REGUIN:
 		  ShowRegUinDialog();
 		  return TRUE;
@@ -337,11 +379,11 @@ static BOOL CALLBACK DlgProcIcqOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARA
           StoreDBCheckState(hwndDlg, IDC_KEEPALIVE, "KeepAlive");
           StoreDBCheckState(hwndDlg, IDC_SECURE, "SecureLogin");
           StoreDBCheckState(hwndDlg, IDC_NOERRMULTI, "IgnoreMultiErrorBox");
-		      StoreDBCheckState(hwndDlg, IDC_AUTOCHANGE, "ServerAutoChange");
-		      if(ICQGetContactSettingByte(NULL,"ServerAutoChange",1)==0)
-			      bServerAutoChange = FALSE;
+		  StoreDBCheckState(hwndDlg, IDC_AUTOCHANGE, "ServerAutoChange");
+		  bServerAutoChange = ICQGetContactSettingByte(NULL,"ServerAutoChange",1);
           ICQWriteContactSettingByte(NULL, "ShowLogLevel", (BYTE)(4-SendDlgItemMessage(hwndDlg, IDC_LOGLEVEL, TBM_GETPOS, 0, 0)));
-
+          GetDlgItemText(hwndDlg, IDC_HTTPUSERAGENT, szHttpUserAgent, sizeof(szHttpUserAgent));
+          ICQWriteContactSettingString(NULL, "HttpUserAgent", szHttpUserAgent);
           return TRUE;
         }
       }
@@ -448,12 +490,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
         else 
           ICQWriteContactSettingByte(NULL, "DCType", 0);
         StoreDBCheckState(hwndDlg, IDC_ADD_AUTH, "Auth");
-
-		if(ICQGetContactSettingByte(NULL, "NoStatusReply", 0))
-			bNoStatusReply = TRUE;
-		else 
-			bNoStatusReply = FALSE;
-
+		bNoStatusReply = ICQGetContactSettingByte(NULL, "NoStatusReply", 0);
         if (icqOnline)
         {
           PBYTE buf=NULL;
@@ -481,13 +518,13 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
             {
               if (gbSsiEnabled)
                 updateServVisibilityCode(3);
-              icq_setstatus(wStatus);
+              icq_setstatus(wStatus, FALSE);
               // Tell who is on our visible list
               icq_sendEntireVisInvisList(0);
             }
             else
             {
-              icq_setstatus(wStatus);
+              icq_setstatus(wStatus, FALSE);
               if (gbSsiEnabled)
                 updateServVisibilityCode(4);
               // Tell who is on our invisible list
@@ -512,7 +549,7 @@ static const UINT icqPopupColorControls[] = {
 void ShowPopUpsOpts(void);
 static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-  BYTE bEnabled;
+	BYTE bEnabled;
   switch (msg)
   {
   case WM_INITDIALOG:
@@ -532,6 +569,7 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
     {
     case IDC_PREVIEW:
       {
+		  extern BOOL bXUpdaterPopUp;
 		  if (ICQGetContactSettingByte(NULL,"PopupsLogEnabled",1))
 		  {
 			  ShowPopUpMsg(NULL, 0, "Popup Title", "Sample Note",    LOG_NOTE);
@@ -564,6 +602,8 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			  ShowPopUpMsg(NULL, 0, "Popup Title", "Removed Himself", POPTYPE_SELFREMOVE);
 		  if(bAuthPopUp)
 			  ShowPopUpMsg(NULL, 0, "Popup Title", "Sample Auth PopUp", POPTYPE_AUTH);
+		  if(bXUpdaterPopUp)
+			  ShowPopUpMsg(NULL, 0, "Popup Title", "Sample XStatus Updater PopUp", POPTYPE_XUPDATER);
       }
       return FALSE;
 
@@ -579,7 +619,7 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	  ShowPopUpsOpts();
 	return TRUE;
     }
-    SendMessage(GetParent(hwndDlg), PSM_CHANGED, 0, 0);
+	OptDlgChanged(hwndDlg);
     break;
   case WM_NOTIFY:
     switch (((LPNMHDR)lParam)->code)
@@ -590,15 +630,9 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 	  ICQWriteContactSettingByte(NULL,"PopupsWinColors",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USEWINCOLORS));
       ICQWriteContactSettingByte(NULL,"PopupsSysIcons",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USESYSICONS));
 	  StoreDBCheckState(hwndDlg, IDC_POPUP_FOR_NOTONLIST , "PopUpForNotOnList");
-	  if(ICQGetContactSettingByte(NULL, "PopUpForNotOnList", 0) == 1)
-		  bPopUpForNotOnList = TRUE;
-	  else
-		  bPopUpForNotOnList = FALSE;
+	  bPopUpForNotOnList = ICQGetContactSettingByte(NULL, "PopUpForNotOnList", 0);
 	  StoreDBCheckState(hwndDlg, IDC_UINPOPUP , "UinPopup");
-	  if(ICQGetContactSettingByte(NULL, "UinPopup", 0) == 1)
-		  bUinPopup = TRUE;
-	  else
-		  bUinPopup = FALSE;
+	  bUinPopup = ICQGetContactSettingByte(NULL, "UinPopup", 0);
       return TRUE;
     }
     break;
@@ -611,6 +645,7 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
+	extern BOOL bXUpdaterPopUp;
 	switch (msg)
 	{
 	case WM_INITDIALOG:
@@ -625,6 +660,7 @@ static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam,
 		LoadDBCheckState(hwndDlg, IDC_IGNCHECKPOP, "IgnoreCheckPop", 1);
 		LoadDBCheckState(hwndDlg, IDC_INFO_REQUEST_POPUP, "InfoRequestPopUp", 0);
 		LoadDBCheckState(hwndDlg, IDC_POPAUTH, "AuthPopUp", 0);
+		LoadDBCheckState(hwndDlg, IDC_POPXUPDATER, "XUpdaterPopUp", 0);
 		SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG0_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups0TextColor",RGB(255,255,255)));
 		SendDlgItemMessage(hwndDlg, IDC_POPUP_LOG0_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"Popups0BackColor",RGB(0,0,0)));
 		SetDlgItemInt(hwndDlg, IDC_POPUP_LOG0_TIMEOUT, ICQGetContactSettingDword(NULL,"Popups0Timeout",0),FALSE);
@@ -667,6 +703,9 @@ static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam,
 		SendDlgItemMessage(hwndDlg, IDC_POPUP_AUTH_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"PopupsAuthTextColor",RGB(255,255,255)));
 		SendDlgItemMessage(hwndDlg, IDC_POPUP_AUTH_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"PopupsAuthBackColor",RGB(0,0,0)));
 		SetDlgItemInt(hwndDlg, IDC_POPUP_AUTH_TIMEOUT, ICQGetContactSettingDword(NULL,"PopupsAuthTimeout",0),FALSE);
+		SendDlgItemMessage(hwndDlg, IDC_POPUP_XUPDATER_TEXTCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"PopupsXUpdaterTextColor",RGB(255,255,255)));
+		SendDlgItemMessage(hwndDlg, IDC_POPUP_XUPDATER_BACKCOLOR, CPM_SETCOLOUR, 0, ICQGetContactSettingDword(NULL,"PopupsXUpdaterBackColor",RGB(0,0,0)));
+		SetDlgItemInt(hwndDlg, IDC_POPUP_XUPDATER_TIMEOUT, ICQGetContactSettingDword(NULL,"PopupsXUpdaterTimeout",0),FALSE);
 		icq_EnableMultipleControls(hwndDlg, icqPopupColorControls, SIZEOF(icqPopupColorControls), ICQGetContactSettingByte(NULL, "PopupsWinColors", 0)-1);
 		break;
 	case WM_COMMAND:
@@ -715,63 +754,38 @@ static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam,
 			ICQWriteContactSettingDword(NULL,"PopupsAuthTextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_AUTH_TEXTCOLOR,CPM_GETCOLOUR,0,0));
 			ICQWriteContactSettingDword(NULL,"PopupsAuthBackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_AUTH_BACKCOLOR,CPM_GETCOLOUR,0,0));
 			ICQWriteContactSettingDword(NULL,"PopupsAuthTimeout",GetDlgItemInt(hwndDlg, IDC_POPUP_AUTH_TIMEOUT, NULL, FALSE));
+			ICQWriteContactSettingDword(NULL,"PopupsXUpdaterTextColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_XUPDATER_TEXTCOLOR,CPM_GETCOLOUR,0,0));
+			ICQWriteContactSettingDword(NULL,"PopupsXUpdaterBackColor",SendDlgItemMessage(hwndDlg,IDC_POPUP_XUPDATER_BACKCOLOR,CPM_GETCOLOUR,0,0));
+			ICQWriteContactSettingDword(NULL,"PopupsXUpdaterTimeout",GetDlgItemInt(hwndDlg, IDC_POPUP_XUPDATER_TIMEOUT, NULL, FALSE));
 			StoreDBCheckState(hwndDlg, IDC_SPAM_POPUP_ENABLE , "SpamPopUpEnabled");
-			if(ICQGetContactSettingByte(NULL, "SpamPopUpEnabled", 0) == 1)
-				bSpamPopUp = TRUE;
-			else
-				bSpamPopUp = FALSE;
+			bSpamPopUp = ICQGetContactSettingByte(NULL, "SpamPopUpEnabled", 0);
 			StoreDBCheckState(hwndDlg, IDC_UNKNOWN_POPUP_ENABLE , "UnknownPopUpEnabled");
-			if(ICQGetContactSettingByte(NULL, "UnknownPopUpEnabled", 0) == 1)
-				bUnknownPopUp = TRUE;
-			else
-				bUnknownPopUp = FALSE;
+			bUnknownPopUp = ICQGetContactSettingByte(NULL, "UnknownPopUpEnabled", 0);
 			StoreDBCheckState(hwndDlg, IDC_WAS_FOUND_POPUP_ENABLE , "FoundPopUpEnabled");
-			if(ICQGetContactSettingByte(NULL, "FoundPopUpEnabled", 1) == 1)
-				bFoundPopUp = TRUE;
-			else
-				bFoundPopUp = FALSE;
+			bFoundPopUp = ICQGetContactSettingByte(NULL, "FoundPopUpEnabled", 1);
 			StoreDBCheckState(hwndDlg, IDC_SCAN_POPUP_ENABLE , "ScanPopUpEnabled");
-			if(ICQGetContactSettingByte(NULL, "ScanPopUpEnabled", 1) == 1)
-				bScanPopUp = TRUE;
-			else
-				bScanPopUp = FALSE;
+			bScanPopUp = ICQGetContactSettingByte(NULL, "ScanPopUpEnabled", 1);
 			StoreDBCheckState(hwndDlg, IDC_VIS_POPUP_ENABLE , "VisPopUpEnabled");
-			if(ICQGetContactSettingByte(NULL, "VisPopUpEnabled", 1) == 1)
-				bVisPopUp = TRUE;
-			else
-				bVisPopUp = FALSE;
+			bVisPopUp = ICQGetContactSettingByte(NULL, "VisPopUpEnabled", 1);
 			StoreDBCheckState(hwndDlg, IDC_CLIENT_CHANGE_POPUP , "ClientChangePopup");
-			if(ICQGetContactSettingByte(NULL, "ClientChangePopup", 0) == 1)
-				bClientChangePopUp = TRUE;
-			else
-				bClientChangePopUp = FALSE;
+			bClientChangePopUp = ICQGetContactSettingByte(NULL, "ClientChangePopup", 0);
 			StoreDBCheckState(hwndDlg, IDC_IGNCHECKPOP , "IgnoreCheckPop");
-			if(ICQGetContactSettingByte(NULL, "IgnoreCheckPop", 1) == 1)
-				bIgnoreCheckPop = TRUE;
-			else
-				bIgnoreCheckPop = FALSE;
+			bIgnoreCheckPop = ICQGetContactSettingByte(NULL, "IgnoreCheckPop", 1);
 			StoreDBCheckState(hwndDlg, IDC_POPSELFREM , "PopSelfRem");
-			if(ICQGetContactSettingByte(NULL, "PopSelfRem", 1) == 1)
-				bPopSelfRem = TRUE;
-			else
-				bPopSelfRem = FALSE;
+			bPopSelfRem = ICQGetContactSettingByte(NULL, "PopSelfRem", 1);
 			StoreDBCheckState(hwndDlg, IDC_INFO_REQUEST_POPUP , "InfoRequestPopUp");
-			if(ICQGetContactSettingByte(NULL, "InfoRequestPopUp", 0) == 1)
-				bInfoRequestPopUp = TRUE;
-			else
-				bInfoRequestPopUp = FALSE;
+			bInfoRequestPopUp = ICQGetContactSettingByte(NULL, "InfoRequestPopUp", 0);
 			StoreDBCheckState(hwndDlg, IDC_POPAUTH , "AuthPopUp");
-			if(ICQGetContactSettingByte(NULL, "AuthPopUp", 0) == 1)
-				bAuthPopUp = TRUE;
-			else
-				bAuthPopUp = FALSE;
+			bAuthPopUp = ICQGetContactSettingByte(NULL, "AuthPopUp", 0);
+			StoreDBCheckState(hwndDlg, IDC_POPXUPDATER , "XUpdaterPopUp");
+			bXUpdaterPopUp = ICQGetContactSettingByte(NULL, "XUpdaterPopUp", 0);
 			DestroyWindow(hwndDlg);
 		}
 		break;
 	case WM_NOTIFY:
 		switch (((LPNMHDR)lParam)->code)
 		{
-		  break;
+	  break;
 		}
 		break;
 	case WM_CLOSE:
@@ -784,7 +798,60 @@ static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
-
+static BOOL CALLBACK DlgProcIcqASDOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
+{
+	void ShowASDOpts(void);
+	switch(msg)
+	{
+	case WM_INITDIALOG:
+		ICQTranslateDialog(hwndDlg);
+		LoadDBCheckState(hwndDlg, IDC_NOASD, "NoASDInInvisible", 1);
+		LoadDBCheckState(hwndDlg, IDC_ASDSTARTUP, "ASDStartup", 0);
+		LoadDBCheckState(hwndDlg, IDC_ASD_FOR_OFFLINE, "ASDForOffline", 1);
+		LoadDBCheckState(hwndDlg, IDC_DETECT_VIA_STATUS_MESSAGE, "bASDViaAwayMsg", 0);
+		LoadDBCheckState(hwndDlg, IDC_DETECT_VIA_XTRAZ, "bASDViaXtraz", 0);
+		LoadDBCheckState(hwndDlg, IDC_DETECT_VIA_URL, "bASDViaURL", 0);
+		LoadDBCheckState(hwndDlg, IDC_DETECT_UNAUTHORIZED, "bASDUnauthorized", 0);
+		LoadDBCheckState(hwndDlg, IDC_DETECT_VIA_AUTH, "bASDViaAuth", 0);
+		break;
+	case WM_COMMAND:
+		switch (LOWORD(wParam))
+		{
+		case IDC_OK:
+			StoreDBCheckState(hwndDlg, IDC_NOASD , "NoASDInInvisible");
+			bNoASDInInvisible = ICQGetContactSettingByte(NULL, "NoASDInInvisible", 1);
+			StoreDBCheckState(hwndDlg, IDC_ASD_FOR_OFFLINE , "ASDForOffline");
+			bASDForOffline = ICQGetContactSettingByte(NULL, "ASDForOffline", 1);
+			StoreDBCheckState(hwndDlg, IDC_ASDSTARTUP , "ASDStartup");
+			StoreDBCheckState(hwndDlg, IDC_DETECT_VIA_STATUS_MESSAGE, "bASDViaAwayMsg");
+			bASDViaAwayMsg = ICQGetContactSettingByte(NULL, "bASDViaAwayMsg", 0);
+			StoreDBCheckState(hwndDlg, IDC_DETECT_VIA_XTRAZ, "bASDViaXtraz");
+			bASDViaXtraz = ICQGetContactSettingByte(NULL, "bASDViaXtraz", 0);
+			StoreDBCheckState(hwndDlg, IDC_DETECT_VIA_URL, "bASDViaURL");
+			bASDViaURL = ICQGetContactSettingByte(NULL, "bASDViaURL", 0);
+			StoreDBCheckState(hwndDlg, IDC_DETECT_UNAUTHORIZED, "bASDUnauthorized");
+			bASDUnauthorized = ICQGetContactSettingByte(NULL, "bASDUnauthorized", 0);
+			StoreDBCheckState(hwndDlg, IDC_DETECT_VIA_AUTH, "bASDViaAuth");
+			bASDViaAuth = ICQGetContactSettingByte(NULL, "bASDViaAuth", 0);
+			DestroyWindow(hwndDlg);
+			break;
+		}
+		break;
+	case WM_NOTIFY:
+		switch (((LPNMHDR)lParam)->code)
+		{
+	  break;
+		}
+		break;
+	case WM_CLOSE:
+		DestroyWindow(hwndDlg);
+		break;
+	case WM_DESTROY:
+		hwndASDOpts = NULL;
+		break;
+	}
+	return FALSE;
+}
 
 
 static HWND hCpCombo;
@@ -970,10 +1037,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		  StoreDBCheckState(hwndDlg, IDC_XSTATUSRESET, "XStatusReset");
 		  StoreDBCheckState(hwndDlg, IDC_FORCEXSTATUS , "ForceXstatus");
 		  StoreDBCheckState(hwndDlg, IDC_XSTATUS_SHOW, "XStatusIconShow");
-		  if (ICQGetContactSettingByte(NULL, "XStatusIconShow", 1)==0)
-			  bXstatusIconShow = FALSE;
-		  else 
-			  bXstatusIconShow = TRUE;
+		  bXstatusIconShow = ICQGetContactSettingByte(NULL, "XStatusIconShow", 1);
 		  StoreDBCheckState(hwndDlg, IDC_KILLSPAMBOTS , "KillSpambots");
 		  StoreDBCheckState(hwndDlg, IDC_KILLUNKNOWN , "KillUnknown");
 		  StoreDBCheckState(hwndDlg, IDC_AIMENABLE, "AimEnabled");
@@ -995,7 +1059,7 @@ static BOOL CALLBACK DlgProcIcqFeaturesOpts(HWND hwndDlg, UINT msg, WPARAM wPara
   }
   return FALSE;
 }
-static const UINT icqASDControls[] = {IDC_NOASD, IDC_CHECKITEM, IDC_ASDSTARTUP};
+//static const UINT icqASDControls[] = {IDC_NOASD, IDC_CHECKITEM, IDC_ASDSTARTUP};
 static const UINT icqPSDControls[] = {IDC_NOPSD_FOR_HIDDEN};
 static BOOL CALLBACK DlgProcIcqFeatures2Opts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1009,20 +1073,18 @@ static BOOL CALLBACK DlgProcIcqFeatures2Opts(HWND hwndDlg, UINT msg, WPARAM wPar
 			ICQTranslateDialog(hwndDlg);
 //			LoadDBCheckState(hwndDlg, IDC_STEALTHRQST, "StealthRequest", 0);
 			LoadDBCheckState(hwndDlg, IDC_PSD, "PSD", 0);
-            LoadDBCheckState(hwndDlg, IDC_NOASD, "NoASD", 0);
 			LoadDBCheckState(hwndDlg, IDC_SHOW_AUTH, "ShowAuth", 0);
 //			LoadDBCheckState(hwndDlg, IDC_INV4INV, "Inv4Inv", DEFAULT_INV4INV_DISABLED);
 //			LoadDBCheckState(hwndDlg, IDC_LOGSELFREM, "LogSelfRem", 0);
 //			LoadDBCheckState(hwndDlg, IDC_IGNCHECKLOG, "IgnoreCheckLog", 0);
-			LoadDBCheckState(hwndDlg, IDC_ASDSTARTUP, "ASDStartup", 0);
 			LoadDBCheckState(hwndDlg, IDC_NOPSD_FOR_HIDDEN, "NoPSDForHidden", 1);
 			bData = DBGetContactSettingByte(NULL,gpszICQProtoName,"ASD", 0);
 			CheckDlgButton(hwndDlg, IDC_ASD, bData);
-			icq_EnableMultipleControls(hwndDlg, icqASDControls, sizeof(icqASDControls)/sizeof(icqASDControls[0]), bData?TRUE:FALSE);
+//			icq_EnableMultipleControls(hwndDlg, icqASDControls, sizeof(icqASDControls)/sizeof(icqASDControls[0]), bData?TRUE:FALSE);
 //			bData = DBGetContactSettingByte(NULL,gpszICQProtoName,"Inv4Inv", DEFAULT_INV4INV_DISABLED);
 //		    CheckDlgButton(hwndDlg, IDC_INV4INV, bData);
-			bData = DBGetContactSettingByte(NULL,gpszICQProtoName,"ASDStartup", 0);
-		    CheckDlgButton(hwndDlg, IDC_ASDSTARTUP, bData);
+//			bData = DBGetContactSettingByte(NULL,gpszICQProtoName,"ASDStartup", 0);
+//		    CheckDlgButton(hwndDlg, IDC_ASDSTARTUP, bData);
 			LoadDBCheckState(hwndDlg, IDC_TZER, "tZer", 0);
 //            icq_EnableMultipleControls(hwndDlg, icqIncognitoControls, sizeof(icqIncognitoControls)/sizeof(icqIncognitoControls[0]), bStealthRequest?TRUE:FALSE);
 	        CheckDlgButton(hwndDlg, IDC_INCUSER, (bIncognitoGlobal == 0));
@@ -1032,15 +1094,17 @@ static BOOL CALLBACK DlgProcIcqFeatures2Opts(HWND hwndDlg, UINT msg, WPARAM wPar
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
 		{
-		  case IDC_ASD:
+/*		  case IDC_ASD:
 			  icq_EnableMultipleControls(hwndDlg, icqASDControls, sizeof(icqASDControls)/sizeof(icqASDControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ASD));
-			  break;
+			  break;*/
 		  case IDC_PSD:
 			  icq_EnableMultipleControls(hwndDlg, icqPSDControls, sizeof(icqPSDControls)/sizeof(icqPSDControls[0]), IsDlgButtonChecked(hwndDlg, IDC_PSD));
 			  break;
 //		  case IDC_STEALTHRQST:
 //		  icq_EnableMultipleControls(hwndDlg, icqIncognitoControls, sizeof(icqIncognitoControls)/sizeof(icqIncognitoControls[0]), IsDlgButtonChecked(hwndDlg, IDC_STEALTHRQST));
-		  
+		  case IDC_ASDOPTIONS:
+			  ShowASDOpts();
+			  break;
 		}
 		OptDlgChanged(hwndDlg);
 		break;
@@ -1048,55 +1112,34 @@ static BOOL CALLBACK DlgProcIcqFeatures2Opts(HWND hwndDlg, UINT msg, WPARAM wPar
 		switch (((LPNMHDR)lParam)->code)
 		{
 		case PSN_APPLY:
-			if( DBGetContactSettingByte(NULL,gpszICQProtoName,"ASD", 0) != (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASD))
+			if( gbASD != (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASD))
 		    {
-			  MessageBox(0,Translate("To enable Active Status Discovery you must restart your Miranda after option is enabled"),Translate("Warning"),MB_OK);
-			  ICQWriteContactSettingByte(NULL,"ASD",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASD));
+				ICQWriteContactSettingByte(NULL,"ASD",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASD));
+				gbASD = (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASD);
+				gbASD?icq_InitISee():icq_ISeeCleanup();
+				//here we need remove menu item from ASD
 		    }
 /*			if( DBGetContactSettingByte(NULL,gpszICQProtoName,"Inv4Inv", 0) != (BYTE)IsDlgButtonChecked(hwndDlg,IDC_INV4INV))
 		    {
 			  MessageBox(0,"To enable/disable Inv4Inv you must restart your Miranda","Warning",MB_OK);
 			  ICQWriteContactSettingByte(NULL,"Inv4Inv",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_INV4INV));
 		    }*/
-			if( DBGetContactSettingByte(NULL,gpszICQProtoName,"ASDStartup", 0) != (BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASDSTARTUP))
-		    {
-			  MessageBox(0,Translate("To enable/disable Entire list check you must restart your Miranda"),Translate("Warning"),MB_OK);
-			  ICQWriteContactSettingByte(NULL,"ASDStartup",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_ASDSTARTUP));
-		    }
 //		    StoreDBCheckState(hwndDlg, IDC_STEALTHRQST , "StealthRequest");
 //			if(ICQGetContactSettingByte(NULL, "StealthRequest", 0) == 1)
 //				bStealthRequest = TRUE;
 //			else 
 //				bStealthRequest = FALSE;
 			StoreDBCheckState(hwndDlg, IDC_SHOW_AUTH, "ShowAuth");
-			if(ICQGetContactSettingByte(NULL, "ShowAuth", 0) == 1)
-				bShowAuth = TRUE;
-			else
-				bShowAuth = FALSE;
+			bShowAuth = ICQGetContactSettingByte(NULL, "ShowAuth", 0);
 			StoreDBCheckState(hwndDlg, IDC_PSD , "PSD");
-			if(ICQGetContactSettingByte(NULL, "PSD", 1) == 1)
-				bPSD = TRUE;
-			else 
-				bPSD = FALSE;
-			StoreDBCheckState(hwndDlg, IDC_NOASD , "NoASD");
-			if(ICQGetContactSettingByte(NULL, "NoASD", 1) == 1)
-				bNoASD = TRUE;
-			else 
-				bNoASD = FALSE;
+			bPSD = ICQGetContactSettingByte(NULL, "PSD", 1);
 			StoreDBCheckState(hwndDlg, IDC_NOPSD_FOR_HIDDEN, "NoPSDForHidden");
-			if(ICQGetContactSettingByte(NULL, "NoPSDForHidden", 1)==1)
-				bNoPSDForHidden = TRUE;
-			else
-				bNoPSDForHidden = FALSE;
+			bNoPSDForHidden = ICQGetContactSettingByte(NULL, "NoPSDForHidden", 1);
 //			StoreDBCheckState(hwndDlg, IDC_INV4INV , "Inv4Inv");
 			StoreDBCheckState(hwndDlg, IDC_INCGLOBAL , "IncognitoGlobal");
-			if(ICQGetContactSettingByte(NULL, "IncognitoGlobal", 0) == 1)
-				bIncognitoGlobal = TRUE;
-			else 
-				bIncognitoGlobal = FALSE;
-			StoreDBCheckState(hwndDlg, IDC_NOASD , "NoASD");
-			StoreDBCheckState(hwndDlg, IDC_ASDSTARTUP , "ASDStartup");
+			bIncognitoGlobal = ICQGetContactSettingByte(NULL, "IncognitoGlobal", 0);
 			StoreDBCheckState(hwndDlg, IDC_TZER, "tZer");
+			gbTzerEnabled = ICQGetContactSettingByte(NULL,"tZer",0);
 			return TRUE;
 		}
 		break;
@@ -1115,6 +1158,7 @@ static BOOL CALLBACK DlgProcIcqEventLogOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			LoadDBCheckState(hwndDlg, IDC_LOG_REMOVE_FILE, "LogSelfRemoveFile", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_IGNORECHECK_FILE, "LogIgnoreCheckFile", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_CHECKSTATUS_FILE, "LogStatusCheckFile", 0);
+			LoadDBCheckState(hwndDlg, IDC_LOG_ASD_FILE, "LogASDFile", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_CLIENTCHANGE_FILE, "LogClientChangeFile", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_AUTH_FILE, "LogAuthFile", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_REQUEST_FILE, "LogRequestFile", 0);
@@ -1122,6 +1166,7 @@ static BOOL CALLBACK DlgProcIcqEventLogOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			LoadDBCheckState(hwndDlg, IDC_LOG_REMOVE_HISTORY, "LogSelfRemoveHistory", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_IGNORECHECK_HISTORY, "LogIgnoreCheckHistory", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_CHECKSTATUS_HISTORY, "LogStatusCheckHistory", 0);
+			LoadDBCheckState(hwndDlg, IDC_LOG_ASD_HISTORY, "LogASDHistory", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_CLIENTCHANGE_HISTORY, "LogClientChangeHistory", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_AUTH_HISTORY, "LogAuthHistory", 0);
 			LoadDBCheckState(hwndDlg, IDC_LOG_REQUEST_HISTORY, "LogRequestHistory", 0);
@@ -1181,83 +1226,40 @@ static BOOL CALLBACK DlgProcIcqEventLogOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		{
 		case PSN_APPLY:
 			StoreDBCheckState(hwndDlg, IDC_LOG_REMOVE_FILE, "LogSelfRemoveFile");
-			if(ICQGetContactSettingByte(NULL, "LogSelfRemoveFile", 0) == 1)
-				bLogSelfRemoveFile = TRUE;
-			else
-				bLogSelfRemoveFile = FALSE;				
+			bLogSelfRemoveFile = ICQGetContactSettingByte(NULL, "LogSelfRemoveFile", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_IGNORECHECK_FILE, "LogIgnoreCheckFile");
-			if(ICQGetContactSettingByte(NULL, "LogIgnoreCheckFile", 0) == 1)
-				bLogIgnoreCheckFile= TRUE;
-			else
-				bLogIgnoreCheckFile = FALSE;
+			bLogIgnoreCheckFile= ICQGetContactSettingByte(NULL, "LogIgnoreCheckFile", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_CHECKSTATUS_FILE, "LogStatusCheckFile");
-			if(ICQGetContactSettingByte(NULL, "LogStatusCheckFile", 0) == 1)
-				bLogStatusCheckFile = TRUE;
-			else
-				bLogStatusCheckFile = FALSE;
+			bLogStatusCheckFile = ICQGetContactSettingByte(NULL, "LogStatusCheckFile", 0);
+			StoreDBCheckState(hwndDlg, IDC_LOG_ASD_FILE, "LogASDFile");
+			bLogASDFile = ICQGetContactSettingByte(NULL, "LogASDFile", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_CLIENTCHANGE_FILE, "LogClientChangeFile");
-			if(ICQGetContactSettingByte(NULL, "LogClientChangeFile", 0) == 1)
-				bLogClientChangeFile = TRUE;
-			else
-				bLogClientChangeFile = FALSE;
-
+			bLogClientChangeFile = ICQGetContactSettingByte(NULL, "LogClientChangeFile", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_AUTH_FILE, "LogAuthFile");
-			if(ICQGetContactSettingByte(NULL, "LogAuthFile", 0) == 1)
-				bLogAuthFile = TRUE;
-			else
-				bLogAuthFile = FALSE;
-
+			bLogAuthFile = ICQGetContactSettingByte(NULL, "LogAuthFile", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_REQUEST_FILE, "LogRequestFile");
-			if(ICQGetContactSettingByte(NULL, "LogRequestFile", 0) == 1)
-				bLogInfoRequestFile = TRUE;
-			else
-				bLogInfoRequestHistory = FALSE;
-
+			bLogInfoRequestFile = ICQGetContactSettingByte(NULL, "LogRequestFile", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_REMOVE_HISTORY, "LogSelfRemoveHistory");
-			if(ICQGetContactSettingByte(NULL, "LogSelfRemoveHistory", 0) == 1)
-				bLogSelfRemoveHistory = TRUE;
-			else
-				bLogSelfRemoveHistory = FALSE;				
+			bLogSelfRemoveHistory = ICQGetContactSettingByte(NULL, "LogSelfRemoveHistory", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_IGNORECHECK_HISTORY, "LogIgnoreCheckHistory");
-			if(ICQGetContactSettingByte(NULL, "LogIgnoreCheckHistory", 0) == 1)
-				bLogIgnoreCheckHistory= TRUE;
-			else
-				bLogIgnoreCheckHistory = FALSE;
+			bLogIgnoreCheckHistory= ICQGetContactSettingByte(NULL, "LogIgnoreCheckHistory", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_CHECKSTATUS_HISTORY, "LogStatusCheckHistory");
-			if(ICQGetContactSettingByte(NULL, "LogStatusCheckHistory", 0) == 1)
-				bLogStatusCheckHistory = TRUE;
-			else
-				bLogStatusCheckHistory = FALSE;
+			bLogStatusCheckHistory = ICQGetContactSettingByte(NULL, "LogStatusCheckHistory", 0);
+			StoreDBCheckState(hwndDlg, IDC_LOG_ASD_HISTORY, "LogASDHistory");
+			bLogASDHistory = ICQGetContactSettingByte(NULL, "LogASDHistory", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_CLIENTCHANGE_HISTORY, "LogClientChangeHistory");
-			if(ICQGetContactSettingByte(NULL, "LogClientChangeHistory", 0) == 1)
-				bLogClientChangeHistory = TRUE;
-			else
-				bLogClientChangeHistory = FALSE;
-
+			bLogClientChangeHistory = ICQGetContactSettingByte(NULL, "LogClientChangeHistory", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_AUTH_HISTORY, "LogAuthHistory");
-			if(ICQGetContactSettingByte(NULL, "LogAuthHistory", 0) == 1)
-				bLogAuthHistory = TRUE;
-			else
-				bLogAuthHistory = FALSE;
-
+			bLogAuthHistory = ICQGetContactSettingByte(NULL, "LogAuthHistory", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_REQUEST_HISTORY, "LogRequestHistory");
-			if(ICQGetContactSettingByte(NULL, "LogRequestHistory", 0) == 1)
-				bLogInfoRequestHistory = TRUE;
-			else
-				bLogInfoRequestHistory = FALSE;
-
+			bLogInfoRequestHistory = ICQGetContactSettingByte(NULL, "LogRequestHistory", 0);
 			StoreDBCheckState(hwndDlg, IDC_LOG_TO_HCONTACT_HISTORY, "LogToHcontact");
-			if(ICQGetContactSettingByte(NULL, "LogToHcontact", 0) == 1)
-				bHcontactHistory = TRUE;
-			else
-				bHcontactHistory = FALSE;
-
+			bHcontactHistory = ICQGetContactSettingByte(NULL, "LogToHcontact", 0);
 	        {
-		    char i[1024];
-		    GetDlgItemText(hwndDlg, IDC_FILEPATH, i, sizeof(i) );
-		    UniWriteContactSettingUtf(NULL, gpszICQProtoName, "EventsLog", i);
-	        }
-
+				char i[1024];
+				GetDlgItemText(hwndDlg, IDC_FILEPATH, i, sizeof(i) );
+				UniWriteContactSettingUtf(NULL, gpszICQProtoName, "EventsLog", i);
+			}
 			return TRUE;
 		}
 		break;
@@ -1265,6 +1267,7 @@ static BOOL CALLBACK DlgProcIcqEventLogOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 	return FALSE;
 }
 
+BOOL id = FALSE;
 static const UINT icqVersionControls[] = {IDC_VERSION_CHECKBOX,IDC_SET_VERSION};
 static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
@@ -1278,12 +1281,13 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 			LoadDBCheckState(hwndDlg, IDC_HIDEID, "Hide ID", 1);	
 			LoadDBCheckState(hwndDlg, IDC_CUSTOM_CAP, "customcap", 1);
 			LoadDBCheckState(hwndDlg,	IDC_VERSION_CHECKBOX, "CurrentVer", 0);
+			id = FALSE;
 			{
 				char* CIdComboBox[] =
 				{
 					"MirandaIM","unknown","QIP2005a","YSM","pyICQ","&RQ","Jimm","Trillian",
-					"Licq","Kopete","ICQ for MAC","Miranda IM 6.6.6 [evil]","ICQ Rambler","ICQ 5.1","icq5 (abv)",
-					"ICQ netvigator","Sim/MacOS X","Sim/Win32","Centericq","libicq2k","mChat","stICQ","KXicq2",
+					"Licq","Kopete","ICQ for MAC","Miranda IM 6.6.6 [evil]","ICQ 5 (Rambler)","ICQ 5.1","ICQ 5 (abv)",
+					"ICQ (Netvigator)","Sim/MacOS X","Sim/Win32","Centericq","libicq2k","mChat","stICQ","KXicq2",
 					"QIP PDA (Windows)","QIP Mobile (Java)","ICQ 2002","ICQ 6","ICQ for Pocket PC",
 					"Anastasia","Virus","alicq","mICQ","StrICQ","vICQ","IM2","GAIM","ICQ99","WebICQ","SmartICQ",
 					"IM+","uIM","TICQClient","IC@","PreludeICQ","Qnext","ICQ Lite","QIP Infium","JICQ",
@@ -1292,7 +1296,7 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				int i;
 				for (i=0; i<sizeof(CIdComboBox)/sizeof(CIdComboBox[0]); i++)
 					ComboBoxAddStringUtf(GetDlgItem(hwndDlg, IDC_CHANGEID), CIdComboBox[i],i);
-      }
+			}
 // eternity : Miranda IM ICQ mods
       {
         char* MIMIdComboBox[] =
@@ -1313,10 +1317,7 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
 			SendDlgItemMessage(hwndDlg, IDC_CHANGEID, CB_SETCURSEL, (DBGetContactSettingWord(NULL,gpszICQProtoName,"CurrentID",0)),0);
 			SetDlgItemInt(hwndDlg, IDC_SET_VERSION, (DBGetContactSettingWord(NULL,gpszICQProtoName,"setVersion", 0)), FALSE );
-// eternity : custom capability edit control
-			SetDlgItemText(hwndDlg, IDC_CUSTCAPEDIT, UniGetContactSettingUtf(NULL,"ICQCaps","capability", 0));
-// eternity : custom capability edit control END
-      return TRUE;
+			return TRUE;
 		}
 	case WM_COMMAND:
 		switch (LOWORD(wParam))
@@ -1331,45 +1332,46 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       }
       break;
 // eternity : changing ClientID ComboBox to cause ICQ Mod ComboBox enable/disable END
+// eternity : Caps List
+      case IDC_CAPSBOX:
+		    ShowCapsListDialog( hwndDlg );
+		    return TRUE;
+// eternity : Caps List END
 		}
-		OptDlgChanged(hwndDlg);
+    OptDlgChanged(hwndDlg);
 		break;
 	case WM_NOTIFY:
 		switch (((LPNMHDR)lParam)->code)
 		{
 		case PSN_APPLY:
 			{
-				int id = 0;
 				int i, fakeId, fakeICQModID;
 				fakeId = SendDlgItemMessage(hwndDlg, IDC_CHANGEID, CB_GETCURSEL, 0, 0);
 				if(DBGetContactSettingWord(NULL, gpszICQProtoName, "CurrentID", 0) != fakeId)
 				{
-					id = 1;
+					id = TRUE;
 					DBWriteContactSettingWord(NULL, gpszICQProtoName, "CurrentID", (WORD)fakeId);
 				}
 // eternity : Miranda IM ICQ mods
 				fakeICQModID = SendDlgItemMessage(hwndDlg, IDC_ENIFMIRCBX, CB_GETCURSEL, 0, 0);
 				if(DBGetContactSettingWord(NULL, gpszICQProtoName, "CurrentICQModID", 0) != fakeICQModID)
 				{
-					id = 1;
+					id = TRUE;
 					DBWriteContactSettingWord(NULL, gpszICQProtoName, "CurrentICQModID", (WORD)fakeICQModID);
 				}
 // eternity : Miranda IM ICQ mods END
 				StoreDBCheckState(hwndDlg, IDC_VERSION_CHECKBOX, "CurrentVer");
-				if(DBGetContactSettingByte(NULL, gpszICQProtoName, "CurrentVer", 0))
-					gbVerEnabled = 1;
-				else 
-					gbVerEnabled = 0;
+				gbVerEnabled = DBGetContactSettingByte(NULL, gpszICQProtoName, "CurrentVer", 0);
 				i = GetDlgItemInt(hwndDlg, IDC_SET_VERSION, 0, 0);
 				if(DBGetContactSettingWord(NULL, gpszICQProtoName, "setVersion", 0) != i)
 				{
-					id = 1;
+					id = TRUE;
 					DBWriteContactSettingWord(NULL, gpszICQProtoName, "setVersion", (WORD)i);
 				}
 				i = IsDlgButtonChecked(hwndDlg, IDC_HIDEID);
 				if(DBGetContactSettingByte(NULL, gpszICQProtoName, "Hide ID", 0) != i)
 				{
-					id = 1;
+					id = TRUE;
 					DBWriteContactSettingByte(NULL, gpszICQProtoName, "Hide ID", i);
 				}
 				if(DBGetContactSettingByte(NULL, gpszICQProtoName, "Hide ID", 0))
@@ -1380,18 +1382,20 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				i = IsDlgButtonChecked(hwndDlg, IDC_CUSTOM_CAP);
 				if(DBGetContactSettingByte(NULL, gpszICQProtoName, "customcap", 0) != i)
 				{
-					id = 1;
+					id = TRUE;
 					DBWriteContactSettingByte(NULL, gpszICQProtoName, "customcap", i);
+					gbCustomCapEnabled=i;
 				}
 				if (id)
 				{
 					setUserInfo();
 					{
-						extern BYTE icq_ver();
 						extern int icqGoingOnlineStatus;
-						extern bSecureIM();
 						icq_packet packet;
 						WORD wStatus;
+						DWORD dwFT1;
+						DWORD dwFT2;
+						DWORD dwFT3;
 						int nPort = ICQGetContactSettingWord(NULL, "UserPort", 0);
 						DWORD dwDirectCookie = rand() ^ (rand() << 16);
 						// Get status
@@ -1407,189 +1411,14 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 						packDWord(&packet, ICQGetContactSettingDword(NULL, "RealIP", 0));
 						packDWord(&packet, nPort);
 						packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
-						packWord(&packet, (WORD)icq_ver());
+						packWord(&packet, (WORD)GetProtoVersion());
 						packDWord(&packet, dwDirectCookie);         // DC Cookie
 						packDWord(&packet, WEBFRONTPORT);           // Web front port
 						packDWord(&packet, CLIENTFEATURES);         // Client features
-						{
-							DWORD a;
-							DWORD b;
-							DWORD c;
-							switch (DBGetContactSettingWord(NULL, gpszICQProtoName, "CurrentID", 0))  //client change dwFT
-							{
-							case 3:											//ysm
-								a=0xFFFFFFAB;           //   Abused timestamp
-								b=0x00000000;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 4:											//ICQ lite
-								a=0x3AA773EE;           //   Abused timestamp
-								b=0x00000000;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 5:													//&RQ
-								a=0xFFFFFF7F;           //   Abused timestamp
-								b=0x00000000;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 7:										//trillian
-								a=0x3B75AC09;           //   Abused timestamp
-								b=0x00000000;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 8:													//licq
-								a=0x2C0BA3DD;           //   Abused timestamp
-								b=0x7D800403;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 2:											//qip
-								a=0x08000300;           //   Abused timestamp
-								b=0x0000000E;       		// Abused timestamp
-								c=0x0000000F;            // Timestamp
-								break;
-							case 46:       //QIP Infium
-								a=0x00002328;           //   Abused timestamp
-								b=0x0000000B;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 18:
-							case 19:
-								a=0x3AA773EE;           //   Abused timestamp
-								b=0x3AA66380;       		// Abused timestamp
-								c=0x00000000;            // Timestamp
-								break;
-							case 21:
-								a=0x3BA8DBAF;
-								b=0x3BEB5373;
-								c=0x3BEB5262;
-								break;
-							case 22:
-								a=0x3B4C4C0C;
-								b=0x00000000;
-								c=0x3B7248ed;
-								break;
-							case 1:											//unknown
-							case 6:											//Jimm
-							case 9:											//Kopete
-							case 10:										////icq for mac
-							case 12:										//rambler
-							case 13:
-							case 14:
-							case 15:
-							case 16:
-							case 17:
-							case 20:
-							case 23:
-							case 24:
-							case 25:
-							case 26:
-							case 27:
-							case 28:
-							case 40:           //uIM
-							case 41:           //TICQClient
-							case 42:           //IC@
-							case 43:          //PreludeICQ
-							case 44:         //QNEXT
-							case 45:         //pyICQ
-							case 47:       //JICQ
-							case 49:       //MIP
-							case 50:     //Trillian Astra
-							case 52:     //NanoICQ
-							case 53:		//IMadering
-								a=0x00000000;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 29:
-								a=0x44F523B0;
-								b=0x44F523A6;
-								c=0x44F523A6;
-								break;
-							case 30:           //alicq
-								a=0xffffffbe;
-								b=0x00090800;
-								c=0x00000000;
-								break;
-							case 31:           //mICQ
-								a=0xFFFFFF42;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 32:            //StrICQ 0.4
-								a=0xFFFFFF8F;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 33:            //vICQ 0.43.0.0
-								a=0x04031980;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 34:            //IM2
-								a=0x3FF19BEB;
-								b=0x00000000;
-								c=0x3FF19BEB;
-								break;
-							case 35:           //GAIM
-								a=0xffffffff;
-								b=0xffffffff;
-								c=0xffffffff;
-								break;
-							case 36:          //ICQ99
-								a=0x3AA773EE;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 37:          //WebICQ
-								a=0xFFFFFFFF;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 38:          //SmartICQ
-								a=0xDDDDEEFF;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 39:           //IM+
-								a=0x494D2B00;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 48:  //SpamBot
-								a=0xffffffff;
-								b=0x00000000;
-								c=0x3B7248ED;
-								break;
-							case 51:           //R&Q
-								a=0xFFFFF666;
-								b=0x00000000;
-								c=0x00000000;
-								break;
-							case 11:
-								a=0xFFFFFFFF;         //Abused timestamp
-								b=0x06060600;     	//Abused timestamp
-								if(gbHideIdEnabled)
-									c=gbUnicodeAPI?0x80000000:0x00000000;
-								else
-									c=bSecureIM()?0x5AFEC0DE:0x00000000;		
-								break;
-							default :								//miranda
-								a=0xffffffff;         //Abused timestamp
-								//b=ICQ_PLUG_VERSION;     	//Abused timestamp
-								b=ICQ_THISPLUG_VERSION;     	//Abused timestamp //eternity
-                if(gbHideIdEnabled)
-									c=gbUnicodeAPI?0x80000000:0x00000000;
-								else
-									c=bSecureIM()?0x5AFEC0DE:0x00000000;
-								break;
-							}
-							ICQWriteContactSettingDword(NULL,  "dwFT1",   a);
-							ICQWriteContactSettingDword(NULL,  "dwFT2",   b);
-							ICQWriteContactSettingDword(NULL,  "dwFT3",   c);
-							packDWord(&packet, a);
-							packDWord(&packet, b);
-							packDWord(&packet, c);
-						}
+						SetTimeStamps(&dwFT1, &dwFT2, &dwFT3);
+						packDWord(&packet, dwFT1);
+						packDWord(&packet, dwFT2);
+						packDWord(&packet, dwFT3);
 						packWord(&packet, 0x0000);                  // Unknown
 						packTLVWord(&packet, 0x001F, 0x0000);
 						sendServPacket(&packet);
@@ -1605,11 +1434,6 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 				bIdChanged = FALSE;
 				}
 			}
-			{ // eternity : custom capability edit control
-				char cap[24];
-				GetDlgItemText(hwndDlg, IDC_CUSTCAPEDIT, cap, sizeof(cap));
-				DBWriteContactSettingStringUtf(NULL,"ICQCaps", "capability", cap);
-			} // eternity : custom capability edit control END
 			return TRUE;
 		}
 		break;
@@ -1669,11 +1493,11 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
     case IDC_UPLOADNOW:
       ShowUploadContactsDialog();
       return TRUE;
-  	case IDC_FORCEREFRESH:
-  		DBWriteContactSettingDword(NULL,gpszICQProtoName,"SrvLastUpdate",0);
-  		DBWriteContactSettingWord(NULL,gpszICQProtoName,"SrvRecordCount",0);
-  		EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEREFRESH), FALSE);
-  		return TRUE;
+	case IDC_FORCEREFRESH:
+		DBWriteContactSettingDword(NULL,gpszICQProtoName,"SrvLastUpdate",0);
+		DBWriteContactSettingWord(NULL,gpszICQProtoName,"SrvRecordCount",0);
+		EnableWindow(GetDlgItem(hwndDlg, IDC_FORCEREFRESH), FALSE);
+		return TRUE;
     case IDC_ENABLE:
       icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLE));
       if (icqOnline) 
@@ -1685,11 +1509,11 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ENABLEAVATARS));
       break;
     case IDC_ADD_TMP_CONTACTS:
-  	  icq_EnableMultipleControls(hwndDlg, icqAddTempControls, sizeof(icqAddTempControls)/sizeof(icqAddTempControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ADD_TMP_CONTACTS));
-  	  break;
+	  icq_EnableMultipleControls(hwndDlg, icqAddTempControls, sizeof(icqAddTempControls)/sizeof(icqAddTempControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ADD_TMP_CONTACTS));
+	  break;
     case IDC_DELETE_TMP_CONTACTS:
-  	  icq_EnableMultipleControls(hwndDlg, icqAddTempControls, sizeof(icqAddTempControls)/sizeof(icqAddTempControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ADD_TMP_CONTACTS));
-  	  break;
+	  icq_EnableMultipleControls(hwndDlg, icqAddTempControls, sizeof(icqAddTempControls)/sizeof(icqAddTempControls[0]), IsDlgButtonChecked(hwndDlg, IDC_ADD_TMP_CONTACTS));
+	  break;
     }
     OptDlgChanged(hwndDlg);
     break;
@@ -1717,19 +1541,40 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		  bTmpContacts = 1;
 	  }
 	  {
-		  char i[128];
-		  GetDlgItemText(hwndDlg, IDC_TMP_CONTACTS_GROUP, i, sizeof(i) );
-		  if(UniGetContactSettingUtf(NULL,gpszICQProtoName,"TmpContactsGroup", 0)!= i)
+		  static char NewTmpGroupName[128] = {0}, 
+			          CurrentTmpGroupName[128] = {0};
+		  GetDlgItemText(hwndDlg, IDC_TMP_CONTACTS_GROUP, NewTmpGroupName, sizeof(NewTmpGroupName));
+		  strcpy(CurrentTmpGroupName, UniGetContactSettingUtf(NULL, gpszICQProtoName, "TmpContactsGroup", "0"));
+		  if(strcmp(CurrentTmpGroupName, NewTmpGroupName) != 0)
 		  {
-			  DBWriteContactSettingByte(NULL,gpszICQProtoName,"GroupCreated",0);
-			  UniWriteContactSettingUtf(NULL,gpszICQProtoName, "TmpContactsGroup", i);
+			  int GroupNumber = 0;
+			  BYTE GroupExist = 0;
+			  char szNumber[32] = {0}, szValue[96] = {0};
+			  extern int CreateCListGroup(const char* szGroupName);
+			  strcpy(szNumber, "0");
+			  while(strcmp(UniGetContactSettingUtf(NULL, "CListGroups", szNumber, "0"), "0") != 0)
+			  {
+#if defined(_MSC_VER) && _MSC_VER >= 1300
+				  _itoa_s(GroupNumber, szNumber, sizeof(szNumber), 10);
+#else
+				  _itoa(GroupNumber, szNumber, 10);
+#endif		
+				  strcpy(szValue, UniGetContactSettingUtf(NULL, "CListGroups", szNumber, "0"));
+				  if(strcmp(NewTmpGroupName, szValue + 1) == 0)
+				  {
+					  GroupExist = 1;
+					  break;
+				  }
+				  GroupNumber++;
+			  }
+			  UniWriteContactSettingUtf(NULL,gpszICQProtoName, "TmpContactsGroup", NewTmpGroupName);
+			  TmpGroupName = UniGetContactSettingUtf(NULL,gpszICQProtoName,"TmpContactsGroup", Translate("General"));
+			  if(!GroupExist)
+				  CreateCListGroup(TmpGroupName);
 		  }
 	  }
       StoreDBCheckState(hwndDlg, IDC_ADDTEMP, "AddTemp");
-	  if(ICQGetContactSettingByte(NULL, "AddTemp", 0) == 1)
-		  bAddTemp = TRUE;
-	  else 
-		  bAddTemp = FALSE;
+	  bAddTemp = ICQGetContactSettingByte(NULL, "AddTemp", 0);
       return TRUE;
     }
     break;
@@ -1808,4 +1653,116 @@ void ShowPopUpsOpts(void)
 		hwndPopUpsOpts = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_POPUPS2), NULL, DlgProcIcqPopupOpts2);
 	}
 	SetForegroundWindow(hwndPopUpsOpts);
+}
+void ShowASDOpts(void){
+	if (hwndASDOpts == NULL)
+	{
+		hwndASDOpts = CreateDialogUtf(hInst, MAKEINTRESOURCE(IDD_OPT_ASD), NULL, DlgProcIcqASDOpts);
+	}
+	SetForegroundWindow(hwndASDOpts);
+}
+
+
+
+// password input box subclassing
+typedef struct
+{
+	WNDPROC oldWndProc;
+	HWND hwndTip;
+} TPasswordBoxData;
+
+static void IcqPasswordBox_Destroy(HWND hwndDlg, int idCtrl);
+
+static LRESULT CALLBACK IcqPasswordBox_WndProc(HWND hwnd,UINT msg,WPARAM wParam,LPARAM lParam)
+{
+	WNDPROC oldWndProc;
+	TPasswordBoxData *dat = (TPasswordBoxData *)GetWindowLong(hwnd, GWL_USERDATA);
+	if (!dat) return DefWindowProc(hwnd, msg, wParam, lParam);
+	oldWndProc = dat->oldWndProc;
+
+	switch(msg) 
+	{
+		case WM_APP:
+		{
+			if (dat->hwndTip)
+			{
+				SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+				DestroyWindow(dat->hwndTip);
+				dat->hwndTip = 0;
+			}
+
+			if (wParam && lParam)
+			{
+				TOOLINFO ti = {0};
+				RECT rc; 
+
+				dat->hwndTip = CreateWindowEx(0, TOOLTIPS_CLASS, NULL, WS_POPUP|TTS_NOPREFIX|TTS_BALLOON, 0, 0, 0, 0, hwnd, NULL, hInst, 0);
+
+				ti.cbSize = sizeof(ti);
+				ti.lpszText = (TCHAR *)lParam;
+				ti.hinst = hInst;
+				ti.hwnd = hwnd;
+				ti.uFlags = TTF_TRACK|TTF_IDISHWND|TTF_TRANSPARENT;
+				ti.uId = (UINT_PTR)hwnd;
+				SendMessage(dat->hwndTip, TTM_ADDTOOL, 0, (LPARAM)&ti);
+
+  			GetWindowRect(hwnd, &rc);
+				SendMessage(dat->hwndTip, TTM_TRACKPOSITION, 0, (LPARAM)MAKELONG(rc.left+20, rc.bottom));
+	  		SendMessage(dat->hwndTip, TTM_SETTITLE, 1, (LPARAM)wParam);
+				SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, TRUE, (LPARAM)&ti);
+			}
+
+			break;
+		}
+
+		case WM_KILLFOCUS:
+		{
+			if (dat->hwndTip)
+			{
+				SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+				DestroyWindow(dat->hwndTip);
+				dat->hwndTip = 0;
+			}
+
+			break;
+		}
+
+		case WM_DESTROY:
+		{
+			IcqPasswordBox_Destroy(GetParent(hwnd), GetWindowLong(hwnd, GWL_ID));
+			break;
+	}
+	}
+
+	return CallWindowProcUtf(oldWndProc, hwnd, msg, wParam, lParam);
+}
+
+static void IcqPasswordBox_Init(HWND hwndDlg, int idCtrl)
+{
+	HWND hwnd = GetDlgItem(hwndDlg, idCtrl);
+	
+	if(GetWindowLong(hwnd, GWL_USERDATA)) return;
+	
+if (IsWinVer2000Plus())
+	{		
+		TPasswordBoxData *dat = (TPasswordBoxData *)mir_alloc(sizeof(TPasswordBoxData));
+		dat->hwndTip = NULL;
+		SetWindowLong(hwnd, GWL_USERDATA, (LONG)dat);		
+		dat->oldWndProc = (WNDPROC)SetWindowLongUtf(hwnd, GWL_WNDPROC, (LONG)IcqPasswordBox_WndProc);
+	}
+}
+
+static void IcqPasswordBox_Destroy(HWND hwndDlg, int idCtrl)
+{
+	HWND hwnd = GetDlgItem(hwndDlg, idCtrl);
+	TPasswordBoxData *dat = (TPasswordBoxData *)GetWindowLong(hwnd, GWL_USERDATA);
+	SetWindowLongUtf(hwnd, GWL_WNDPROC, (LONG)dat->oldWndProc);
+	SetWindowLong(hwnd, GWL_USERDATA, 0);
+	if (dat->hwndTip)
+	{
+		SendMessage(dat->hwndTip, TTM_TRACKACTIVATE, FALSE, 0);
+		DestroyWindow(dat->hwndTip);
+		dat->hwndTip = 0;
+	}
+	mir_free(dat);
 }

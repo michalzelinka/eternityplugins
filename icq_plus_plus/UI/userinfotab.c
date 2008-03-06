@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -211,7 +212,7 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
 
 					SetValue(hwndDlg, IDC_STATUS, hContact, gpszICQProtoName, "Status", SVS_STATUSID);
 
-					ShowWindow(GetDlgItem(hwndDlg,IDC_GETSTATUS),(ASD)?SW_SHOW:SW_HIDE);
+					ShowWindow(GetDlgItem(hwndDlg,IDC_GETSTATUS),(gbASD)?SW_SHOW:SW_HIDE);
 					//ShowWindow(GetDlgItem(hwndDlg,IDC_GETCAPS),(wStatus != ID_STATUS_OFFLINE)?SW_SHOW:SW_HIDE);
 					ShowWindow(GetDlgItem(hwndDlg,IDC_RETRIEVE),SW_SHOW);
 					ShowWindow(GetDlgItem(hwndDlg,IDC_IGNORECHECK),SW_SHOW);
@@ -800,7 +801,7 @@ static BYTE SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       dbv.dVal = (DWORD)szSetting;
       break;
     case DBVT_ASCIIZ:
-    case DBVT_WCHAR:
+    case DBVT_WCHAR: // surely?
       dbv.pszVal = pstr = szSetting;
       break;
     default:
@@ -853,7 +854,7 @@ static BYTE SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
       {
         char* pXName;
         char* pszStatus;
-        BYTE bXStatus = ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0);
+        BYTE bXStatus = ICQGetContactXStatus(hContact);
 
         pszStatus = MirandaStatusToStringUtf(dbv.wVal);
         if (bXStatus)

@@ -341,8 +341,8 @@ __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 
 __declspec(dllexport) int Load(PLUGINLINK *link)
 {
-  pluginLink=link;
-  HookEvent(ME_SYSTEM_MODULESLOADED,PluginInit);
+  pluginLink = link;
+  HookEvent( ME_SYSTEM_MODULESLOADED, PluginInit );
   return 0;
 }
 

@@ -28,7 +28,7 @@
 // Revision       : $Revision: 36 $
 // Last change on : $Date: 2007-08-05 03:45:10 +0300 (Вс, 05 авг 2007) $
 // Last change by : $Author: sss123next $
-BOOL ASD;
+//BOOL ASD = FALSE;
 
 
 #define hIconInst hInst
@@ -49,9 +49,16 @@ BOOL PopUpErrMsg(char* aMsg);
 int icq_SelfRemove(WPARAM wParam,LPARAM lParam);
 int icq_GrantAuth(WPARAM wParam,LPARAM lParam);
 
+BYTE gbASD;
+
 int icq_CheckAllUsersStatus(WPARAM wParam,LPARAM lParam);
 int IcqSetVis(WPARAM wparam,LPARAM lparam);
 int IcqSetInvis(WPARAM wparam,LPARAM lparam);
 void SetWebAware(BYTE bSend);
 void sendVisContactServ(DWORD dwUin, int mode);
 void sendVisListServ(int mode);
+BOOL bASDViaAwayMsg;
+BOOL bASDViaXtraz;
+BOOL bASDViaURL;
+BOOL bASDUnauthorized; //work in progress
+BOOL bASDViaAuth; //

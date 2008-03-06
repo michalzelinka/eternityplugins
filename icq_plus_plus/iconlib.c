@@ -41,18 +41,18 @@
 
 void InitIconLib()
 {
-  char str[MAX_PATH], proto[MAX_PATH], lib[MAX_PATH];
+    char str[MAX_PATH], proto[MAX_PATH], lib[MAX_PATH];
     
 	ICQTranslateUtfStatic(gpszICQProtoName, proto, MAX_PATH);
 
-  GetModuleFileName(hInst, lib, MAX_PATH);
+    GetModuleFileName(hInst, lib, MAX_PATH);
 
 	IconLibDefine(ICQTranslateUtfStatic("Protocol icon", str, MAX_PATH), proto, "proto", NULL, lib, -IDI_ICQ);
-  IconLibDefine(ICQTranslateUtfStatic("Request authorization", str, MAX_PATH), proto, "req_auth", NULL, lib, -IDI_AUTH);
-  IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str, MAX_PATH), proto, "grant_auth", NULL, lib, -IDI_GRANT);
-  IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str, MAX_PATH), proto, "revoke_auth", NULL, lib, -IDI_REMOVE);
-  IconLibDefine(ICQTranslateUtfStatic("Add to server list", str, MAX_PATH), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
-  IconLibDefine(ICQTranslateUtfStatic("Send tZer", str, MAX_PATH), proto, "send_tzer", NULL, lib, -IDI_SEND_TZER);
+    IconLibDefine(ICQTranslateUtfStatic("Request authorization", str, MAX_PATH), proto, "req_auth", NULL, lib, -IDI_AUTH);
+    IconLibDefine(ICQTranslateUtfStatic("Grant authorization", str, MAX_PATH), proto, "grant_auth", NULL, lib, -IDI_GRANT);
+    IconLibDefine(ICQTranslateUtfStatic("Revoke authorization", str, MAX_PATH), proto, "revoke_auth", NULL, lib, -IDI_REMOVE);
+    IconLibDefine(ICQTranslateUtfStatic("Add to server list", str, MAX_PATH), proto, "add_to_server", NULL, lib, -IDI_SERVLIST_ADD);
+    IconLibDefine(ICQTranslateUtfStatic("Send tZer", str, MAX_PATH), proto, "send_tzer", NULL, lib, -IDI_SEND_TZER);
 	IconLibDefine(ICQTranslateUtfStatic("Always visible", str, MAX_PATH), proto, "set_vis", NULL, lib, -IDI_SET_VIS);
 	IconLibDefine(ICQTranslateUtfStatic("Never visible", str, MAX_PATH), proto, "set_invis", NULL, lib, -IDI_SET_INVIS);
 	IconLibDefine(ICQTranslateUtfStatic("Incognito Request", str, MAX_PATH), proto, "incognito", NULL, lib, -IDI_INCOGNITO_R);

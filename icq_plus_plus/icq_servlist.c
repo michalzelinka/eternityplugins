@@ -79,7 +79,7 @@ void AddGroupRename(WORD wGroupID)
   if (nGroupRenameCount >= nGroupRenameSize)
   {
     nGroupRenameSize += 10;
-    pwGroupRenameList = (WORD*)realloc(pwGroupRenameList, nGroupRenameSize * sizeof(WORD));
+    pwGroupRenameList = (WORD*)SAFE_REALLOC(pwGroupRenameList, nGroupRenameSize * sizeof(WORD));
   }
 
   pwGroupRenameList[nGroupRenameCount] = wGroupID;
@@ -152,7 +152,7 @@ void AddJustAddedContact(HANDLE hContact)
   if (nJustAddedCount >= nJustAddedSize)
   {
     nJustAddedSize += 10;
-    pdwJustAddedList = (HANDLE*)realloc(pdwJustAddedList, nJustAddedSize * sizeof(HANDLE));
+    pdwJustAddedList = (HANDLE*)SAFE_REALLOC(pdwJustAddedList, nJustAddedSize * sizeof(HANDLE));
   }
 
   pdwJustAddedList[nJustAddedCount] = hContact;
@@ -227,7 +227,7 @@ static BOOL AddPendingOperation(HANDLE hContact, const char* szGroup, servlistco
   if (nPendingCount >= nPendingSize) // add new
   {
     nPendingSize += 10;
-    pdwPendingList = (ssipendingitem**)realloc(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
+    pdwPendingList = (ssipendingitem**)SAFE_REALLOC(pdwPendingList, nPendingSize * sizeof(ssipendingitem*));
   }
 
   pdwPendingList[nPendingCount] = (ssipendingitem*)SAFE_MALLOC(sizeof(ssipendingitem));
@@ -326,7 +326,7 @@ void ReserveServerID(WORD wID, int bGroupId)
   if (nIDListCount >= nIDListSize)
   {
     nIDListSize += 100;
-    pwIDList = (DWORD*)realloc(pwIDList, nIDListSize * sizeof(DWORD));
+    pwIDList = (DWORD*)SAFE_REALLOC(pwIDList, nIDListSize * sizeof(DWORD));
   }
 
   pwIDList[nIDListCount] = wID | bGroupId << 0x18;
@@ -633,6 +633,7 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
   int nNickLen, nNoteLen, nDataLen;
   WORD wTLVlen;
   BYTE bAuth;
+  int bDataTooLong = FALSE;
 
   // Prepare UID
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUid))
@@ -665,6 +666,24 @@ DWORD icq_sendServerContact(HANDLE hContact, DWORD dwCookie, WORD wAction, WORD 
 
   nNickLen = strlennull(szNick);
   nNoteLen = strlennull(szNote);
+
+  // Limit the strings
+  if (nNickLen > MAX_SSI_TLV_NAME_SIZE)
+  {
+    bDataTooLong = TRUE;
+    nNickLen = null_strcut(szNick, MAX_SSI_TLV_NAME_SIZE);
+  }
+  if (nNoteLen > MAX_SSI_TLV_COMMENT_SIZE)
+  {
+    bDataTooLong = TRUE;
+    nNoteLen = null_strcut(szNote, MAX_SSI_TLV_COMMENT_SIZE);
+  }
+  if (bDataTooLong)
+  { // Inform the user
+    /// TODO: do something with this for Manage Server-List dialog.
+    if (wAction != ICQ_LISTS_REMOVEFROMLIST) // do not report this when removing from list
+      icq_LogMessage(LOG_WARNING, "The contact's information was too big and was truncated.");
+  }
 
   // Build the packet
   wTLVlen = (nNickLen?4+nNickLen:0) + (nNoteLen?4+nNoteLen:0) + (bAuth?4:0) + nDataLen;
@@ -860,7 +879,7 @@ void* collectBuddyGroup(WORD wGroupID, int *count)
       if (wItemID)
       { // valid ID, add
         cnt++;
-        buf = (WORD*)realloc(buf, cnt*sizeof(WORD));
+        buf = (WORD*)SAFE_REALLOC(buf, cnt*sizeof(WORD));
         buf[cnt-1] = wItemID;
       }
     }
@@ -897,7 +916,7 @@ void* collectGroups(int *count)
       if (i == cnt)
       { // not preset, add
         cnt++;
-        buf = (WORD*)realloc(buf, cnt*sizeof(WORD));
+        buf = (WORD*)SAFE_REALLOC(buf, cnt*sizeof(WORD));
         buf[i] = wGroupID;
       }
     }
@@ -1193,7 +1212,7 @@ char* makeGroupPathUtf(WORD wGroupId)
 
         szTempGroup = makeGroupPathUtf(wId);
 
-        szTempGroup = realloc(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
+        szTempGroup = SAFE_REALLOC(szTempGroup, strlennull(szGroup)+strlennull(szTempGroup)+2);
         strcat(szTempGroup, "\\");
         strcat(szTempGroup, szGroup+level);
         SAFE_FREE(&szGroup);

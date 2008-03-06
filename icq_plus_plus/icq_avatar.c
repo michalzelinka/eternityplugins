@@ -412,7 +412,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   if (atsi && atsi->pendingLogin) // this is not safe...
   {
     NetLog_Server("Avatar, Multiple start thread attempt, ignored.");
-    NetLib_SafeCloseHandle(&hConn, FALSE);
+    NetLib_CloseConnection(&hConn, FALSE);
     SAFE_FREE(&cookie);
     return;
   }
@@ -488,7 +488,7 @@ void handleAvatarContactHash(DWORD dwUIN, char* szUID, HANDLE hContact, unsigned
 
     if (memcmp(pHash+4, emptyItem, itemLen > 0x10 ? 0x10 : itemLen))
     { // Item types
-      // 0000: AIM avatar ?
+      // 0000: AIM mini avatar
       // 0001: AIM/ICQ avatar ID/hash (len 5 or 16 bytes)
       // 0002: iChat online message
       // 0008: ICQ Flash avatar hash (16 bytes)
@@ -1041,9 +1041,9 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
         LeaveCriticalSection(&cookieMutex);
       }
     }
-    NetLib_SafeCloseHandle(&atsi->hAvatarPacketRecver, FALSE); // Close the packet receiver 
+    NetLib_SafeCloseHandle(&atsi->hAvatarPacketRecver); // Close the packet receiver 
   }
-  NetLib_SafeCloseHandle(&atsi->hConnection, FALSE); // Close the connection
+  NetLib_CloseConnection(&atsi->hConnection, FALSE); // Close the connection
 
   // release rates
   ratesRelease(&atsi->rates);

@@ -331,7 +331,7 @@ CAPTION "Manage ICQ Server Contacts"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     LTEXT           "Select contacts to store:",IDC_STATIC11,5,5,91,8
-    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x2c8,5,14,155,222,WS_EX_CLIENTEDGE
+    CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x2c9,5,14,155,222,WS_EX_CLIENTEDGE
     DEFPUSHBUTTON   "Synchronize",IDOK,238,222,56,14
     PUSHBUTTON      "Cancel",IDCANCEL,298,222,55,14
     LISTBOX         IDC_LOG,169,5,184,213,NOT LBS_NOTIFY | LBS_NOINTEGRALHEIGHT | LBS_NOSEL | WS_VSCROLL | WS_TABSTOP
@@ -403,14 +403,12 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,68,109,10
     EDITTEXT        IDC_SET_VERSION,125,66,25,12,ES_AUTOHSCROLL | ES_NUMBER
     GROUPBOX        "Capabilities",IDC_STATIC,4,89,287,29
-    CONTROL         "Send capabilities from other plugins",IDC_CUSTOM_CAP,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,100,268,10
-    CTEXT           "",IDC_FAKEWARNING,0,126,291,57
-    LTEXT           "Custom capability:",IDC_CUSTCAPSTATIC,168,13,81,8
-    EDITTEXT        IDC_CUSTCAPEDIT,168,23,114,14,ES_AUTOHSCROLL
+    CONTROL         "Send custom capabilities",IDC_CUSTOM_CAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,100,152,10
+    CTEXT           "",IDC_FAKEWARNING,3,124,284,58
     LTEXT           "..and if MirandaIM, use this ICQ mod:",IDC_ENIFMIR,13,25,136,8
     COMBOBOX        IDC_ENIFMIRCBX,45,35,107,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     LTEXT           "(range 0-255)",IDC_STATIC,155,68,55,8,WS_DISABLED
+    PUSHBUTTON      "Edit capabilities",IDC_CAPSBOX,173,98,114,14
 END
 
 IDD_OPT_ICQ DIALOGEX 0, 0, 301, 222
@@ -418,18 +416,18 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "ICQ",IDC_STICQGROUP,3,0,298,87
-    RTEXT           "ICQ number:",IDC_STATIC11,54,12,51,8
-    EDITTEXT        IDC_ICQNUM,110,10,106,12,ES_AUTOHSCROLL | ES_NUMBER
-    RTEXT           "Password:",IDC_STATIC12,54,26,51,8
-    EDITTEXT        IDC_PASSWORD,110,24,106,12,ES_PASSWORD | ES_AUTOHSCROLL
+    GROUPBOX        "ICQ",IDC_STICQGROUP,3,0,298,63
+    RTEXT           "ICQ number:",IDC_STATIC11,24,12,51,8
+    EDITTEXT        IDC_ICQNUM,80,10,106,12,ES_AUTOHSCROLL | ES_NUMBER
+    RTEXT           "Password:",IDC_STATIC12,24,26,51,8
+    EDITTEXT        IDC_PASSWORD,80,24,106,12,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",IDC_STATIC,12,41,280,19
-    GROUPBOX        "Connection settings",IDC_STATIC,3,89,297,132
-    LTEXT           "Login Server:",IDC_STATIC,12,103,55,8
-    LTEXT           "Port:",IDC_STATIC,182,103,25,8
-    EDITTEXT        IDC_ICQPORT,208,101,29,12,ES_AUTOHSCROLL
-    PUSHBUTTON      "Edit",IDC_SERVERBOX,244,101,50,12
-    LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",IDC_STATIC,11,122,286,19
+    GROUPBOX        "Connection settings",IDC_STATIC,3,67,297,154
+    LTEXT           "Login Server:",IDC_STATIC,12,79,55,8
+    LTEXT           "Port:",IDC_STATIC,182,79,25,8
+    EDITTEXT        IDC_ICQPORT,208,77,29,12,ES_AUTOHSCROLL
+    PUSHBUTTON      "Edit",IDC_SERVERBOX,244,77,50,12
+    LTEXT           "Hint: Use port 0 to connect on a random port. Try port 80 or port 443 if you are having problems connecting through a http proxy server.",IDC_STATIC,11,98,286,19
     CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,11,153,282,10
     CONTROL         "Send 'Keep-alives' (enable this if you use a proxy server and frequently get disconnected)",IDC_KEEPALIVE,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,11,166,282,18
@@ -437,10 +435,12 @@ BEGIN
     LTEXT           "Show connection error messages:",IDC_STATIC,12,199,148,8
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,18,209,52,10
     LTEXT           "",IDC_LEVELDESCR,71,209,226,8,SS_NOPREFIX
-    COMBOBOX        IDC_ICQSERVER,63,101,110,47,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
-    PUSHBUTTON      "Register new UIN",IDC_REGUIN,104,66,79,17
+    COMBOBOX        IDC_ICQSERVER,63,77,110,47,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
+    PUSHBUTTON      "Register new UIN",IDC_REGUIN,205,9,79,26
     CONTROL         "Try to connect to next server in list if connection error occured (Server AutoChange)",IDC_AUTOCHANGE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,141,284,8
+    LTEXT           "HTTP User Agent for proxy",IDC_STATIC,12,123,103,8
+    COMBOBOX        IDC_HTTPUSERAGENT,121,122,172,87,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
 
 IDD_ICQ_SRV_LIST DIALOGEX 0, 0, 272, 241
@@ -461,18 +461,29 @@ BEGIN
     LTEXT           "Port:",IDC_STATIC,124,193,17,8
 END
 
+IDD_ICQ_CAPS_LIST DIALOGEX 0, 0, 204, 213
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+CAPTION "Manage ICQ Capabilities List"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    GROUPBOX        "Capabilities List",IDC_STATIC,0,1,203,161
+    PUSHBUTTON      "+",IDC_CAPL_ADD,0,198,35,14
+    PUSHBUTTON      ">>",IDC_CAPL_MODIFY,40,198,35,14
+    PUSHBUTTON      "X",IDC_CAPL_DELETE,80,198,35,14
+    PUSHBUTTON      "Close",IDOK,153,198,50,14
+    CONTROL         "",IDC_CAPABILITIES,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,4,10,195,149
+    LTEXT           "Capability text:",IDC_STATIC,4,166,131,8
+    EDITTEXT        IDC_CAPL_EDIT,4,175,195,14,ES_AUTOHSCROLL
+END
+
 IDD_OPT_ICQFEATURES2 DIALOGEX 0, 0, 294, 231
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    RTEXT           "*need restart",IDC_NEEDRESTART,228,182,61,8
     GROUPBOX        "Other...",IDC_STATIC,2,130,287,45
-    CONTROL         "Enable tZer support  *",IDC_TZER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,142,212,10
-    CONTROL         "Disable Statuscheck in invisible status",IDC_NOASD,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,39,174,10
-    CONTROL         "Check entire list on startup",IDC_ASDSTARTUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,28,153,10
-    CONTROL         "Enable Passive Status Discovery",IDC_PSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,19,170,10
+    CONTROL         "Enable tZer support",IDC_TZER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,142,212,10
+    CONTROL         "Enable Passive Status Discovery",IDC_PSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,19,207,10
     CONTROL         "Enable Active Status Discovery",IDC_ASD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,10,149,10
     GROUPBOX        "Status Discovery System",IDC_STATIC,2,0,287,78
     GROUPBOX        "Stealth away message request",IDC_STATIC,2,81,287,24
@@ -480,7 +491,8 @@ BEGIN
     CONTROL         "Global (affects every plugin)",IDC_INCGLOBAL,"Button",BS_AUTORADIOBUTTON,145,90,137,11
     CONTROL         "Always show auth items in menu",IDC_SHOW_AUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,153,192,10
     CONTROL         "Disable Passive Status Discovery for hidden contacts",IDC_NOPSD_FOR_HIDDEN,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,49,227,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,29,227,10
+    PUSHBUTTON      "Options",IDC_ASDOPTIONS,160,8,50,10
 END
 
 IDD_ICQ_REG_UIN DIALOGEX 0, 0, 314, 150
@@ -511,11 +523,10 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LOG_REMOVE_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,21,13,10
     CONTROL         "",IDC_LOG_IGNORECHECK_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,31,12,10
-    GROUPBOX        "Events log",IDC_STATIC,2,2,287,153
     LTEXT           "Checking ignore state:",IDC_STATIC,6,31,116,8
     LTEXT           "Removed himself from my Serverlist:",IDC_STATIC,6,21,156,8
-    LTEXT           "File",IDC_STATIC,170,10,34,8
-    LTEXT           "History",IDC_STATIC,225,10,48,8
+    LTEXT           "File",IDC_STATIC,170,11,34,8
+    LTEXT           "History",IDC_STATIC,225,11,48,8
     CONTROL         "",IDC_LOG_REMOVE_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,21,16,10
     CONTROL         "",IDC_LOG_IGNORECHECK_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,31,13,10
     EDITTEXT        IDC_FILEPATH,6,130,193,12,ES_AUTOHSCROLL
@@ -534,6 +545,10 @@ BEGIN
     CONTROL         "",IDC_LOG_REQUEST_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,71,16,10
     CONTROL         "",IDC_LOG_REQUEST_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,71,16,10
     LTEXT           "Request your info",IDC_STATIC,6,71,143,8
+    GROUPBOX        "Events log",IDC_STATIC,2,7,287,153
+    CONTROL         "",IDC_LOG_ASD_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,80,16,10
+    CONTROL         "",IDC_LOG_ASD_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,80,16,10
+    LTEXT           "Detected via ASD/PSD",IDC_STATIC,6,80,143,8
 END
 
 IDD_OPT_POPUPS2 DIALOGEX 0, 0, 293, 311
@@ -613,6 +628,11 @@ BEGIN
     CONTROL         "",IDC_POPUP_AUTH_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,206,39,10
     CONTROL         "",IDC_POPUP_AUTH_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,206,39,10
     EDITTEXT        IDC_POPUP_AUTH_TIMEOUT,185,204,34,12,ES_AUTOHSCROLL | ES_NUMBER
+    CONTROL         "",IDC_POPXUPDATER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,219,9,10
+    LTEXT           "XStatus Updater",IDC_STATIC,15,220,55,8
+    CONTROL         "",IDC_POPUP_XUPDATER_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,220,39,10
+    CONTROL         "",IDC_POPUP_XUPDATER_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,220,39,10
+    EDITTEXT        IDC_POPUP_XUPDATER_TIMEOUT,185,218,34,12,ES_AUTOHSCROLL | ES_NUMBER
 END
 
 IDD_RELNOTES DIALOGEX 100, 100, 192, 149
@@ -625,14 +645,14 @@ BEGIN
     RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
     RTEXT           "Version:",IDC_RNVER,7,14,53,8
     LTEXT           "ICQ eternity/PlusPlus++ Mod",IDC_RLNPLGNM2,66,4,98,8
-    LTEXT           "0.3.88.33",IDC_RNVER2,66,14,98,8
-    LTEXT           "svn merge (icq 6 moods, fixes etc.)",IDC_CHNG1,20,92,150,8
+    LTEXT           "0.3.88.37",IDC_RNVER2,66,14,98,8
+    LTEXT           "svn merge",IDC_CHNG1,20,92,150,8
     RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
     LTEXT           "jarvis (based on ICQ Plus Mod)",IDC_RNAUTH2,66,24,115,8
     RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
-    LTEXT           "© 2000-2007 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",IDC_RNCPR2,66,34,115,42
+    LTEXT           "© 2000-2008 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",IDC_RNCPR2,66,34,115,42
     ICON            IDI_ICQ,IDC_RNCSICON,163,3,20,20
-    LTEXT           "icq plus svn merge (fixes, optimalizations etc.)",IDC_CHNG2,20,101,150,17
+    LTEXT           "prepairing to merge with Plus Mod, this Mod will be private (me&friends) most probably :)",IDC_CHNG2,20,101,150,17
     CONTROL         "Check1",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,92,9,10
     CHECKBOX        "Check1",IDC_CHECK4,7,101,9,10,WS_DISABLED
 END
@@ -648,6 +668,31 @@ BEGIN
     LTEXT           "Name: ",IDC_STATIC,11,6,24,8
     EDITTEXT        IDC_TZER_NAME,11,15,129,12,ES_AUTOHSCROLL
     LTEXT           "tZer:",IDC_STATIC,11,33,21,9
+END
+
+IDD_OPT_ASD DIALOGEX 0, 0, 335, 204
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+EXSTYLE WS_EX_CONTROLPARENT
+CAPTION "ASD Options"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "Detect via status message (some old clients)",IDC_DETECT_VIA_STATUS_MESSAGE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,111,317,10
+    CONTROL         "Detect via malformed xtraz (icq6) (by [sin])",IDC_DETECT_VIA_XTRAZ,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,123,317,10
+    CONTROL         "Detect via malformed url (old miranda, some other clients)",IDC_DETECT_VIA_URL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,134,317,10
+    PUSHBUTTON      "Ok",IDC_OK,278,183,50,14
+    CONTROL         "Detect unauthorized contacts status (reported by D@rkNeo)",IDC_DETECT_UNAUTHORIZED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,145,317,10
+    CONTROL         "Detect via Auth server bug",IDC_DETECT_VIA_AUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,156,317,10
+    GROUPBOX        "Methods",IDC_STATIC,3,99,325,80
+    GROUPBOX        "Options",IDC_STATIC,3,3,325,92
+    CONTROL         "Check entire list on startup",IDC_ASDSTARTUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,14,309,10
+    CONTROL         "Disable Statuscheck in invisible status",IDC_NOASD,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,36,308,10
+    CONTROL         "Enable only for offline and invisible contacts (can fix some ASD problems)",IDC_ASD_FOR_OFFLINE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,25,307,10
 END
 
 
@@ -682,8 +727,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,88,33
- PRODUCTVERSION 0,8,0,1
+ FILEVERSION 0,3,88,38
+ PRODUCTVERSION 0,8,0,10
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -700,12 +745,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced eternity/PlusPlus++ modification"
-            VALUE "FileVersion", "0, 3, 88, 33"
+            VALUE "FileVersion", "0, 3, 88, 38"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2007 Joe Kucera, Angeli-Ka, Bio, Martin Oberg, Richard Hughes, Jon Keating, Se7en, [sss], jarvis, chaos.persei, [sin], nullbie, Big Muscle"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2008 Joe Kucera, Angeli-Ka, Bio, Martin Oberg, Richard Hughes, Jon Keating, Se7en, [sss], jarvis, chaos.persei, [sin], nullbie, Big Muscle"
             VALUE "OriginalFilename", "ICQ.dll"
             VALUE "ProductName", "ICQ Protocol Support"
-            VALUE "ProductVersion", "0, 8, 0, 1"
+            VALUE "ProductVersion", "0, 8, 0, 10"
         END
     END
     BLOCK "VarFileInfo"
@@ -802,7 +847,7 @@ BEGIN
         VERTGUIDE, 170
         VERTGUIDE, 225
         VERTGUIDE, 289
-        HORZGUIDE, 10
+        HORZGUIDE, 11
         HORZGUIDE, 21
         HORZGUIDE, 31
         HORZGUIDE, 41
@@ -823,18 +868,39 @@ BEGIN
         VERTGUIDE, 185
         VERTGUIDE, 235
         TOPMARGIN, 7
-        BOTTOMMARGIN, 266
+        BOTTOMMARGIN, 304
     END
 
-    IDD_RELNOTES, DIALOG
+    IDD_OPT_ASD, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 185
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 142
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 328
+        VERTGUIDE, 11
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 197
     END
 END
 #endif    // APSTUDIO_INVOKED
+
+
+/////////////////////////////////////////////////////////////////////////////
+//
+// Dialog Info
+//
+
+IDD_OPT_ICQ DLGINIT
+BEGIN
+    IDC_ICQSERVER, 0x403, 24, 0
+0x6f4d, 0x697a, 0x6c6c, 0x2f61, 0x2e34, 0x2030, 0x6328, 0x6d6f, 0x6170, 
+0x6974, 0x6c62, 0x0065, 
+    IDC_ICQSERVER, 0x403, 10, 0
+0x4d20, 0x4953, 0x2045, 0x2e35, 0x0030, 
+    IDC_ICQSERVER, 0x403, 17, 0
+0x5320, 0x6e75, 0x534f, 0x3520, 0x392e, 0x7320, 0x6e75, 0x7534, "\000" 
+    IDC_ICQSERVER, 0x403, 6, 0
+0x5820, 0x3131, 0x0029, 
+    0
+END
 
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////

@@ -431,7 +431,7 @@ static void putItemToQueue1(rate_record *item, int nLev)
         return; // request xstatus from same contact, do it only once
     }
     pendingListSize1++;
-    pendingList1 = (rate_record**)realloc(pendingList1, pendingListSize1*sizeof(rate_record*));
+    pendingList1 = (rate_record**)SAFE_REALLOC(pendingList1, pendingListSize1*sizeof(rate_record*));
     tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
     memcpy(tmp, item, sizeof(rate_record));
     pendingList1[pendingListSize1 - 1] = tmp;
@@ -575,7 +575,7 @@ static void putItemToQueue2(rate_record *item, int nLev)
   if (!bFound)
   { // not found, enlarge the queue
     pendingListSize2++;
-    pendingList2 = (rate_record**)realloc(pendingList2, pendingListSize2*sizeof(rate_record*));
+    pendingList2 = (rate_record**)SAFE_REALLOC(pendingList2, pendingListSize2*sizeof(rate_record*));
   }
   tmp = (rate_record*)SAFE_MALLOC(sizeof(rate_record));
   memcpy(tmp, item, sizeof(rate_record));

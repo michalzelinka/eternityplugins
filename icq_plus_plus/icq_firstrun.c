@@ -62,10 +62,10 @@ BOOL CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM 
       DWORD dwUIN;
       char pszUIN[20];
 
-	    InitIconLib();
+	  InitIconLib();
 
       ICQTranslateDialog(hwndDlg);
-	    SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) IconLibGetIcon("proto"));
+	  SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM) IconLibGetIcon("proto"));
 
       dwUIN = ICQGetContactSettingUIN(NULL);
 

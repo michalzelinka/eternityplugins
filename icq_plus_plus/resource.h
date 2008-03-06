@@ -33,8 +33,9 @@
 #define IDI_SET_INVIS                   135
 #define IDI_SERVLIST_ADD                136
 #define IDD_TZER                        137
-#define IDI_TZER                        137
 #define IDI_SEND_TZER                   138
+#define IDI_TZER                        139
+#define IDD_ICQ_CAPS_LIST               140
 #define IDI_ICON2                       141
 #define IDD_CONFIRM                     151
 #define IDD_OPT_ICQ                     152
@@ -92,6 +93,7 @@
 #define IDD_ICQ_REG_UIN                 406
 #define IDD_OPT_ICQ_EVENTS              407
 #define IDC_TZER_COMBO                  408
+#define IDD_OPT_ASD                     408
 #define IDC_TZER_NAME                   409
 #define IDC_POPUPS_ENABLED              410
 #define IDC_POPUPS_LOG_ENABLED          411
@@ -142,6 +144,9 @@
 #define IDC_POPUP_AUTH_BACKCOLOR        480
 #define IDC_POPUP_AUTH_TEXTCOLOR        481
 #define IDC_POPUP_AUTH_TIMEOUT          482
+#define IDC_POPUP_XUPDATER_BACKCOLOR    483
+#define IDC_POPUP_XUPDATER_TEXTCOLOR    484
+#define IDC_POPUP_XUPDATER_TIMEOUT      485
 #define IDC_LOG                         1001
 #define IDI_EXPANDSTRINGEDIT            1001
 #define IDC_SAVEPASS                    1004
@@ -163,31 +168,31 @@
 #define IDC_EDITAUTH                    1017
 #define IDC_RNCHNGS                     1017
 #define IDC_LOGINPW                     1018
-#define IDC_INSTRUCTION                 1019
 #define IDC_RNPLGNM                     1019
+#define IDC_INSTRUCTION                 1019
+#define IDC_RLNPLGNM2                   1020
 #define IDC_PASSWORD                    1020
 #define IDC_SUPTIME                     1020
 #define IDC_DCENABLE                    1020
-#define IDC_RLNPLGNM2                   1020
+#define IDC_RNVER                       1021
 #define IDC_DCPASSIVE                   1021
 #define IDC_OLDPASS                     1021
-#define IDC_RNVER                       1021
+#define IDC_RNVER2                      1022
 #define IDC_DCPASSIVE2                  1022
 #define IDC_DCICON                      1022
 #define IDC_ICQNUM                      1022
-#define IDC_RNVER2                      1022
 #define IDC_RNAUTH                      1023
-#define IDC_RETRIEVE                    1024
 #define IDC_RNAUTH2                     1024
+#define IDC_RETRIEVE                    1024
 #define IDC_RNCPR                       1025
-#define IDC_SCROLLBAR1                  1026
 #define IDC_RNCPR2                      1026
-#define IDC_CHANGEID                    1027
+#define IDC_SCROLLBAR1                  1026
 #define IDC_RNVERSTICK                  1027
+#define IDC_CHANGEID                    1027
 #define IDC_IDSTATIC                    1028
+#define IDC_RNCSICON                    1029
 #define IDC_HIDE_ID                     1029
 #define IDC_HIDEID                      1029
-#define IDC_RNCSICON                    1029
 #define IDC_AIMENABLE                   1030
 #define IDC_GETSTATUS                   1030
 #define IDC_BUTTON1                     1032
@@ -197,6 +202,8 @@
 #define IDC_REGUIN                      1032
 #define IDC_POPUPS_OPTIONS              1032
 #define IDC_OK                          1032
+#define IDC_ASDOPTIONS                  1032
+#define IDC_CAPSBOX                     1032
 #define IDC_VERSION_CHECKBOX            1034
 #define IDC_CLIST                       1035
 #define IDC_KILLUNKNOWN                 1038
@@ -215,18 +222,26 @@
 #define IDC_TZER                        1043
 #define IDC_LOG_REMOVE_HISTORY          1043
 #define IDC_UINPOPUP                    1043
+#define IDC_DETECT_VIA_STATUS_MESSAGE   1043
 #define IDC_CUSTOM_CAP                  1044
 #define IDC_SPAM_POPUP_ENABLE           1044
 #define IDC_CHECK4                      1044
+#define IDC_DETECT_VIA_ZTRAZ            1044
+#define IDC_DETECT_VIA_XTRAZ            1044
 #define IDC_KILLSPAMBOTS                1045
 #define IDC_LIST1                       1045
 #define IDC_CLIENTCAPS                  1045
 #define IDC_WAS_FOUND_POPUP_ENABLE      1045
 #define IDC_SERVERS                     1045
+#define IDC_CHECK5                      1045
+#define IDC_DETECT_VIA_URL              1045
+#define IDC_CAPABILITIES                1045
 #define IDC_CLIENTICON                  1046
 #define IDC_SCAN_POPUP_ENABLE           1046
+#define IDC_DETECT_UNAUTHORIZED         1046
 #define IDC_TIMESTAMPS                  1047
 #define IDC_UNKNOWN_POPUP_ENABLE        1047
+#define IDC_DETECT_VIA_AUTH             1047
 #define IDC_EMAIL                       1048
 #define IDC_ICON_POS_TEXT               1048
 #define IDC_VIS_POPUP_ENABLE            1048
@@ -239,7 +254,6 @@
 #define IDC_NEEDRESTART                 1056
 #define IDC_SET_VERSION                 1057
 #define IDC_FORCEXSTATUS                1057
-#define IDC_CUSTCAPEDIT                 1058
 #define IDC_CUSTCAPSTATIC               1059
 #define IDC_GENDER                      1060
 #define IDADD                           1060
@@ -261,9 +275,11 @@
 #define IDC_CLIENTC_CHANGE_POPUP        1067
 #define IDC_CLIENT_CHANGE_POPUP         1067
 #define IDC_XSTUPDATE                   1067
+#define IDC_ASD_FOR_OFFLINE             1067
 #define IDC_EDIT1                       1068
 #define IDC_FILEPATH                    1068
 #define IDC_XSTUPDATERATE               1068
+#define IDC_CAPL_EDIT                   1068
 #define IDC_POSITION                    1069
 #define IDC_BROWSE                      1069
 #define IDC_LOG_CHECKSTATUS_FILE        1070
@@ -285,13 +301,20 @@
 #define IDC_REQUEST_LOG_FILE            1080
 #define IDC_LOG_REQUEST_FILE            1080
 #define IDC_LOG_REQUEST_HISTORY         1081
+#define IDC_LOG_ASD_FILE                1082
 #define IDC_DC_ICON_POS_TEXT            1083
+#define IDC_LOG_REQUEST_HISTORY2        1083
+#define IDC_LOG_ASD_HISTORY             1083
+#define IDC_HTTPUSERAGENT               1084
 #define IDC_ENIFMIR                     1084
 #define IDC_ENIFMIRCBX                  1085
 #define IDC_COMBO1                      1086
 #define IDC_CHNG1                       1087
 #define IDC_CHNG2                       1088
 #define IDC_CHNG3                       1089
+#define IDC_CAPL_ADD                    1090
+#define IDC_CAPL_MODIFY                 1091
+#define IDC_CAPL_DELETE                 1092
 #define IDC_IP                          1094
 #define IDC_UINSTATIC                   1122
 #define IDC_UIN                         1123
@@ -336,6 +359,7 @@
 #define IDC_ASDSTARTUP                  1389
 #define IDC_POPAUTH                     1389
 #define IDC_CHECKITEM                   1390
+#define IDC_POPXUPDATER                 1390
 #define IDC_AGERANGE                    1410
 #define IDC_MARITALSTATUS               1411
 #define IDC_KEYWORDS                    1412
@@ -396,9 +420,9 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        138
+#define _APS_NEXT_RESOURCE_VALUE        257
 #define _APS_NEXT_COMMAND_VALUE         40001
-#define _APS_NEXT_CONTROL_VALUE         1088
+#define _APS_NEXT_CONTROL_VALUE         1603
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif

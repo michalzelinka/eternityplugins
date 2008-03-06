@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -6,7 +7,8 @@
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright © 2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -85,57 +87,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 	capstr* capId;
 	LPSTR szClient = {0};
 	
-	*bClientId = 1; // Most clients does not tick as MsgIDs
-
-	if (capId = MatchCap(caps, wLen, &capIcqJen, 4)) { // eternity mod caps detection
-      char sz[64];
-      static char szTmp[256];
-      BYTE mver0 = (*capId)[0x4];
-      BYTE mver1 = (*capId)[0x5];
-      BYTE mver2 = (*capId)[0x6];
-      BYTE mver3 = (*capId)[0x7];
-      BYTE iver0 = (*capId)[0x8];
-      BYTE iver1 = (*capId)[0x9];
-      BYTE iver2 = (*capId)[0xA];
-      BYTE iver3 = (*capId)[0xB];
-      BYTE secure = (*capId)[0xC];
-      BYTE Unicode = (BYTE)(dwFT3>>24)&0xFF;
-      if (mver1 < 20 && iver1 < 20)
-      {
-        strcpy(szTmp, "Miranda IM ");
-        if (mver0 == 0x80)
-        {
-          mir_snprintf(sz, sizeof(sz), "0.%u.%u alpha build #%u", mver1, mver2,mver3);
-          lstrcatA(szTmp, sz);
-        }
-        else
-        {
-          mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u", mver0, mver1, mver2,mver3);
-          lstrcatA(szTmp, sz);
-        }
-			  if (Unicode == 0x80)
-				  lstrcatA(szTmp," Unicode");
-			  else if (dwFT1 == 0x7fffffff)
-				  lstrcatA(szTmp," Unicode");
-        lstrcatA(szTmp," (ICQ "ICQ_THISMODNAME" ");
-        if (iver0 == 0x80)
-        {
-          mir_snprintf(sz, sizeof(sz), "0.%u.%u.%u alpha)", iver1, iver2, iver3);
-          lstrcatA(szTmp,sz);
-        }
-        else
-        {
-          mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u)", iver0, iver1, iver2, iver3);
-          lstrcatA(szTmp,sz);
-        }
-        if (secure != 0 && secure != 20||dwFT3 == 0x5AFEC0DE)
-				  lstrcatA(szTmp, " (SecureIM)");
-        szClient = szTmp;
-      }
-    } // eternity detection END
+	*bClientId = CLID_ALTERNATIVE; // Most clients does not tick as MsgIDs
 
   // Is this a Miranda IM client?
-  else if (dwFT1 == 0xffffffff) // eternity "else" more ..
+  if (dwFT1 == 0xffffffff) 
   {
     if (dwFT2 == 0xffffffff)
     { // This is Gaim not Miranda
@@ -149,25 +104,25 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     { // And this is most probably Spam Bot
       szClient = cliSpamBot;
     }
-	  else if(!MatchCap(caps,wLen, &capIcqJs7, 4)&&!MatchCap(caps,wLen, &capIcqJSin, 4)&&!MatchCap(caps,wLen, &capIcqJp, 4))
-      { // Yes this is most probably Miranda, get the version info  (need better realization)
-		  unsigned ver1 = (dwFT2>>24)&0xFF;
-		  unsigned ver2 = (dwFT2>>16)&0xFF;
-		  unsigned ver3 = (dwFT2>>8)&0xFF;
-		  unsigned ver4 = (dwFT2)&0xFF;
-		  if(ver1 & 0x80)
-		  {
-			  makeClientVersion(szClientBuf, "Miranda IM (ICQ 0.", ver2, ver3, ver4, 0);
-			  lstrcatA(szClientBuf," alpha)");
-		  }
-		  else
-		  {
-			  makeClientVersion(szClientBuf, "Miranda IM (ICQ ", ver1, ver2, ver3, ver4);
-			  lstrcatA(szClientBuf,")");
-		  }
-		  szClient = szClientBuf;
-		  *bClientId = 2;  
-	  }
+	else if(!MatchCap(caps,wLen, &capIcqJs7, 4)&&!MatchCap(caps,wLen, &capIcqJSin, 4)&&!MatchCap(caps,wLen, &capIcqJp, 4)&&!MatchCap(caps,wLen, &capIcqJen, 4))
+    { // Yes this is most probably Miranda, get the version info  (need better realization)
+		unsigned ver1 = (dwFT2>>24)&0xFF;
+		unsigned ver2 = (dwFT2>>16)&0xFF;
+		unsigned ver3 = (dwFT2>>8)&0xFF;
+		unsigned ver4 = (dwFT2)&0xFF;
+		if(ver1 & 0x80)
+		{
+			makeClientVersion(szClientBuf, "Miranda IM (ICQ 0.", ver2, ver3, ver4, 0);
+			lstrcatA(szClientBuf," alpha)");
+		}
+		else
+		{
+			makeClientVersion(szClientBuf, "Miranda IM (ICQ ", ver1, ver2, ver3, ver4);
+			lstrcatA(szClientBuf,")");
+		}
+		szClient = szClientBuf;
+		*bClientId = CLID_MIRANDA;
+	}
   }
   else if ((dwFT1 & 0xFF7F0000) == 0x7D000000)
   { // This is probably an Licq client
@@ -245,6 +200,15 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     null_snprintf(szClientBuf, 64, "R&Q %u", (unsigned)dwFT2);
     szClient = szClientBuf;   
   }
+  else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666) 
+ 	{ // http://darkjimm.ucoz.ru/
+    strcpy(szClientBuf, "D[i]Chat"); 
+ 	  if (dwFT2 == 0x10000) 
+ 	    strcat(szClientBuf, " v.0.1a"); 
+ 	  else if (dwFT2 == 0x22) 
+ 	    strcat(szClientBuf, " v.0.2b"); 
+    szClient = szClientBuf; 
+  }
   else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
   {
     if ((dwFT1 < dwOnlineSince + 3600) && (dwFT1 > (dwOnlineSince - 3600)))
@@ -266,7 +230,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     if (dwUin && caps)
     {
       // check capabilities for client identification
-		if ((capId = MatchCap(caps, wLen, &capMirandaIm, 8))&&(!MatchCap(caps, wLen, &capIcqJSin, 4)&&!MatchCap(caps,wLen,&capIcqJs7, 4)&&!MatchCap(caps,wLen,&capIcqJp, 4)))
+		if ((capId = MatchCap(caps, wLen, &capMirandaIm, 8))&&(!MatchCap(caps, wLen, &capIcqJSin, 4)&&!MatchCap(caps,wLen,&capIcqJs7, 4)&&!MatchCap(caps,wLen,&capIcqJp, 4)&&!MatchCap(caps,wLen,&capIcqJen, 4)))
 		{ // new Miranda Signature
 			char sz[64];
 			static char szTmp[256];
@@ -281,42 +245,61 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 			strcpy(szTmp, "Miranda IM ");
 			if (MatchCap(caps,wLen,&capMirandaMobile,13))
 				lstrcatA(szTmp, "Mobile ");
-			if (mver0 == 0x80) 
+// eternity : nicer Miranda signatures
+			if (mver0 == 0x80)
 			{
-				mir_snprintf(sz, sizeof(sz), "0.%u.%u alpha build #%u", mver1, mver2,mver3);
+        if (mver2 == 0x00)
+          mir_snprintf(sz, sizeof(sz), "0.%u alpha build #%u", mver1, mver3); // 0.x alpha #x
+        else
+				  mir_snprintf(sz, sizeof(sz), "0.%u.%u preview #%u", mver1, mver2,mver3); // 0.x.x preview #x
 				lstrcatA(szTmp, sz);
 			}
-			else
+			else // others, but also for those where bug caused that alpha flag was not send
 			{
-				mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u", mver0, mver1, mver2,mver3);
+        if (mver2 == 0x00)
+          mir_snprintf(sz, sizeof(sz), "%u.%u", mver0, mver1); // 0.x final
+        else
+          mir_snprintf(sz, sizeof(sz), "%u.%u.%u", mver0, mver1, mver2); // 0.x.x final
 				lstrcatA(szTmp, sz);
+        if (mver3 != 0x00 && mver3 != 0x64) // if some build version is set, then it's probably alpha
+        {
+          mir_snprintf(sz, sizeof(sz), " alpha build #%u", mver3); // ".. alpha #x"
+          lstrcatA(szTmp, sz);
+        }
 			}
-			if (dwFT1 == 0x7fffffff)
+// eternity : nicer Miranda signatures - END
+			if (dwFT1 == 0x7fffffff ||(BYTE)((dwFT3>>24)&0xFF) == 0x80)
 				lstrcatA(szTmp, " Unicode");
 			lstrcatA(szTmp," (ICQ");
-			if(MatchCap(caps,wLen,&capIcqJs7old, 0x10)||MatchCap(caps,wLen,&capIcqJs7s, 0x10)) //detecting sss & s7 old mod versions
+      if(MatchCap(caps,wLen,&capIcqJs7old, 0x10)||MatchCap(caps,wLen,&capIcqJs7s, 0x10)) //detecting sss & s7 old mod versions
 				lstrcatA(szTmp, " S7 & SSS (old)");
-      switch (iver0) {
-        case 0x81 : lstrcatA(szTmp, " BM"); break; // detecting BM mod
-					break;
-        case 0x88 : lstrcatA(szTmp, " eternity (old)"); break; // eternity mod
-        default   : break;
+      else {
+        switch (iver0) {
+          case 0x81 : lstrcatA(szTmp, " BM Mod"); break; // detecting BM mod
+					  break;
+          case 0x88 : lstrcatA(szTmp, " eternity Mod (old)"); break; // eternity mod
+          default   : break;
+        }
+        switch (iver2) {
+          case 0x58 : lstrcatA(szTmp, " "ICQ_THISMODNAME); break; // detecting naturalized eternity/PlusPlus++ mod
+          default : break;
+        }
       }
 			lstrcatA(szTmp, " ");
 // eternity mod :: slightly modded clients versions
       switch (iver0) {
         case 0x88 : // eternity (old)
         case 0x81 : // BM
-        case 0x80 : mir_snprintf(sz, sizeof(sz),  "0.%u.%u.%u alpha)", iver1, iver2, iver3); // mir and bm 0.x
+        case 0x80 : mir_snprintf(sz, sizeof(sz), "0.%u.%u.%u alpha)", iver1, iver2, iver3); // mir and bm 0.x
                     break;
-        default   : mir_snprintf(sz, sizeof(sz),  "%u.%u.%u.%u)",iver0, iver1, iver2, iver3); // other x.x (only for 6.6.6.0?)
+        default   : mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u)",iver0, iver1, iver2, iver3); // other x.x (only for 6.6.6.0?)
       }
       lstrcatA(szTmp, sz);
 // END
 			if (dwFT3 == 0x5AFEC0DE||MatchCap(caps,wLen,&capIcqJs7s, 0x10))
-				lstrcatA(szTmp, " (SecureIM)");
+				lstrcatA(szTmp, " [SecureIM]");
 			szClient = szTmp;
-			*bClientId = 2;
+			*bClientId = CLID_MIRANDA;
 		}
 		else if (MatchCap(caps, wLen, &capTrillian, 0x10) || MatchCap(caps, wLen, &capTrilCrypt, 0x10))
 		{ // this is Trillian, check for new versions
@@ -325,7 +308,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 				if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
 					szClient = "Trillian Astra";
 				else
-					szClient = "Trillian v3";
+				{ // workaroud for a bug in Trillian - make it receive msgs, other features will not work!
+				     ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
+				     szClient = "Trillian v3";
+				  }
 			}
 			else
 				szClient = cliTrillian;
@@ -342,6 +328,23 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 				szClient = szClientBuf;
 			}
 		}
+      else if (capId = MatchCap(caps, wLen, &capClimm, 0xC))
+      {
+        unsigned ver1 = (*capId)[0xC];
+        unsigned ver2 = (*capId)[0xD];
+        unsigned ver3 = (*capId)[0xE];
+        unsigned ver4 = (*capId)[0xF];
+
+        makeClientVersion(szClientBuf, "climm ", ver1, ver2, ver3, ver4);
+		if ((ver1 & 0x80) == 0x80) 
+          strcat(szClientBuf, " alpha");
+        if (dwFT3 == 0x02000020)
+          strcat(szClientBuf, "/Win32");
+        else if (dwFT3 == 0x03000800)
+          strcat(szClientBuf, "/MacOS X");
+
+        szClient = szClientBuf;
+      }		
 		else if (capId = MatchCap(caps, wLen, &capSim, 0xC))
       {
         unsigned ver1 = (*capId)[0xC];
@@ -388,6 +391,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         unsigned ver4 = (*capId)[0xF];
 
         makeClientVersion(szClientBuf, "mICQ ", ver1, ver2, ver3, ver4);
+		if ((ver1 & 0x80) == 0x80) strcat(szClientBuf, " alpha");
 
         szClient = szClientBuf;
       }
@@ -429,10 +433,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       {
         szClient = "QIP Mobile (Java)";
       }
-  	  else if (MatchCap(caps,wLen,&capQipSymbian,0x10))
-  	  {
-  		  szClient = "QIP Mobile (Symbian)";
-  	  }
+	  else if (MatchCap(caps,wLen,&capQipSymbian,0x10))
+	  {
+		  szClient = "QIP Mobile (Symbian)";
+	  }
       else if (MatchCap(caps, wLen, &capQipInfium, 0x10))
       {
         char ver[10];
@@ -480,6 +484,20 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         strncat(szClientBuf, (*capId) + 5, 11);
         szClient = szClientBuf;
       }
+      else if (capId = MatchCap(caps, wLen, &capCorePager, 0xA))
+      { // http://corepager.net.ru/index/0-2
+        strcpy(szClientBuf, "CORE Pager");
+        if (dwFT2 == 0x0FFFF0011 && dwFT3 == 0x1100FFFF && (dwFT1 >> 0x18))
+        {
+          char ver[16];
+
+          null_snprintf(ver, 10, " %d.%d", dwFT1 >> 0x18, (dwFT1 >> 0x10) & 0xFF);
+          if ((dwFT1 & 0xFF) == 0x0B)
+            strcat(ver, " Beta");
+          strcat(szClientBuf, ver);
+        }
+        szClient = szClientBuf;
+      }
       else if (MatchCap(caps, wLen, &capMacIcq, 0x10))
       {
         szClient = "ICQ for Mac";
@@ -507,26 +525,32 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
       { // http://www.inlusoft.com
         szClient = "Inlux Messenger";
       }
-  	  else if (capId = MatchCap(caps, wLen, &capVmICQ, 5))
-  	  {
-  		  strcpy(szClientBuf, "VmICQ ");
-  		  strncat(szClientBuf, (*capId) + 5, 11);
-  		  szClient = szClientBuf;
-  	  }
+	  else if (capId = MatchCap(caps, wLen, &capVmICQ, 5))
+	  {
+		  strcpy(szClientBuf, "VmICQ ");
+		  strncat(szClientBuf, (*capId) + 5, 11);
+		  szClient = szClientBuf;
+	  }
+      else if (capId = MatchCap(caps, wLen, &capSmapeR, 0x07))
+      { // http://www.smape.com/smaper
+        strcpy(szClientBuf, "SmapeR");
+        strncat(szClientBuf, (*capId) + 6, 10);
+        szClient = szClientBuf;
+      }
       else if (capId = MatchCap(caps, wLen, &capMipClient, 0x04))
       { //http://mip.rufon.net - new signature
         strcpy(szClientBuf, "MIP ");
         strncat(szClientBuf, (*capId) + 4, 12);
         szClient = szClientBuf;
       }
-  	  else if(capId = MatchCap(caps,wLen,&capYapp, 4))
-  	  {
-  		  strcpy(szClientBuf, "Yapp! v");
-  		  strncat(szClientBuf, (*capId) + 8, 5);
-  		  szClient = szClientBuf;
-  	  }
-  	  else if(!wVersion && CheckContactCapabilities(hContact, CAPF_DIRECT|CAPF_RTF|CAPF_TYPING|CAPF_UTF))
-  		  szClient = "GlICQ";
+	  else if(capId = MatchCap(caps,wLen,&capYapp, 4))
+	  {
+		  strcpy(szClientBuf, "Yapp! v");
+		  strncat(szClientBuf, (*capId) + 8, 5);
+		  szClient = szClientBuf;
+	  }
+	  else if(!wVersion && CheckContactCapabilities(hContact, CAPF_DIRECT|CAPF_RTF|CAPF_TYPING|CAPF_UTF))
+		  szClient = "GlICQ";
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -535,7 +559,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           szClient = cliLibicqUTF; // IcyJuice added unicode capability to libicq2000
         // others - like jabber transport uses unmodified library, thus cannot be detected
       }
-      else if (szClient == NULL && !((capId = MatchCap(caps, wLen, &capIcqJs7, 4))||(capId = MatchCap(caps, wLen, &capIcqJSin, 4))||(capId = MatchCap(caps, wLen, &capIcqJp, 4)))) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
+      else if (szClient == NULL && !((capId = MatchCap(caps, wLen, &capIcqJs7, 4))||(capId = MatchCap(caps, wLen, &capIcqJSin, 4))||(capId = MatchCap(caps, wLen, &capIcqJp, 4))||(capId = MatchCap(caps, wLen, &capIcqJen, 4)))) // HERE ENDS THE SIGNATURE DETECTION, after this only feature default will be detected
       {
 		  if (wVersion == 8 && CheckContactCapabilities(hContact, CAPF_XTRAZ) && (MatchCap(caps, wLen, &capIMSecKey1, 6) || MatchCap(caps, wLen, &capIMSecKey2, 6)))
 		  { // ZA mangled the version, OMG!
@@ -546,21 +570,21 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           if (MatchCap(caps, wLen, &capIs2001, 0x10))
           {
             if (!dwFT1 && !dwFT2 && !dwFT3)
-			      {
+			{
               if (CheckContactCapabilities(hContact, CAPF_RTF))
                 szClient = "TICQClient"; // possibly also older GnomeICU
               else
                 szClient = "ICQ for Pocket PC";
-			      }
+			}
             else
             {
-              *bClientId = 0;
+              *bClientId = CLID_GENERIC;
               szClient = "ICQ 2001";
             }
           }
           else if (MatchCap(caps, wLen, &capIs2002, 0x10))
           {
-            *bClientId = 0;
+            *bClientId = CLID_GENERIC;
             szClient = "ICQ 2002";
           }
 		  else if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_UTF | CAPF_RTF) && !MatchCap(caps, wLen, &capIcqJs7, 0x4) && !MatchCap(caps,wLen,&capIcqJSin, 0x4))
@@ -590,7 +614,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
         { // try to determine lite versions
           if (CheckContactCapabilities(hContact, CAPF_XTRAZ))
           {
-            *bClientId = 0;
+            *bClientId = CLID_GENERIC;
             if (CheckContactCapabilities(hContact, CAPF_AIM_FILE))
             {
               if (MatchCap(caps, wLen, &captZers, 0x10))
@@ -598,16 +622,17 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 if (MatchCap(caps, wLen, &capHtmlMsgs, 0x10))
                 {
                   strcpy(szClientBuf, "ICQ 6");
+                  *bClientId = CLID_ICQ6;
                 }
                 else
                 {
-                  strcpy(szClientBuf, "icq5.1");
+                  strcpy(szClientBuf, "ICQ 5.1");
                 }
                 SetContactCapabilities(hContact, CAPF_STATUSMSGEXT);
               }
               else
               {
-                strcpy(szClientBuf, "icq5");
+                strcpy(szClientBuf, "ICQ 5");
               }
               if (MatchCap(caps, wLen, &capRambler, 0x10))
               {
@@ -651,18 +676,18 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "&RQ";
             else
             {
-              *bClientId = 0;
+              *bClientId = CLID_GENERIC;
               szClient = "ICQ 2000";
             }
           }
           else if (CheckContactCapabilities(hContact, CAPF_UTF))
           {
             if (CheckContactCapabilities(hContact, CAPF_TYPING))
-              szClient = "Icq2Go! (Java)";
+              szClient = "ICQ2Go! (Java)";
             else if (wClass & CLASS_WIRELESS)
               szClient = "Pocket Web 1&1";
             else
-              szClient = "Icq2Go!";
+              szClient = "ICQ2Go! (Flash)"; // fixing overlay in Fingerprint
           }
 		 /* else if (CheckContactCapabilities(hContact, CAPF_UTF))
           {
@@ -713,6 +738,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "PyICQ-t Jabber Transport";
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_DIRECT | CAPF_TYPING) && wLen == 0x40)
               szClient = "Agile Messenger"; // Smartphone 2002
+            else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_DIRECT | CAPF_AIM_FILE) && MatchCap(caps, wLen, &capAimFileShare, 0x10))
+              szClient = "Slick"; // http://lonelycatgames.com/?app=slick
           }
         }
       }
@@ -810,10 +837,10 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 	  }
 	}
   }
-  if (!szClient&&!MatchCap(caps, wLen, &capIcqJs7, 4)&&!MatchCap(caps, wLen, &capIcqJSin, 4)&&!MatchCap(caps, wLen, &capIcqJp, 4))
+  if (!szClient&&!MatchCap(caps, wLen, &capIcqJs7, 4)&&!MatchCap(caps, wLen, &capIcqJSin, 4)&&!MatchCap(caps, wLen, &capIcqJp, 4)&&!MatchCap(caps, wLen, &capIcqJen, 4))
   {
 	  NetLog_Server("No client identification, put default ICQ client for protocol.");
-	  *bClientId = 0;
+	  *bClientId = CLID_GENERIC;
 	  switch (wVersion)
 	  {  // client detection failed, provide default clients
 	  case 6:
@@ -838,7 +865,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
   }
   if (!szClient)
   {
-	  if ((capId = MatchCap(caps, wLen, &capIcqJs7, 4))||(capId = MatchCap(caps, wLen, &capIcqJSin, 4))||(capId = MatchCap(caps, wLen, &capIcqJp, 4))) //detecting mod and core version, please fix me
+	  if ((capId = MatchCap(caps, wLen, &capIcqJs7, 4))||(capId = MatchCap(caps, wLen, &capIcqJSin, 4))||(capId = MatchCap(caps, wLen, &capIcqJp, 4))||(capId = MatchCap(caps, wLen, &capIcqJen, 4))) //detecting mod and core version, please fix me
 	  {
 		  char sz[64];
 		  static char szTmp[256];
@@ -856,55 +883,68 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 		  if (mver1 < 20 && iver1 < 20)
 		  {
 			  strcpy(szTmp, "Miranda IM ");
-			  if (mver0 == 0x80) 
+// eternity : nicer Miranda signatures
+			  if (mver0 == 0x80)
 			  {
-				  mir_snprintf(sz, sizeof(sz), "0.%u.%u alpha build #%u", mver1, mver2,mver3);
+          if (mver2 == 0x00)
+            mir_snprintf(sz, sizeof(sz), "0.%u alpha build #%u", mver1, mver3);
+          else
+				    mir_snprintf(sz, sizeof(sz), "0.%u.%u alpha build #%u", mver1, mver2, mver3);
 				  lstrcatA(szTmp, sz);
 			  }
 			  else
 			  {
-				  mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u", mver0, mver1, mver2,mver3);
+          if (mver2 == 0x00)
+            mir_snprintf(sz, sizeof(sz), "%u.%u", mver0, mver1);
+          else
+            mir_snprintf(sz, sizeof(sz), "%u.%u.%u", mver0, mver1, mver2);
 				  lstrcatA(szTmp, sz);
+          if (mver3 != 0x00 && mver3 != 0x64)
+          {
+            mir_snprintf(sz, sizeof(sz), " alpha build #%u", mver3);
+            lstrcatA(szTmp, sz);
+          }
 			  }
-			  if (Unicode == 0x80)
+// eternity : nicer Miranda signatures - END
+			  if (Unicode == 0x80||dwFT1 == 0x7fffffff)
 				  lstrcatA(szTmp," Unicode");
-			  else if (dwFT1 == 0x7fffffff)
-				  lstrcatA(szTmp," Unicode");
+        lstrcatA( szTmp, " (ICQ" );
 			  if (ModVer == 'p')
-				  lstrcatA(szTmp," (ICQ "ICQ_MODNAME);
+				  //lstrcatA(szTmp," (ICQ "ICQ_MODNAME"");
+				  lstrcatA(szTmp," "ICQ_MODNAME);
+				else if (((*capId)[0x0]) == 'e')
+				  lstrcatA(szTmp," "ICQ_THISMODNAME);
 			  else if (((*capId)[0x0]) == 's')
-				  lstrcatA(szTmp," (ICQ S!N");
-			  else if (ModVer == 'j')
-				  lstrcatA(szTmp," (ICQ S7 & SSS");
-			  lstrcatA(szTmp," ");
+				  lstrcatA(szTmp," S!N Mod");
+			  else if(ModVer == 'j')
+				  lstrcatA(szTmp," S7 & SSS Mod");
+				lstrcatA(szTmp," ");
 			  if (iver0 == 0x80)
 			  {
-				  mir_snprintf(sz, sizeof(sz),  "0.%u.%u.%u alpha)", iver1, iver2, iver3);
+				  mir_snprintf(sz, sizeof(sz), "0.%u.%u.%u alpha)", iver1, iver2, iver3);
 				  lstrcatA(szTmp,sz);
 			  }
 			  else
 			  {
-				  mir_snprintf(sz, sizeof(sz),  "%u.%u.%u.%u)",iver0, iver1, iver2, iver3);
+				  mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u)",iver0, iver1, iver2, iver3);
 				  lstrcatA(szTmp,sz);
 			  }
 			  if (secure != 0 && secure != 20||dwFT3 == 0x5AFEC0DE)
-				  lstrcatA(szTmp, " (SecureIM)");
+				  lstrcatA(szTmp, " [SecureIM]");
 		  }
 		  else if(MatchCap(caps,wLen,&capIcqJs7s,0x10))
-			  strcpy(szTmp,"Miranda IM (ICQ S7 & SSS old) (SecureIM)");			  
+			  strcpy(szTmp,"Miranda IM (ICQ S7 & SSS Mod (old)) [SecureIM]");
 		  else if(MatchCap(caps,wLen,&capIcqJs7old,0x10))
-			  strcpy(szTmp,"Miranda IM (ICQ S7 & SSS old)");			  
+			  strcpy(szTmp,"Miranda IM (ICQ S7 & SSS Mod (old))");
 		  else
-			  strcpy(szTmp,"Miranda IM (ICQ S7 & SSS) (broken ID)");			  
+			  strcpy(szTmp,"Miranda IM (ICQ S7 & SSS Mod) [broken ID]");
 		  szClient = szTmp;
 	  }
 	  else if(CheckContactCapabilities(hContact, CAPF_SRV_RELAY | CAPF_DIRECT | CAPF_TYPING) && wVersion > 1000)
 	  {
 		  szClient = "QIP 2005a (as Unknown)";
 	  }
-	  else if(CheckContactCapabilities(hContact, CAPF_UTF)&&!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)&&
-		       !CheckContactCapabilities(hContact, CAPF_TYPING))//i hate pocket web ;)
-
+    else if(CheckContactCapabilities(hContact, CAPF_UTF)&&!CheckContactCapabilities(hContact, CAPF_SRV_RELAY)&&!CheckContactCapabilities(hContact, CAPF_TYPING))//i hate pocket web ;)
 		  szClient = "Pocket Web 1&1";
   }
   if (szClient)
@@ -916,7 +956,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 		  szExtra = " + SimpPro";
       if (MatchCap(caps, wLen, &capIMsecure, 0x10) || MatchCap(caps, wLen, &capIMSecKey1, 6) || MatchCap(caps, wLen, &capIMSecKey2, 6))
 		  szExtra = " + IMsecure";
-	  if (!strstr(szClient, "Miranda") && ((capId = MatchCap(caps, wLen, &capIcqJs7, 4))||(capId = MatchCap(caps, wLen, &capIcqJp, 4))||(capId = MatchCap(caps, wLen, &capIcqJSin, 4)))) //detecting mod and core version, please fix me
+	  if (!strstr(szClient, "Miranda") && ((capId = MatchCap(caps, wLen, &capIcqJs7, 4))||(capId = MatchCap(caps, wLen, &capIcqJen, 4))||(capId = MatchCap(caps, wLen, &capIcqJp, 4))||(capId = MatchCap(caps, wLen, &capIcqJSin, 4)))) //detecting mod and core version, please fix me
 	  {
 		  char sz[64];
 		  static char szTmp[256];
@@ -944,25 +984,25 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 				  mir_snprintf(sz, sizeof(sz), "%u.%u.%u.%u", mver0, mver1, mver2,mver3);
 				  lstrcatA(szTmp, sz);
 			  }
-			  if (Unicode == 0x80)
-				  lstrcatA(szTmp," Unicode");
-			  else if (dwFT1 == 0x7fffffff)
+			  if (Unicode == 0x80||dwFT1 == 0x7fffffff)
 				  lstrcatA(szTmp," Unicode");
 			  if (ModVer == 'p')
 				  lstrcatA(szTmp," (ICQ "ICQ_MODNAME);
+			  else if (((*capId)[0x0]) == 'e')
+				  lstrcatA(szTmp," (ICQ "ICQ_THISMODNAME);
 			  else if (((*capId)[0x0]) == 's')
-				  lstrcatA(szTmp," (ICQ S!N");
+				  lstrcatA(szTmp," (ICQ S!N Mod");
 			  else if(ModVer == 'j')
-				  lstrcatA(szTmp," (ICQ S7 & SSS");
+				  lstrcatA(szTmp," (ICQ S7 & SSS Mod");
 				lstrcatA(szTmp," ");
 			  if (iver0 == 0x80)
 			  {
-				  mir_snprintf(sz, sizeof(sz),  "0.%u.%u.%u alpha)", iver1, iver2, iver3);
+				  mir_snprintf(sz, sizeof(sz),  " 0.%u.%u.%u alpha)", iver1, iver2, iver3);
 				  lstrcatA(szTmp,sz);
 			  }
 			  else		
 			  {
-				  mir_snprintf(sz, sizeof(sz),  "%u.%u.%u.%u)",iver0, iver1, iver2, iver3);
+				  mir_snprintf(sz, sizeof(sz),  " %u.%u.%u.%u)",iver0, iver1, iver2, iver3);
 				  lstrcatA(szTmp,sz);
 			  }
 			  lstrcatA(szTmp,")");
@@ -971,7 +1011,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 		  }
 		  if (iver1 >= 20 && mver1 >= 20||MatchCap(caps, wLen, &capIcqJs7old, 0x10))
 		  {
-			  strcpy(sz, " (Miranda IM (ICQ S7 & SSS))");
+			  strcpy(sz, " (Miranda IM (ICQ S7 & SSS Mod))");
 			  strcpy(szTmp,sz);
 			  if (MatchCap(caps, wLen, &capIcqJs7s, 0x10))
 				  lstrcatA(sz," (SecureIM))");
@@ -989,6 +1029,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 			  lstrcatA(szClient, szExtra);
 	  }
   }
+  /*
   { // custom miranda packs
 	  char *capId;
 	  if (capId = (char*)MatchCap(caps, wLen, &capMimPack, 4))
@@ -998,6 +1039,35 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 		  lstrcatA(szClient, szPack);
 	  }
   }
+  */
+ 	{ // custom miranda packs - multiple pack caps processing v1 
+ 	  char *capId; 
+ 	  char szOldPack[16]; 
+ 	  int i = 0; 
+ 	  BYTE *capsPos; 
+ 	  capsPos = caps; 
+ 	  lstrcpy( szOldPack, "" ); 
+ 	  for( i = 0; ; i++ ) 
+ 	  { 
+ 	    if ( MatchCap( capsPos, wLen, &capMimPack, 4 ) ) 
+ 	    { 
+ 	      char szPack[16]; 
+ 	      capId = ( char* )MatchCap( capsPos, wLen, &capMimPack, 4 ); 
+ 	      capsPos = caps + i * 16; 
+ 	      mir_snprintf( szPack, 16, " [%.12s]", capId + 4 ); 
+ 	      if ( lstrcmp( szPack, szOldPack) == 0 ) 
+ 	        continue; 
+ 	      else
+        { 
+ 	        lstrcatA( szClient, szPack ); 
+ 	        lstrcpy( szOldPack, szPack ); 
+ 	      } 
+ 	    } 
+ 	    else 
+ 	      break; 
+ 	  } 
+ 	} 
   NetLog_Server("Client identified as %s", szClient);
+  //  ICQWriteContactSettingUtf(hContact, "MirVer", szClient);  //thi already fixed in other place
   return szClient;
 }

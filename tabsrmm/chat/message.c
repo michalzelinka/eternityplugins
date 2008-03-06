@@ -20,7 +20,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: message.c 7113 2008-01-20 01:01:22Z nightwish2004 $
+$Id: message.c 7307 2008-02-18 16:56:02Z nightwish2004 $
 */
 
 #include "../commonheaders.h"
@@ -148,10 +148,30 @@ TCHAR* Chat_DoRtfToTags(char* pszText, SESSION_INFO* si)
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 4;
 					strcpy(InsertThis, "\n");
-				} else if (!memcmp(p1, "\\emdash", 7) || !memcmp(p1, "\\endash", 7)) {   // dashes
+				} else if (!memcmp(p1, "\\endash", 7)) {
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 7;
-					strcpy(InsertThis, "-");
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x93");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x96");
+#endif
+				} else if (!memcmp(p1, "\\emdash", 7)) {
+					bTextHasStarted = bJustRemovedRTF = TRUE;
+					iRemoveChars = 7;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\x94");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x97");
+#endif
+				} else if (!memcmp(p1, "\\bullet", 7)) {
+					bTextHasStarted = bJustRemovedRTF = TRUE;
+					iRemoveChars = 7;
+#if defined(_UNICODE)
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\xE2\x80\xA2");
+#else
+					mir_snprintf(InsertThis, SIZEOF(InsertThis), "\x95");
+#endif
 				} else if (!memcmp(p1, "\\line", 5)) {  // newline
 					bTextHasStarted = bJustRemovedRTF = TRUE;
 					iRemoveChars = 5;

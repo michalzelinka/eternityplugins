@@ -54,6 +54,7 @@ static void StoreDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting)
 
 
 
+
 static int CALLBACK PopupDlgProc(HWND hWnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
         switch(message) {
@@ -193,6 +194,12 @@ int ShowPopUpMsg(HANDLE hContact, DWORD dwUin, const char* szTitle, const char* 
 		  ppd.colorBack = RGB(0,0,0);
 		  ppd.colorText = RGB(255,255,255);
 		  strcat(szPrefix, "Auth");
+		  break;
+	  case POPTYPE_XUPDATER:
+		  rsIcon = MAKEINTRESOURCE(IDI_INFORMATION);
+		  ppd.colorBack = RGB(0,0,0);
+		  ppd.colorText = RGB(255,255,255);
+		  strcat(szPrefix, "XUpdater");
 		  break;
       default:
         return -1;

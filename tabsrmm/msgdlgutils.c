@@ -1,4 +1,4 @@
-/*
+_/*
 astyle --force-indent=tab=4 --brackets=linux --indent-switches
 		--pad=oper --one-line=keep-blocks  --unpad=paren
 
@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msgdlgutils.c 7052 2008-01-05 02:52:40Z nightwish2004 $
+$Id: msgdlgutils.c 7387 2008-03-03 18:02:00Z nightwish2004 $
 */
 
 /*
@@ -463,28 +463,7 @@ int MsgWindowUpdateMenu(HWND hwndDlg, struct MessageWindowData *dat, HMENU subme
 		EnableMenuItem(submenu, ID_TABMENU_CLEARSAVEDTABPOSITION, (DBGetContactSettingDword(dat->hContact, SRMSGMOD_T, "tabindex", -1) != -1) ? MF_ENABLED : MF_GRAYED);
 	}
 	else if (menuID == MENU_LOGMENU) {
-		int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0;
-		int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
-		int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
-
-		CheckMenuItem(submenu, ID_LOGMENU_SHOWTIMESTAMP, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWTIME ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGMENU_USECONTACTSLOCALTIME, MF_BYCOMMAND | iLocalTime ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGMENU_SHOWDATE, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWDATES ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWSECONDS ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGMENU_INDENTMESSAGEBODY, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDENT ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGMENU_USESIMPLETEMPLATE, MF_BYCOMMAND | (!(dat->dwFlags & MWF_LOG_NORMALTEMPLATES) ? MF_CHECKED : MF_UNCHECKED));
-		CheckMenuItem(submenu, ID_MESSAGEICONS_SHOWICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SHOWICONS ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_SYMBOLS ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_MESSAGEICONS_USEINCOMING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INOUTICONS ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGMENU_ACTIVATERTL, MF_BYCOMMAND | iRtl ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES, MF_BYCOMMAND | iLogStatus ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SHOWGRID, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GRID ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_INDIVIDUALBKG ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_GROUPMESSAGES, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_GROUPMODE ? MF_CHECKED : MF_UNCHECKED);
-		CheckMenuItem(submenu, ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING, MF_BYCOMMAND | dat->dwFlags & MWF_LOG_TEXTFORMAT ? MF_CHECKED : MF_UNCHECKED);
-
-		EnableMenuItem(submenu, ID_LOGMENU_SHOWDATE, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
-		EnableMenuItem(submenu, ID_LOGMENU_SHOWSECONDS, dat->dwFlags & MWF_LOG_SHOWTIME ? MF_ENABLED : MF_GRAYED);
+		// TODO: removed
 	}
 	else if (menuID == MENU_PICMENU) {
 		MENUITEMINFO mii = {0};
@@ -639,76 +618,13 @@ int MsgWindowMenuHandler(HWND hwndDlg, struct MessageWindowData *dat, int select
 		}
 	}
 	else if (menuId == MENU_LOGMENU) {
-		int iLocalTime = dat->dwFlagsEx & MWF_SHOW_USELOCALTIME ? 1 : 0;
+		int iLocalTime = 0;
 		int iRtl = (myGlobals.m_RTLDefault == 0 ? DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 0) : DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", 1));
 		int iLogStatus = (myGlobals.m_LogStatusChanges != 0) && (DBGetContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", -1) != 0);
 
 		DWORD dwOldFlags = dat->dwFlags;
 
 		switch (selection) {
-
-			case ID_LOGMENU_SHOWTIMESTAMP:
-				dat->dwFlags ^= MWF_LOG_SHOWTIME;
-				return 1;
-			case ID_LOGMENU_USECONTACTSLOCALTIME:
-				iLocalTime ^= 1;
-				dat->dwFlagsEx ^= MWF_SHOW_USELOCALTIME;
-				if (dat->hContact) {
-					DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "uselocaltime", (BYTE) iLocalTime);
-					SendMessage(hwndDlg, DM_REMAKELOG, 0, 0);
-				}
-				return 1;
-			case ID_LOGMENU_INDENTMESSAGEBODY:
-				dat->dwFlags ^= MWF_LOG_INDENT;
-				return 1;
-			case ID_LOGMENU_ACTIVATERTL:
-				iRtl ^= 1;
-				dat->dwFlags = iRtl ? dat->dwFlags | MWF_LOG_RTL : dat->dwFlags & ~MWF_LOG_RTL;
-				if (dat->hContact) {
-					if (iRtl != myGlobals.m_RTLDefault)
-						DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "RTL", (BYTE) iRtl);
-					else
-						DBDeleteContactSetting(dat->hContact, SRMSGMOD_T, "RTL");
-					SendMessage(hwndDlg, DM_OPTIONSAPPLIED, 0, 0);
-				}
-				return 1;
-			case ID_LOGMENU_USESIMPLETEMPLATE:
-				dat->dwFlags ^= MWF_LOG_NORMALTEMPLATES;
-				return 1;
-			case ID_LOGMENU_SHOWDATE:
-				dat->dwFlags ^= MWF_LOG_SHOWDATES;
-				return 1;
-			case ID_LOGMENU_SHOWSECONDS:
-				dat->dwFlags ^= MWF_LOG_SHOWSECONDS;
-				return 1;
-			case ID_MESSAGEICONS_SHOWICONS:
-				dat->dwFlags ^= MWF_LOG_SHOWICONS;
-				return 1;
-			case ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS:
-				dat->dwFlags ^= MWF_LOG_SYMBOLS;
-				return 1;
-			case ID_MESSAGEICONS_USEINCOMING:
-				dat->dwFlags ^= MWF_LOG_INOUTICONS;
-				return 1;
-			case ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES:
-				DBWriteContactSettingByte(dat->hContact, SRMSGMOD_T, "logstatus", (BYTE)(iLogStatus ? 0 : -1));
-				return 1;
-			case ID_MESSAGELOGFORMATTING_SHOWGRID:
-				dat->dwFlags ^= MWF_LOG_GRID;
-				if (dat->dwFlags & MWF_LOG_GRID)
-					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(1, 1));    // XXX margins in the log (looks slightly better)
-				else
-					SendDlgItemMessage(hwndDlg, IDC_LOG, EM_SETMARGINS, EC_LEFTMARGIN | EC_RIGHTMARGIN, MAKELONG(0, 0));    // XXX margins in the log (looks slightly better)
-				return 1;
-			case ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS:
-				dat->dwFlags ^= MWF_LOG_INDIVIDUALBKG;
-				return 1;
-			case ID_MESSAGELOGFORMATTING_GROUPMESSAGES:
-				dat->dwFlags ^= MWF_LOG_GROUPMODE;
-				return 1;
-			case ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING:
-				dat->dwFlags ^= MWF_LOG_TEXTFORMAT;
-				return 1;
 			case ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS: {
 				char *szFilename = GetThemeFileName(1);
 				if (szFilename != NULL)

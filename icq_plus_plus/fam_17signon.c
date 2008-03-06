@@ -40,7 +40,8 @@
 
 
 static void handleAuthKeyResponse(BYTE *buf, WORD wPacketLen, serverthread_info *info);
-
+static void handleRegImage(BYTE *buf, WORD wPacketLen, serverthread_info *info);
+static void handleIcqNewUin(BYTE *buf, WORD wPacketLen, serverthread_info *info);
 
 void handleAuthorizationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
 {
@@ -217,22 +218,29 @@ void registerUin(char* password, char* image)
 static void handleRegImage(BYTE *buf, WORD wPacketLen, serverthread_info *info)
 {
 	HANDLE hFile; 
-	DWORD dwBytesWritten;
-	DWORD dwBufSize=4096;
+	DWORD dwBytesWritten;	
+	
 	char szTempName[MAX_PATH];
 	char lpPathBuffer[4096];
 	char* szType;
-	WORD wTypeLen;
+	WORD wLen;
 		
 	//Extracting image type (added 16 may 2007 by chaos.persei only for better debuging)
-	unpackTypedTLV(&buf, wPacketLen, 0x0001, NULL, &wTypeLen, &szType);
-	NetLog_Server("Image with protection code recevied, type is %s", szType);
+	unpackTypedTLV(buf, wPacketLen, 0x0001, NULL, &wLen, &szType);
+	NetLog_Server("Image with protection code recieved, type is %s", szType);
 
-	//Removes the image tlv header	
-	buf += 4;
+	buf += wLen + 4;
+	wPacketLen -= wLen;
+	buf += 2;
+	wPacketLen -= 4;
+	unpackWord(&buf, &wLen);
+	
+	NetLog_Server("Image size: %d bytes", wLen);
+	NetLog_Server("Packet size: %d bytes", wPacketLen);
+	
 
     // Get the temp path
-    GetTempPath(dwBufSize,   // length of the buffer
+    GetTempPath(4096,   // length of the buffer
          lpPathBuffer);      // buffer for path 
 
     // Create a temporary file.     
@@ -241,8 +249,6 @@ static void handleRegImage(BYTE *buf, WORD wPacketLen, serverthread_info *info)
         0,                        // create unique name 
         szTempName);              // buffer for name 
 	
-	strcat(szTempName, ".jpg");
-
 	hFile = CreateFile((LPTSTR) szTempName,     // file to create
                    GENERIC_WRITE,          // open for writing
                    0,                      // do not share
@@ -251,7 +257,7 @@ static void handleRegImage(BYTE *buf, WORD wPacketLen, serverthread_info *info)
                    FILE_ATTRIBUTE_NORMAL,  // normal file
                    NULL);                  // no attr. template
 
-	WriteFile(hFile, buf, wPacketLen, 
+	WriteFile(hFile, buf, wLen, 
                 &dwBytesWritten, NULL);
 
 	CloseHandle(hFile);

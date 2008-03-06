@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -42,13 +43,15 @@
 #pragma warning(disable: 4996)
 
 #define MIRANDA_VER 0x700
-#define ICQ_MODNAME "Plus"
-#define ICQ_THISMODNAME "eternity/PlusPlus++"
+#define ICQ_MODNAME "Plus Mod"
+#define ICQ_THISMODNAME "eternity/PlusPlus++ Mod"
+
+#include "m_stdhdr.h"
 
 // Windows includes
 #include <windows.h>
 #include <commctrl.h>
-#include <shlwapi.h>
+//#include <shlwapi.h>
 
 // eternity: missing includes?
 //#include <winuser.h>
@@ -56,17 +59,19 @@
 
 // Standard includes
 #include <stdio.h>
-#include <stdlib.h>
 #include <time.h>
 #include <sys/types.h>
 #include <sys/stat.h>
 #include <io.h>
 #include <direct.h>
 #include <fcntl.h>
-#include <crtdbg.h>
+#ifndef _DEBUG
+	#include <crtdbg.h>
+#endif
 #include <process.h>
 #include <malloc.h>
 
+#include "changeinfo/changeinfo.h"
 // Miranda IM SDK includes
 #include <newpluginapi.h> // This must be included first
 #include <m_awaymsg.h>
@@ -139,12 +144,21 @@
 
 #include "icq_rates.h"
 
-#include "changeinfo/changeinfo.h"
 #include "icq_popups.h"
 #include "iconlib.h"
 
 #include "icq_tzers.h"
 
+#if defined(_MSC_VER) && _MSC_VER < 1300
+
+#define TTS_BALLOON             0x40
+#define TTM_SETTITLE            (WM_USER + 32)
+
+#endif		
+
+#ifndef CDSIZEOF_STRUCT
+#define CDSIZEOF_STRUCT(structname, member)  (((int)((LPBYTE)(&((structname*)0)->member) - ((LPBYTE)((structname*)0)))) + sizeof(((structname*)0)->member))
+#endif
 
 // :TODO: This should not be here :p
 void icq_FirstRunCheck(void);

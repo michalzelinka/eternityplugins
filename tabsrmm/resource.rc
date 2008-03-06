@@ -114,44 +114,35 @@ BEGIN
     CONTROL         "",IDC_SIDEBARDOWN,"TSButtonClass",WS_TABSTOP,124,33,14,13,0x18000000L
 END
 
-IDD_USERPREFS DIALOG  0, 0, 278, 292
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_USERPREFS DIALOGEX 0, 0, 286, 265
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
 CAPTION "Dialog"
-FONT 8, "MS Shell Dlg"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
 BEGIN
-    GROUPBOX        "Message log settings",IDC_STATIC,2,3,274,40
-    CONTROL         "Global",IDC_LOGISGLOBAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP,9,14,59,11
-    CONTROL         "Local",IDC_LOGISPRIVATE,"Button",BS_AUTORADIOBUTTON,9,27,61,11
-    LTEXT           "When set to ""Local"", current global settings are inherited for this user. Future changes of message log related options will then be private.",IDC_STATIC,73,13,196,24
-    GROUPBOX        "Message log view mode",IDC_STATIC,2,44,274,33
-    COMBOBOX        IDC_IEVIEWMODE,6,58,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
-    LTEXT           "Select how to display the message log. This setting can be ignored when one of the listed plugins is not installed.",IDC_STATIC,130,50,141,24
-    GROUPBOX        "Send text formatting method",IDC_STATIC,2,78,274,33
-    COMBOBOX        IDC_TEXTFORMATTING,6,90,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",IDC_STATIC,130,85,141,24
-    GROUPBOX        "Text direction (BiDi)",IDC_STATIC,2,112,274,32
-    COMBOBOX        IDC_BIDI,6,123,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "You can force a text direction mode for this contact. Otherwise, it will use the default value set on the message log options page.",IDC_STATIC,130,117,141,24
-    GROUPBOX        "ANSI codepage",IDC_STATIC,2,147,274,32
-    COMBOBOX        IDC_CODEPAGES,6,159,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",IDC_STATIC,130,152,141,24
-    GROUPBOX        "Other options",IDC_STATIC,2,180,274,90
+    GROUPBOX        "Message log view mode",IDC_STATIC,4,11,274,33
+    COMBOBOX        IDC_IEVIEWMODE,8,25,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_GROUP | WS_TABSTOP
+    LTEXT           "Select how to display the message log. This setting can be ignored when one of the listed plugins is not installed.",IDC_STATIC,126,17,141,24
+    GROUPBOX        "Send text formatting method",IDC_STATIC,4,45,274,33
+    COMBOBOX        IDC_TEXTFORMATTING,8,57,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "You can override the global setting for text formatting here. Use ""Force Off"" to never send formatting info for this contact.",IDC_STATIC,126,52,141,24
+    GROUPBOX        "ANSI codepage",IDC_STATIC,4,82,274,32
+    COMBOBOX        IDC_CODEPAGES,8,94,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Codepage for ANSI encoding/decoding when sending or receiving non-unicode messages.",IDC_STATIC,126,87,141,24
+    GROUPBOX        "Other options",IDC_STATIC,4,123,274,127
     CONTROL         "Use private splitter position",IDC_PRIVATESPLITTER,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,205,134,11
-    CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,216,131,11
-    CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,202,126,12
-    DEFPUSHBUTTON   "OK",IDOK,168,274,50,14
-    PUSHBUTTON      "Cancel",IDCANCEL,225,274,50,14
-    COMBOBOX        IDC_TIMEZONE,6,253,85,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Timezone offset",IDC_STATIC,18,242,112,9
-    CONTROL         "Always trim message log to",IDC_ALWAYSTRIM2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,226,105,10
-    EDITTEXT        IDC_TRIM,154,239,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
-    CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,189,219,10,14
-    LTEXT           "Events",IDC_STATIC,216,240,38,8
-    COMBOBOX        IDC_INFOPANEL,7,190,119,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Info panel mode",IDC_STATIC,143,192,104,8
-    CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,143,213,126,12
-    CONTROL         "Never close automatically",IDC_NOAUTOCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,228,131,11
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,162,134,12
+    CONTROL         "Contact is a favorite contact",IDC_ISFAVORITE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,174,131,12
+    CONTROL         "Force ANSI send / receive",IDC_FORCEANSI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,162,126,12
+    COMBOBOX        IDC_TIMEZONE,8,225,85,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Timezone offset",IDC_STATIC,12,214,112,9
+    CONTROL         "Always trim message log to",IDC_ALWAYSTRIM2,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,209,105,12
+    EDITTEXT        IDC_TRIM,156,225,33,12,ES_RIGHT | ES_NUMBER | WS_DISABLED
+    CONTROL         "",IDC_TRIMSPIN,"msctls_updown32",UDS_SETBUDDYINT | UDS_ALIGNRIGHT | UDS_AUTOBUDDY | UDS_ARROWKEYS | UDS_NOTHOUSANDS | UDS_HOTTRACK | WS_DISABLED,191,219,10,14
+    LTEXT           "Events",IDC_STATIC,218,227,38,8
+    COMBOBOX        IDC_INFOPANEL,9,145,114,46,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Info panel mode",IDC_STATIC,12,135,104,8
+    CONTROL         "Ignore sending timeouts",IDC_IGNORETIMEOUTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,145,174,126,12
+    CONTROL         "Never close automatically",IDC_NOAUTOCLOSE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,10,186,131,12
 END
 
 IDD_CONTAINEROPTIONS DIALOGEX 0, 0, 354, 211
@@ -531,6 +522,49 @@ BEGIN
     LTEXT           "- something more I forgot x)",IDC_STATIC,19,113,150,11
 END
 
+IDD_USERPREFS_FRAME DIALOGEX 0, 0, 289, 316
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 400, 0, 0x1
+BEGIN
+    CONTROL         "",IDC_OPTIONSTAB,"SysTabControl32",0x0,2,5,285,284
+    PUSHBUTTON      "Ok",IDOK,124,296,71,16
+    PUSHBUTTON      "Cancel",IDCANCEL,201,296,71,16
+END
+
+IDD_USERPREFS1 DIALOGEX 0, 0, 286, 265
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CONTROL | WS_CHILD | WS_CAPTION
+CAPTION "Dialog"
+FONT 8, "MS Shell Dlg", 0, 0, 0x0
+BEGIN
+    GROUPBOX        "Icons",IDC_STATIC,8,36,266,42
+    CONTROL         "Show icons",IDC_UPREFS_SHOWICONS,"Button",BS_AUTO3STATE | WS_TABSTOP,15,47,121,11
+    CONTROL         "Show symbols",IDC_UPREFS_SHOWSYMBOLS,"Button",BS_AUTO3STATE | WS_TABSTOP,147,47,121,11
+    CONTROL         "Use different icons to mark incoming and outgoing messages",IDC_UPREFS_INOUTICONS,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,60,244,11
+    GROUPBOX        "Date and time",IDC_STATIC,8,86,266,45
+    CONTROL         "Show timestamps",IDC_UPREFS_SHOWTIMESTAMP,"Button",BS_AUTO3STATE | WS_TABSTOP,15,97,121,11
+    CONTROL         "Show seconds in timestamp",IDC_UPREFS_SHOWSECONDS,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,110,121,11
+    CONTROL         "Show date in timestamps",IDC_UPREFS_SHOWDATES,"Button",BS_AUTO3STATE | WS_TABSTOP,147,97,121,11
+    CONTROL         "Use contacts local time",IDC_UPREFS_LOCALTIME,"Button",BS_AUTO3STATE | WS_TABSTOP,147,110,121,11
+    GROUPBOX        "Format",IDC_STATIC,8,134,266,53
+    CONTROL         "Indent message body",IDC_UPREFS_INDENT,"Button",BS_AUTO3STATE | WS_TABSTOP,15,144,121,11
+    CONTROL         "Display grid lines",IDC_UPREFS_GRID,"Button",BS_AUTO3STATE | WS_TABSTOP,15,157,121,11
+    CONTROL         "Message grouping",IDC_UPREFS_GROUPING,"Button",BS_AUTO3STATE | WS_TABSTOP,147,144,121,11
+    CONTROL         "Support BBCODE",IDC_UPREFS_BBCODE,"Button",BS_AUTO3STATE | WS_TABSTOP,147,157,121,11
+    CONTROL         "Use different background colors for incoming and outgoing messages",IDC_UPREFS_MULTIPLEBG,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,171,257,11
+    GROUPBOX        "Misc",IDC_STATIC,8,186,266,52
+    CONTROL         "RTL is default text direction",IDC_UPREFS_RTL,"Button",BS_AUTO3STATE | WS_TABSTOP,15,196,248,11
+    CONTROL         "Log status changes (in open message windows only)",IDC_UPREFS_LOGSTATUS,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,210,248,11
+    PUSHBUTTON      "Revert to global options",IDC_REVERTGLOBAL,49,242,177,18
+    LTEXT           "You can set private message log options for this contact here. Filled boxes are inherited from the global settings which can be found on Message Sessions->Message Log",IDC_STATIC,16,4,251,28
+    CONTROL         "Use normal templates (uncheck to use simple templates)",IDC_UPREFS_NORMALTEMPLATES,
+                    "Button",BS_AUTO3STATE | WS_TABSTOP,15,224,248,11
+END
+
 
 /////////////////////////////////////////////////////////////////////////////
 //
@@ -555,8 +589,8 @@ BEGIN
 
     IDD_USERPREFS, DIALOG
     BEGIN
+        RIGHTMARGIN, 278
         TOPMARGIN, 3
-        BOTTOMMARGIN, 290
     END
 
     IDD_CONTAINEROPTIONS, DIALOG
@@ -596,6 +630,13 @@ BEGIN
         RIGHTMARGIN, 185
         TOPMARGIN, 7
         BOTTOMMARGIN, 144
+    END
+
+    IDD_USERPREFS_FRAME, DIALOG
+    BEGIN
+        LEFTMARGIN, 7
+        RIGHTMARGIN, 283
+        TOPMARGIN, 7
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -678,35 +719,6 @@ BEGIN
     END
     POPUP "Logmenu"
     BEGIN
-        POPUP "Message Icons"
-        BEGIN
-            MENUITEM "Show Icons",                  ID_MESSAGEICONS_SHOWICONS
-            MENUITEM "Show Symbols",                ID_MESSAGEICONS_SYMBOLSINSTEADOFICONS
-            MENUITEM "Use Incoming/Outgoing Icons", ID_MESSAGEICONS_USEINCOMING
-        END
-        POPUP "Timestamp Settings"
-        BEGIN
-            MENUITEM "Show Timestamp",              ID_LOGMENU_SHOWTIMESTAMP
-            MENUITEM "Show Date",                   ID_LOGMENU_SHOWDATE
-            MENUITEM "Show Seconds",                ID_LOGMENU_SHOWSECONDS
-            MENUITEM SEPARATOR
-            MENUITEM "Use Contacts local Time",     ID_LOGMENU_USECONTACTSLOCALTIME
-        END
-        MENUITEM "Use simple Template",         ID_LOGMENU_USESIMPLETEMPLATE
-        MENUITEM SEPARATOR
-        POPUP "Message Log Formatting"
-        BEGIN
-            MENUITEM "Indent Message Body",         ID_LOGMENU_INDENTMESSAGEBODY
-            MENUITEM "Show grid",                   ID_MESSAGELOGFORMATTING_SHOWGRID
-            MENUITEM "Use multiple Background Colors", ID_MESSAGELOGFORMATTING_USEINDIVIDUALBACKGROUNDCOLORS
-            MENUITEM "Simple Text Formatting",      ID_MESSAGELOGFORMATTING_SIMPLETEXTFORMATTING
-            MENUITEM SEPARATOR
-            MENUITEM "Use Message Grouping",        ID_MESSAGELOGFORMATTING_GROUPMESSAGES
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "Use RTL for this Contact",    ID_LOGMENU_ACTIVATERTL
-        MENUITEM "Log Status Changes",          ID_LOGITEMSTOSHOW_LOGSTATUSCHANGES
-        MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", ID_MESSAGELOG_EXPORTMESSAGELOGSETTINGS
         MENUITEM "Import Message Log Settings...", ID_MESSAGELOG_IMPORTMESSAGELOGSETTINGS
     END
@@ -875,40 +887,6 @@ BEGIN
     END
     POPUP "Message &Log"
     BEGIN
-        POPUP "Log Items to show"
-        BEGIN
-            POPUP "Message Icons"
-            BEGIN
-                MENUITEM "Show Icons",                  40131
-                MENUITEM "Show Symbols",                40132
-                MENUITEM "Use Incoming/Outgoing Icons", 40133
-            END
-            MENUITEM SEPARATOR
-            MENUITEM "Grid Lines",                  40068
-            MENUITEM SEPARATOR
-            MENUITEM "Log Status Changes",          40120
-        END
-        MENUITEM SEPARATOR
-        MENUITEM "Use simple Templates",        ID_LOGMENU_USESIMPLETEMPLATE
-        POPUP "Timestamp Settings"
-        BEGIN
-            MENUITEM "Show Timestamp",              40047
-            MENUITEM "Show Date",                   40051
-            MENUITEM "Show Seconds",                40052
-            MENUITEM SEPARATOR
-            MENUITEM "Use Contacts local Time",     40050
-        END
-        POPUP "Message Log Formatting"
-        BEGIN
-            MENUITEM "Indent Message Body",         40048
-            MENUITEM SEPARATOR
-            MENUITEM "Use multiple Background Colors", 40069
-            MENUITEM "Use Message Grouping",        40073
-            MENUITEM "Simple Text Formatting",      40130
-            MENUITEM SEPARATOR
-            MENUITEM "Use RTL for this Contact",    40054
-        END
-        MENUITEM SEPARATOR
         MENUITEM "Export Message Log Settings...", 40128
         MENUITEM "Import Message Log Settings...", 40129
     END
@@ -937,17 +915,6 @@ BEGIN
     END
 END
 
-
-/////////////////////////////////////////////////////////////////////////////
-//
-// Icon
-//
-
-// Icon with lowest ID value placed first to ensure application icon
-// remains consistent on all systems.
-// IDI_TREEVIEWEXPAND      ICON    DISCARDABLE     "res/expand.ico"
-// IDI_TREEVIEWCHECKED     ICON    DISCARDABLE     "res/checked.ico"
-// IDI_TREEVIEWUNCHECKED   ICON    DISCARDABLE     "res/unchecked.ico"
 #endif    // Neutral resources
 /////////////////////////////////////////////////////////////////////////////
 
@@ -975,12 +942,12 @@ END
 2 TEXTINCLUDE 
 BEGIN
     "#include <windows.h>\r\n"
-    "#include ""../../include/statusmodes.h""\r\n"
+    "#include ""../../include/statusmodes.h""\r\0"
 END
 
 3 TEXTINCLUDE 
 BEGIN
-    "\r\n"
+    "\r\0"
 END
 
 #endif    // APSTUDIO_INVOKED

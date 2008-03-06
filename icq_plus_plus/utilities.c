@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -6,7 +7,8 @@
 // Copyright © 2001,2002 Jon Keating, Richard Hughes
 // Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Thief, Angeli-Ka, nullbie
+// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Thief, Angeli-Ka, nullbie
+// Copyright © 2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -60,7 +62,6 @@ static int cacheListSize = 0;
 static CRITICAL_SECTION cacheMutex;
 
 extern BOOL bIsSyncingCL;
-extern int CreateCListGroup(const char* szGroupName);
 
 
 void EnableDlgItem(HWND hwndDlg, UINT control, int state)
@@ -315,7 +316,7 @@ void SetGatewayIndex(HANDLE hConn, DWORD dwIndex)
     }
   }
 
-  gateways = (gateway_index *)realloc(gateways, sizeof(gateway_index) * (gatewayCount + 1));
+  gateways = (gateway_index *)SAFE_REALLOC(gateways, sizeof(gateway_index) * (gatewayCount + 1));
   gateways[gatewayCount].hConn = hConn;
   gateways[gatewayCount].dwIndex = dwIndex;
   gatewayCount++;
@@ -363,7 +364,7 @@ void FreeGatewayIndex(HANDLE hConn)
     {
       gatewayCount--;
       memmove(&gateways[i], &gateways[i+1], sizeof(gateway_index) * (gatewayCount - i));
-      gateways = (gateway_index*)realloc(gateways, sizeof(gateway_index) * gatewayCount);
+      gateways = (gateway_index*)SAFE_REALLOC(gateways, sizeof(gateway_index) * gatewayCount);
 
       // Gateway found, exit loop
       break;
@@ -379,7 +380,7 @@ void AddToSpammerList(DWORD dwUIN)
 {
   EnterCriticalSection(&cookieMutex);
 
-  spammerList = (DWORD *)realloc(spammerList, sizeof(DWORD) * (spammerListCount + 1));
+  spammerList = (DWORD *)SAFE_REALLOC(spammerList, sizeof(DWORD) * (spammerListCount + 1));
   spammerList[spammerListCount] = dwUIN;
   spammerListCount++;
 
@@ -424,7 +425,7 @@ static void AddToCache(HANDLE hContact, DWORD dwUin)
   if (cacheCount + 1 >= cacheListSize)
   {
     cacheListSize += 100;
-    contacts_cache = (icq_contacts_cache *)realloc(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
+    contacts_cache = (icq_contacts_cache *)SAFE_REALLOC(contacts_cache, sizeof(icq_contacts_cache) * cacheListSize);
   }
 
 #ifdef _DEBUG
@@ -617,6 +618,8 @@ HANDLE HContactFromUIN(DWORD uin, int *Added)
 		// else need to wait for CList/NotOnList to be deleted
 		//icq_GetUserStatus(hContact, 3);
       }
+      if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+        icq_sendGetLocationInfo(hContact, uin, NULL);
     }
     AddToCache(hContact, uin);
     *Added = 1;
@@ -682,6 +685,8 @@ HANDLE HContactFromUID(DWORD dwUIN, char* pszUID, int *Added)
       {
         icq_sendNewContact(0, pszUID);
       }
+      if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+        icq_sendGetLocationInfo(hContact, 0, pszUID);
     }
     *Added = 1;
 
@@ -785,6 +790,27 @@ char* __fastcall null_strdup(const char *string)
     return strdup(string);
 
   return NULL;
+}
+
+
+
+size_t __fastcall null_strcut(char *string, size_t maxlen)
+{ // limit the string to max length (null & utf-8 strings ready)
+  size_t len = strlennull(string);
+
+  if (len < maxlen) 
+    return len;
+
+  len = maxlen;
+
+  if (UTF8_IsValid(string)) // handle utf-8 string
+  { // find the first byte of possible multi-byte character
+    while ((string[len] & 0xc0) == 0x80) len--;
+  }
+  // simply cut the string
+  string[len] = '\0';
+
+  return len;
 }
 
 
@@ -1335,7 +1361,6 @@ int GetGMTOffset(void)
 BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
 	DWORD uin = DBGetContactSettingDword(hContact,gpszICQProtoName,"UIN",0);
-	DBWriteContactSettingByte(hContact, gpszICQProtoName, "IsContactChecked", 0);
   // Privacy control
   if (ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
   {
@@ -1372,7 +1397,8 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 	  chk.popuptype=POPTYPE_VIS;
 	  chk.icqeventtype=ICQEVENTTYPE_CHECK_STATUS;
 	  chk.dwUin = uin;
-	  chk.msg = "(contact which you invisible for request status message)";
+	  //chk.msg = "(contact which you invisible for request status message)";
+	  chk.msg = "contact which you are invisible for requests your status message";
 	  CheckContact(chk);
 	  return FALSE;
   }
@@ -1384,7 +1410,6 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
     (byMessageType == MTYPE_AUTODND  && gnCurrentStatus != ID_STATUS_DND) ||
     (byMessageType == MTYPE_AUTOFFC  && gnCurrentStatus != ID_STATUS_FREECHAT))
   {
-//	  CheckContact(uin,hContact,0);
 	  CHECKCONTACT chk = {0};
 	  chk.dwUin=uin;
 	  chk.hContact=hContact;
@@ -1392,7 +1417,8 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 	  chk.popup=chk.logtofile=chk.historyevent=TRUE;
 	  chk.icqeventtype=ICQEVENTTYPE_CHECK_STATUS;
 	  chk.popuptype=POPTYPE_INFO_REQUEST;
-	  chk.msg="(request wrong status type)";
+	  //chk.msg="(request wrong status type)";
+	  chk.msg="requested wrong status type - is trying to find you";
 	  CheckContact(chk);
     return FALSE;
   }
@@ -1405,15 +1431,13 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
     }
   }
 
-//  CheckContact(uin,hContact,-1);
   {
 	  CHECKCONTACT chk = {0};
 	  chk.dwUin = uin;
 	  chk.hContact=hContact;
-	  chk.check = -1;
+	  chk.PSD = -1;
 	  CheckContact(chk);
   }
-//  CheckContact(uin, hContact, -1,0,0,0,0,0,0,0,0);
   // All OK!
   return TRUE;
 }
@@ -1443,6 +1467,18 @@ void* __fastcall SAFE_MALLOC(size_t size)
       ZeroMemory(p, size);
   }
   return p;
+}
+
+
+
+void* __fastcall SAFE_REALLOC(void* p, size_t size)
+{
+  if (p)
+  {
+    return realloc(p, size);
+  }
+  else
+    return SAFE_MALLOC(size);
 }
 
 
@@ -1490,13 +1526,28 @@ HANDLE NetLib_BindPort(NETLIBNEWCONNECTIONPROC_V2 pFunc, void* lParam, WORD* pwP
 
 
 
-void NetLib_SafeCloseHandle(HANDLE *hConnection, int bServerConn)
+void NetLib_CloseConnection(HANDLE *hConnection, int bServerConn)
+{
+  if (*hConnection)
+  {
+    int sck = CallService(MS_NETLIB_GETSOCKET, (WPARAM)*hConnection, (LPARAM)0);
+
+    if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
+
+    NetLib_SafeCloseHandle(hConnection);
+
+    if (bServerConn)
+      FreeGatewayIndex(*hConnection);
+  }
+}
+
+
+
+void NetLib_SafeCloseHandle(HANDLE *hConnection)
 {
   if (*hConnection)
   {
     Netlib_CloseHandle(*hConnection);
-    if (bServerConn)
-      FreeGatewayIndex(*hConnection);
     *hConnection = NULL;
   }
 }
@@ -2165,42 +2216,106 @@ int GetCacheByID(int ID, icq_contacts_cache *icc)
 
 }
 
-BOOL invis_for(DWORD dwUin, HANDLE hContact)  //this function checking are you invisible for hContact or dwUin
+/*BOOL invis_for(DWORD dwUin, HANDLE hContact)  //this function checking are you invisible for hContact or dwUin, need optimization...
 {
-	BOOL bRet = FALSE;
-	
+	WORD wApparent = DBGetContactSettingWord(hContact,gpszICQProtoName,"ApparentMode",0);
+
+	if(bVisibility==0x02) 
+		return TRUE;
 	if (dwUin && !hContact)
 		hContact=HContactFromUIN(dwUin,0);
-	if (DBGetContactSettingWord(hContact,gpszICQProtoName,"ApparentMode",0)==ID_STATUS_ONLINE)
+	if (!hContact)
 	{
-		bRet=FALSE;
+		return TRUE;
 	}
-	if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+	if(DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)&&bVisibility!=0x01||bVisibility!=0x04)
+		return TRUE;
+	if((wApparent==ID_STATUS_OFFLINE||gnCurrentStatus == ID_STATUS_INVISIBLE&&bVisibility!=0x04&&wApparent!=ID_STATUS_ONLINE)&&bVisibility!=0x01)
+		return TRUE;
+	return FALSE;
+} */
+
+
+
+BOOL invis_for(DWORD dwUin, HANDLE hContact)  //this function checking are you invisible for hContact or dwUin, need optimization... (modified by Bio)
+{
+	WORD wApparent;
+
+	// Block all users from seeing you
+//	if ( bVisibility==0x02 || !dwUin )
+	if ( bVisibility==0x02) //we support AIM which do not use UIN's
 	{
-		if (bVisibility==0x05)
-			bRet=TRUE;
+		NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+		return TRUE;
 	}
-	{
-		if (DBGetContactSettingWord(hContact,gpszICQProtoName,"ApparentMode",0)==ID_STATUS_OFFLINE)
+
+	// Allow all users to see you
+	if ( bVisibility == 0x01 )
+		return FALSE;
+
+	if ( !hContact ) {
+		hContact=HContactFromUIN(dwUin,0);
+		if (!hContact)
 		{
-			if (bVisibility!=0x01||gnCurrentStatus == ID_STATUS_INVISIBLE||bVisibility == 0x02) 
-				bRet=TRUE;
+			NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+			return TRUE;
 		}
 	}
-	return(bRet);
+
+	if ( DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) )
+	{
+		NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+		return TRUE;
+	}
+
+	// Allow only users in the buddy list to see you
+	if ( bVisibility == 0x05 ) {
+		if ( DBGetContactSettingByte(hContact, "CList", "Hidden", 0) )
+		{
+			NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+			return TRUE;
+		}
+		else
+			return FALSE;
+	}
+
+	wApparent = DBGetContactSettingWord(hContact,gpszICQProtoName,"ApparentMode",0);
+
+	// Allow only users in the permit list to see you
+	if ( bVisibility == 0x03 ) {
+		if ( wApparent == ID_STATUS_ONLINE )
+			return FALSE;
+		else
+		{
+			NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+			return TRUE;
+		}
+	}
+
+	// Block only users in the invisible list from seeing you
+	if ( bVisibility == 0x04 ) {
+		if ( wApparent == ID_STATUS_OFFLINE )
+		{
+			NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+			return TRUE;
+		}
+		else
+			return FALSE;
+	}
+
+	// invisible by default
+	NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
+	return TRUE;
 }
 
 void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups, write events, log to file, call PSD, parsing temporary contacts, NEED TO BE FINISHED
 {
 	BYTE Hidden = DBGetContactSettingByte(chk.hContact, "CList", "Hidden", 0);
 	BYTE InDb = CallService(MS_DB_CONTACT_IS, (WPARAM)chk.hContact, 0);
-//	BYTE Checked = DBGetContactSettingByte(chk.hContact,gpszICQProtoName,"IsContactChecked",0);
 	BYTE NotOnList = DBGetContactSettingByte(chk.hContact,"CList","NotOnList",0);
 	BOOL Cancel = FALSE;
 	BOOL showpopup = TRUE;
 	char popmsg[512] = {0}, eventmsghistory[512] = {0}, eventmsgfile[512] = {0};
-//	if(Checked)
-//		return;
 	if(!InDb||NotOnList||Hidden)
 	{
 		if(!bPopUpForNotOnList)
@@ -2223,12 +2338,6 @@ void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups,
 			chk.hContact = HContactFromUIN(chk.dwUin, &added);
 			if(NotOnList)
 			{
-				if(!bTmpGroupCreated)
-				{
-					CreateCListGroup(TmpGroupName);
-					ICQWriteContactSettingByte(NULL, "GroupCreated", 1);
-					bTmpGroupCreated = TRUE;
-				}
 				{
 					DBCONTACTWRITESETTING dbcws;
 					dbcws.value.type = DBVT_UTF8;
@@ -2238,10 +2347,7 @@ void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups,
 					CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)chk.hContact, (LPARAM)&dbcws);    
 				}	
 				DBWriteContactSettingByte(chk.hContact,"CList","Hidden",0);
-				if(bAddTemp)
-					DBWriteContactSettingByte(chk.hContact,"CList","NotOnList",1);
-				else
-					DBWriteContactSettingByte(chk.hContact,"CList","NotOnList",0);
+				DBWriteContactSettingByte(chk.hContact,"CList","NotOnList",bAddTemp);
 				DBWriteContactSettingByte(chk.hContact, gpszICQProtoName, "CheckSelfRemove", 1);//excluding from checkselfremove				
 				//				DBWriteContactSettingByte(hContact, gpszICQProtoName, "FoundedContact", 1); //mark founded contacts
 			}
@@ -2331,7 +2437,13 @@ void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups,
 								strcpy(eventmsghistory,"check your status ");
 							if(bLogStatusCheckFile)
 								strcpy(eventmsgfile,"check your status ");
-							break;			
+							break;	
+						case ICQEVENTTYPE_WAS_FOUND:
+							if(bLogASDHistory)
+								strcpy(eventmsghistory,"");
+							if(bLogASDFile)
+								strcpy(eventmsgfile,"");
+							break;
 						case ICQEVENTTYPE_CLIENT_CHANGE:
 							if(bLogIgnoreCheckHistory)
 								strcpy(eventmsghistory,chk.msg);
@@ -2390,12 +2502,14 @@ void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups,
 					}
 				}
 			}
-			if(chk.check != -1 && !Cancel)
+			if(chk.PSD != -1 && !Cancel)
 			{
-				if(!chk.check)
-					chk.check=21;
-				if(ASD&&chk.check<10||bPSD&&chk.check>20)
-					icq_SetUserStatus(chk.dwUin, 0, chk.check, 0);
+				if(!chk.PSD)
+					chk.PSD=21;
+				if(gbASD&&chk.PSD<10)
+					icq_SetUserStatus(chk.dwUin, 0, chk.PSD, 0);
+				else if(ICQGetContactSettingWord(chk.hContact, "Status", ID_STATUS_OFFLINE) == ID_STATUS_OFFLINE && (bPSD&&chk.PSD>20)) //check for wrong PSD call
+					icq_SetUserStatus(chk.dwUin, 0, chk.PSD, 0);
 			}
 		}
 	}
@@ -2475,7 +2589,7 @@ void LogToFile(HANDLE hContact, DWORD dwUin, char *string, int event_type)
 		case ICQEVENTTYPE_CLIENT_CHANGE:
 			if(!bLogClientChangeFile)
 				return;
-			wsprintf(content, string);
+			utf8_decode_static(string, content, strlen(string));
 			break;
 
 		case ICQEVENTTYPE_CHECK_STATUS:
@@ -2483,7 +2597,11 @@ void LogToFile(HANDLE hContact, DWORD dwUin, char *string, int event_type)
 				return;
 			mir_snprintf(content, sizeof(content), "%s %s", Translate("checked your real status "), Translate(string));
 			break;
-
+		case ICQEVENTTYPE_WAS_FOUND:
+			if(!bLogASDFile)
+				return;
+			mir_snprintf(content, sizeof(content), "%s", Translate(string));
+			break;
 		case ICQEVENTTYPE_IGNORECHECK_STATUS:
 			if(!bLogIgnoreCheckFile)
 				return;
@@ -2507,52 +2625,256 @@ void LogToFile(HANDLE hContact, DWORD dwUin, char *string, int event_type)
 	}
 }
 
-
-/*void logtofile(HANDLE hContact, DWORD dwUin, char *string, int event_type)
+WORD GetProtoVersion()
 {
-
-	char szTime[30];
-	char content[MAX_PATH];
-	char filename[1024];
-	time_t now;
-	FILE *f;
-	int i;
- 
-
-	static struct
+	int ver = 0;
+	if (gbVerEnabled)
 	{
-		int type;
-		BOOL *flag;
-		char *message;
-	} eventTypes[] =
+		ver = (DBGetContactSettingWord(NULL,gpszICQProtoName,"setVersion", 0));
+	}
+	else
 	{
-		{ ICQEVENTTYPE_AUTH_GRANTED,	&bLogAuthFile,			"granted your authorization request" },
-		{ ICQEVENTTYPE_SELF_REMOVE,		&bLogSelfRemoveFile,	"removed himself from your serverlist" },
-	};
-	int eventTypesCount = sizeof(eventTypes) / sizeof(*eventTypes);
-	
-	for (i = 0; i < eventTypesCount; ++i)
-		if (eventTypes.type == event_type)
+		switch (DBGetContactSettingWord(NULL,gpszICQProtoName,"CurrentID",0)) //client change version
 		{
-			if (!*eventTypes.flag) return;
-			mir_snprintf(content, sizeof(content), "%s %s", Translate(eventTypes.message), Translate(string)) ;
+		case 1:						//unknown
+			ver = 66;
+			break;
+		case 23:
+		case 24:
+		case 2:						//qip
+		case 3:						//ysm
+		case 7:						//trillian
+		case 46:                   //qip infium
+			ver = 11;
+			break;
+		case 6:						//Jimm
+			ver = 5;
+			break;
+		case 9:						//Kopete
+		case 52:                  //NanoICQ
+			ver = 10;
+			break;
+		case 11:
+			ver = 13;
+			break;
+		case 4:						//icq lite
+		case 5:						//&RQ
+		case 12:					//rambler
+		case 13:						//icq 5.1
+		case 14:
+		case 15:
+		case 16:
+		case 17:
+		case 26:         //icq6
+		case 44:        //QNEXT
+		case 45:         //pyICQ
+			ver = 9;
+			break;
+		case 21:                 //stICQ
+			ver = 2;
+			break;
+		case 36:       //ICQ99   
+			ver = 6;
+			break;
+		case 37:               //WebICQ
+			ver = 7;
+			break;
+		case 35:          //GAIM
+			ver = 0;
+			break;           
+		default :						//miranda
+			ver = 8;
 			break;
 		}
-		
-	// type not found
-	if (i == eventTypesCount)
-		return;
-
-	now = time(NULL);
-	strftime(szTime, sizeof(szTime), "%a, %d %b %Y %H:%M:%S", localtime(&now)) ;
-                                         // Sun, 00 Jan 0000 00:00:00 
-
-	wsprintf(filename, UniGetContactSettingUtf(NULL, gpszICQProtoName, "EventsLog", "EventsLog.txt")) ;
-    f = fopen( filename, "a+" );
-	if( f != NULL )
-	{
-		fprintf( f, "[%s] %s (%u) %s\n", szTime, NickFromHandleUtf(hContact), dwUin, content); 
-		fclose(f);
 	}
-	//another realisation by Nullbie
-} */
+	DBWriteContactSettingWord(NULL,gpszICQProtoName,"setVersion",(WORD)ver);
+	return ver;
+}
+
+static void SetDwFT(DWORD *dwFT, char* DbValue, DWORD DwValue) 
+{ 
+  *dwFT=DwValue; 
+  ICQWriteContactSettingDword(NULL, DbValue, DwValue); 
+}
+
+void SetTimeStamps(DWORD *dwFT1, DWORD *dwFT2, DWORD *dwFT3)
+{
+	switch (DBGetContactSettingWord(NULL, gpszICQProtoName, "CurrentID", 0))  //client change dwFT
+	{
+	case 3:											//ysm
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFFAB);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 4:											//ICQ lite
+ 	  SetDwFT(dwFT1, "dwFT1", 0x3AA773EE);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 5:													//&RQ
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFF7F);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 7:										//trillian
+ 	  SetDwFT(dwFT1, "dwFT1", 0x3B75AC09);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 8:													//licq
+ 	  SetDwFT(dwFT1, "dwFT1", 0x2C0BA3DD);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x7D800403);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 2:											//qip
+ 	  SetDwFT(dwFT1, "dwFT1", 0x08000300);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 46:       //QIP Infium
+ 	  SetDwFT(dwFT1, "dwFT1", 0x0000232C);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x0000000B);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 18:
+	case 19:
+ 	  SetDwFT(dwFT1, "dwFT1", 0x3AA773EE);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x3AA66380);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 21:
+    SetDwFT(dwFT1, "dwFT1", 0x3BA8DBAF);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x3BEB5373);
+    SetDwFT(dwFT3, "dwFT3", 0x3BEB5262);
+		break;
+	case 22:
+ 	  SetDwFT(dwFT1, "dwFT1", 0x3B4C4C0C);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+    SetDwFT(dwFT3, "dwFT3", 0x3B7248ED);
+		break;
+	case 1:											//unknown
+	case 6:											//Jimm
+	case 9:											//Kopete
+	case 10:										////icq for mac
+	case 12:										//rambler
+	case 13:
+	case 14:
+	case 15:
+	case 16:
+	case 17:
+	case 20:
+	case 23:
+	case 24:
+	case 25:
+	case 26:
+	case 27:
+	case 28:
+	case 40:           //uIM
+	case 41:           //TICQClient
+	case 42:           //IC@
+	case 43:          //PreludeICQ
+	case 44:         //QNEXT
+	case 45:         //pyICQ
+	case 47:       //JICQ
+	case 49:       //MIP
+	case 50:     //Trillian Astra
+	case 52:     //NanoICQ
+	case 53:		//IMadering
+ 	  SetDwFT(dwFT1, "dwFT1", 0x00000000);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 29:
+ 	  SetDwFT(dwFT1, "dwFT1", 0x44F523B0);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x44F523A6);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x44F523A6);
+		break;
+	case 30:           //alicq
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFFBE);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00090800);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 31:           //mICQ
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFF42);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 32:            //StrICQ 0.4
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFF8F);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 33:            //vICQ 0.43.0.0
+ 	  SetDwFT(dwFT1, "dwFT1", 0x04031980);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 34:            //IM2
+ 	  SetDwFT(dwFT1, "dwFT1", 0x3FF19BEB);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x3FF19BEB);
+		break;
+	case 35:           //GAIM
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFFFF);
+ 	  SetDwFT(dwFT2, "dwFT2", 0xFFFFFFFF);
+ 	  SetDwFT(dwFT3, "dwFT3", 0xFFFFFFFF);
+		break;
+	case 36:          //ICQ99
+ 	  SetDwFT(dwFT1, "dwFT1", 0x3AA773EE);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 37:          //WebICQ
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFFFF);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 38:          //SmartICQ
+ 	  SetDwFT(dwFT1, "dwFT1", 0xDDDDEEFF);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 39:           //IM+
+ 	  SetDwFT(dwFT1, "dwFT1", 0x494D2B00);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 48:  //SpamBot
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFFFFF);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x3B7248ED);
+		break;
+	case 51:           //R&Q
+ 	  SetDwFT(dwFT1, "dwFT1", 0xFFFFF666);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
+ 	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
+		break;
+	case 11:
+    SetDwFT(dwFT1, "dwFT1", gbUnicodeCore ? 0x7FFFFFFF : 0xFFFFFFFF);
+ 	  SetDwFT(dwFT2, "dwFT2", 0x06060600);
+		/*/ eternity : commented, Unicode is already set in dwFT1
+    if(gbHideIdEnabled)
+      SetDwFT(dwFT3, "dwFT3", gbUnicodeCore ? 0x80000000 : 0x00000000);
+		else
+			SetDwFT(dwFT3, "dwFT3", gbSecureIM ? 0x5AFEC0DE : 0x00000000);
+	  */
+    SetDwFT(dwFT3, "dwFT3", gbSecureIM ? 0x5AFEC0DE : 0x00000000);
+	  // eternity END	  
+		break;
+	default :								//miranda
+    SetDwFT(dwFT1, "dwFT1", gbUnicodeCore ? 0x7FFFFFFF : 0xFFFFFFFF);
+ 	  SetDwFT(dwFT2, "dwFT2", ICQ_THISPLUG_VERSION);
+    // note by jarvis : SecureIM flag is already send in MirVer packet (xxxxxxxxxxxxHERE)
+    // I wonder if it is needed here whereas otherwise fake MIM IDs are not sending Unicode flag
+    // I think here in timestamps Unicode flag should be prior
+    // also, someone with SecureIM would like secure communication more than faking his ID, where safecode is included :)
+    // maybe what we could use:
+    // SetDwFT(dwFT3, "dwFT3", gbSecureIM ? 0x5AFEC0DE : gbUnicodeCore ? 0x80000000 : 0x00000000);
+    // or better, if safecode wouldn't be so important, then only first expression without "if" clause
+		/*if(gbHideIdEnabled)
+      SetDwFT(dwFT3, "dwFT3", gbUnicodeCore ? 0x80000000 : 0x00000000);
+		else*/
+ 	  SetDwFT(dwFT3, "dwFT3", gbSecureIM ? 0x5AFEC0DE : 0x00000000);
+		break;
+	}
+}

@@ -57,10 +57,10 @@ BOOL CALLBACK LoginPasswdDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM l
         char str[MAX_PATH];
         DWORD dwUin;
 
-		//InitIconLib();
+		InitIconLib();
 
         ICQTranslateDialog(hwndDlg);
-		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)IconLibGetIcon("main"));
+		SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)IconLibGetIcon("proto"));
         dwUin = ICQGetContactSettingUIN(NULL);
         null_snprintf(pszUIN, 128, ICQTranslateUtfStatic("Enter a password for UIN %u:", str, MAX_PATH), dwUin);
         SetDlgItemTextUtf(hwndDlg, IDC_INSTRUCTION, pszUIN);

@@ -90,8 +90,7 @@ static int CListMW_ExtraIconsApply(WPARAM wParam, LPARAM lParam);
 void InitDCEvents(void)
 {
   char szSection[MAX_PATH + 64];
-  char str[MAX_PATH], prt[MAX_PATH];
-
+  char str[MAX_PATH], prt[MAX_PATH];    
   null_snprintf(szSection, sizeof(szSection), ICQTranslateUtfStatic("%s", str, MAX_PATH), ICQTranslateUtfStatic(gpszICQProtoName, prt, MAX_PATH));
   IconLibDefine(ICQTranslateUtfStatic("Direct Connection", str, MAX_PATH), szSection, "dcico", LoadIcon(hIconInst, MAKEINTRESOURCE(IDI_DC)), NULL, -(IDI_DC));
   hHookExtraIconsRebuild = HookEvent(ME_CLIST_EXTRA_LIST_REBUILD, CListMW_ExtraIconsRebuild);
@@ -153,7 +152,7 @@ void CloseContactDirectConns(HANDLE hContact)
 
       directConnList[i]->hConnection = NULL; // do not allow reuse
       if (sck!=INVALID_SOCKET) shutdown(sck, 2); // close gracefully
-      NetLib_SafeCloseHandle(&hConnection, FALSE);
+      NetLib_CloseConnection(&hConnection, FALSE);
     }
   }
 
@@ -171,7 +170,7 @@ static void ResizeDirectList(int nSize)
     else
       directConnSize -= 4;
 
-    directConnList = (directconnect**)realloc(directConnList, sizeof(directconnect*) * directConnSize);
+    directConnList = (directconnect**)SAFE_REALLOC(directConnList, sizeof(directconnect*) * directConnSize);
   }
 }
 
@@ -238,7 +237,7 @@ void AddExpectedFileRecv(filetransfer* ft)
 {
   EnterCriticalSection(&expectedFileRecvMutex);
 
-  expectedFileRecv = (filetransfer** )realloc(expectedFileRecv, sizeof(filetransfer *) * (expectedFileRecvCount + 1));
+  expectedFileRecv = (filetransfer** )SAFE_REALLOC(expectedFileRecv, sizeof(filetransfer *) * (expectedFileRecvCount + 1));
   expectedFileRecv[expectedFileRecvCount++] = ft;
 
   LeaveCriticalSection(&expectedFileRecvMutex);
@@ -261,7 +260,7 @@ filetransfer *FindExpectedFileRecv(DWORD dwUin, DWORD dwTotalSize)
       pFt = expectedFileRecv[i];
       expectedFileRecvCount--;
       memmove(expectedFileRecv + i, expectedFileRecv + i + 1, sizeof(filetransfer*) * (expectedFileRecvCount - i));
-      expectedFileRecv = (filetransfer**)realloc(expectedFileRecv, sizeof(filetransfer*) * expectedFileRecvCount);
+      expectedFileRecv = (filetransfer**)SAFE_REALLOC(expectedFileRecv, sizeof(filetransfer*) * expectedFileRecvCount);
 
       // Filereceive found, exit loop
       break;
@@ -434,6 +433,7 @@ HICON GetDCIcon(UINT flags)
 static void setContactExtraIcon(HANDLE hContact, BOOL bFunc, BOOL bRem)
 {
 	WORD icon_pos = ICQGetContactSettingWord(NULL, "dc_icon_pos", 5);
+    if( DBGetContactSettingByte(NULL, "ICQ", "ShowDCIcon", 1)==0 ) return;
 	if(icon_pos<=0||icon_pos>9)
 	{
 		icon_pos=5;
@@ -495,7 +495,7 @@ void CloseDirectConnection(directconnect *dc)
   EnterCriticalSection(&directConnListMutex);
 
   hContact2 = &dc->hContact;
-  NetLib_SafeCloseHandle(&dc->hConnection, FALSE);
+  NetLib_CloseConnection(&dc->hConnection, FALSE);
 #ifdef _DEBUG
   if (dc->hConnection)
     NetLog_Direct("Direct conn closed (%p)", dc->hConnection);
@@ -556,6 +556,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   NETLIBPACKETRECVER packetRecv={0};
   HANDLE hPacketRecver;
   BOOL bFirstPacket = TRUE;
+  int nSkipPacketBytes = 0;
   DWORD dwReqMsgID1;
   DWORD dwReqMsgID2;
 
@@ -770,11 +771,16 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
 
     if (dc.type == DIRECTCONN_CLOSING)
       packetRecv.bytesUsed = packetRecv.bytesAvailable;
+    else if (packetRecv.bytesAvailable < nSkipPacketBytes)
+    { // the whole buffer needs to be skipped
+      nSkipPacketBytes -= packetRecv.bytesAvailable;
+      packetRecv.bytesUsed = packetRecv.bytesAvailable;
+    }
     else
     {
       int i;
 
-      for (i = 0; i + 2 <= packetRecv.bytesAvailable;)
+      for (i = nSkipPacketBytes, nSkipPacketBytes = 0; i + 2 <= packetRecv.bytesAvailable;)
       { 
         WORD wLen = *(WORD*)(packetRecv.buffer + i);
 
@@ -787,6 +793,16 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
             break;
           }
           bFirstPacket = FALSE;
+        }
+        else
+        {
+          if (packetRecv.bytesAvailable >= i + 2 && wLen > 8190)
+          { // check for too big packages
+            NetLog_Direct("Error: Package too big: %d bytes, skipping.");
+            nSkipPacketBytes = wLen;
+            packetRecv.bytesUsed = i + 2;
+            break;
+          }
         }
 
         if (wLen + 2 + i > packetRecv.bytesAvailable)
@@ -817,7 +833,7 @@ static DWORD __stdcall icq_directThread(directthreadstartinfo *dtsi)
   if(!dc.hConnection) setContactExtraIcon(dc.hContact, 0, 1);
   // End of packet receiving loop
 
-  NetLib_SafeCloseHandle(&hPacketRecver, FALSE);
+  NetLib_SafeCloseHandle(&hPacketRecver);
   CloseDirectConnection(&dc);
 
   if (dc.ft)

@@ -86,6 +86,8 @@ void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSn
   }
 }
 
+
+
 void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
 {
   oscar_tlv* tlv = getTLV(pChain, 0x1D, 1);
@@ -396,15 +398,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 		  }
 
 		  szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
-/*		  if((wVersion == 7)&&CheckContactCapabilities(hContact, CAPF_UTF))
-		  {
-			  WORD wClass = getWordFromChain(pChain, 0x01, 1);
-			  if (wClass & CLASS_WIRELESS)
-				  szClient = "Pocket Web 1&1";
-		  }
-		  if(!IsBadStringPtr(szClient,sizeof(szClient)))
-			  if(strstr(szClient,"icq5")&&wVersion==11)
-				  szClient="QIP 2005a";  */ //not needed now .....
 		}
 #ifdef _DEBUG
         if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
@@ -464,15 +457,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			else
 				strcpy(string, ICQTranslateUtf("Client changed to "));
 			strcat(string, szClient);
-/*			if(bLogClientChangeHistory)
-				HistoryLog(hContact,dwUIN, string, ICQEVENTTYPE_CLIENT_CHANGE, DBEF_READ); 
-			LogToFile(hContact, dwUIN, string, ICQEVENTTYPE_CLIENT_CHANGE); */
-//			CheckContact(dwUIN, hContact, -1, 0, 0, 1, 1, string, ICQEVENTTYPE_CLIENT_CHANGE, DBEF_READ, 1);
 			{
 				CHECKCONTACT chk = {0};
 				chk.dwUin=dwUIN;
 				chk.hContact=hContact;
-				chk.check=-1;
+				chk.PSD=-1;
 				chk.popup=chk.logtofile=chk.historyevent=chk.nottmpcontact=TRUE;
 				chk.icqeventtype=ICQEVENTTYPE_CLIENT_CHANGE;
 				chk.popuptype=POPTYPE_CLIENT_CHANGE;
@@ -545,7 +534,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			  AddToSpammerList(dwUIN);
 			  if (bUnknownPopUp)
 				  ShowPopUpMsg(hContact, dwUIN, "Unknown Detected", "Contact deleted & further events blocked.", POPTYPE_UNKNOWN);
-			  icq_sendRemoveContact(dwUIN, NULL);
+//			  icq_sendRemoveContact(dwUIN, NULL);
 			  CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
 			  NetLog_Server("Contact %u deleted", dwUIN);
@@ -560,7 +549,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
       AddToSpammerList(dwUIN);
       if (bSpamPopUp)
         ShowPopUpMsg(hContact, dwUIN, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
-      icq_sendRemoveContact(dwUIN, NULL);
       CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
       NetLog_Server("Contact %u deleted", dwUIN);
@@ -577,32 +565,56 @@ static void handleUserOffline(BYTE *buf, WORD wLen)
   DWORD dwUIN;
   uid_str szUID;
 
-  // Unpack the sender's user ID
-  if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
+  do {
+    WORD wTLVCount;
 
-  hContact = HContactFromUID(dwUIN, szUID, NULL);
+    // Unpack the sender's user ID
+    if (!unpackUID(&buf, &wLen, &dwUIN, &szUID)) return;
 
-  // Skip contacts that are not already on our list
-  if (hContact != INVALID_HANDLE_VALUE)
-  {
-    NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+    // Warning level?
+    buf += 2;
 
-    //this is needed to prevent too many checks
-	if(!CheckContactCapabilities(hContact, WAS_FOUND))
-	{
-    ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
-    ICQWriteContactSettingDword(hContact, "IdleTS", 0);
-    // close Direct Connections to that user
-    CloseContactDirectConns(hContact);
-    // Reset DC status
-    ICQWriteContactSettingByte(hContact, "DCStatus", 0);
-    // clear Xtraz status
-    handleXStatusCaps(hContact, NULL, 0, NULL, 0);
-	
-	icq_GetUserStatus(hContact,2);
-	//inv4inv(hContact, 1); //add to invisible list
-	}
-  }
+    // TLV Count
+    unpackWord(&buf, &wTLVCount);
+    wLen -= 4;
+
+    // Skip the TLV chain
+    while (wTLVCount && wLen >= 4)
+    {
+      WORD wTLVType;
+      WORD wTLVLen;
+
+      unpackWord(&buf, &wTLVType);
+      unpackWord(&buf, &wTLVLen);
+      wLen -= 4;
+
+      // stop parsing overflowed packet
+      if (wTLVLen > wLen) return;
+
+      buf += wTLVLen;
+      wLen -= wTLVLen;
+      wTLVCount--;
+    }
+    
+    // Determine contact
+    hContact = HContactFromUID(dwUIN, szUID, NULL);
+
+    // Skip contacts that are not already on our list or are already offline
+    if (hContact != INVALID_HANDLE_VALUE && (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE||CheckContactCapabilities(hContact, WAS_FOUND)))
+    {
+      NetLog_Server("%s went offline.", strUID(dwUIN, szUID));
+
+      ICQWriteContactSettingWord(hContact, "Status", ID_STATUS_OFFLINE);
+      ICQWriteContactSettingDword(hContact, "IdleTS", 0);
+      // close Direct Connections to that user
+      CloseContactDirectConns(hContact);
+      // Reset DC status
+      ICQWriteContactSettingByte(hContact, "DCStatus", 0);
+      // clear Xtraz status
+      handleXStatusCaps(hContact, NULL, 0, NULL, 0);
+      icq_GetUserStatus(hContact,2);
+    }
+  } while (wLen >= 1);
 }
 
 
@@ -774,7 +786,7 @@ void CheckSelfRemove()
 		  chk.logtofile=chk.popup=chk.historyevent=TRUE;
 		  chk.msg="has removed himself from your Serverlist!";
 		  chk.popuptype=POPTYPE_SELFREMOVE;
-		  chk.check=-1;
+		  chk.PSD=-1;
 		  CheckContact(chk);
 		  DBWriteContactSettingByte(hContact, gpszICQProtoName, "CheckSelfRemove", 1);
 	  }

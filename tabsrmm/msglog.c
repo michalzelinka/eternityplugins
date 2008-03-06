@@ -22,7 +22,7 @@ You should have received a copy of the GNU General Public License
 along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
-$Id: msglog.c 7113 2008-01-20 01:01:22Z nightwish2004 $
+$Id: msglog.c 7266 2008-02-13 16:01:10Z nightwish2004 $
 */
 
 #include "commonheaders.h"
@@ -606,7 +606,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	TemplateSet *this_templateset;
 	BOOL isBold = FALSE, isItalic = FALSE, isUnderline = FALSE;
 	DWORD dwEffectiveFlags;
-	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, dat->dwFlagsEx & MWF_SHOW_BBCODE);
+	DWORD dwFormattingParams = MAKELONG(myGlobals.m_FormatWholeWordsOnly, 0);
 	char  *szProto = dat->bIsMeta ? dat->szMetaProto : dat->szProto;
 	BOOL  fIsStatusChangeEvent = FALSE;
 	TCHAR *msg, *formatted;
@@ -748,7 +748,7 @@ static char *Template_CreateRTFFromDbEvent(struct MessageWindowData *dat, HANDLE
 	 */
 	if (dwEffectiveFlags & MWF_LOG_SHOWTIME) {
 		final_time = dbei.timestamp;
-		if (dat->dwFlagsEx & MWF_SHOW_USELOCALTIME) {
+		if (dat->dwFlags & MWF_LOG_LOCALTIME) {
 			if (!isSent && dat->timediff != 0)
 				final_time = dbei.timestamp - dat->timediff;
 		}

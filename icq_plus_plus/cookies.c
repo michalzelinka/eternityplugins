@@ -57,7 +57,7 @@ static int ResizeCookieList(int nSize)
     else
       newSize = cookieSize - 4;
 
-    pNew = (icq_cookie_info *)realloc(cookie, sizeof(icq_cookie_info) * newSize);
+    pNew = (icq_cookie_info *)SAFE_REALLOC(cookie, sizeof(icq_cookie_info) * newSize);
 
     if (!pNew)
     { // realloc failed, cookies intact... try again

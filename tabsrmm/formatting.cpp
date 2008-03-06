@@ -23,7 +23,7 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 ---------------------------------------------------------------------------
 
-$Id: formatting.cpp 7052 2008-01-05 02:52:40Z nightwish2004 $
+$Id: formatting.cpp 7266 2008-02-13 16:01:10Z nightwish2004 $
 
 License: GPL
 */
@@ -41,6 +41,7 @@ License: GPL
 
 #include "m_MathModule.h"
 
+#define MWF_LOG_BBCODE 65536
 #define MWF_LOG_TEXTFORMAT 0x2000000
 #define MSGDLGFONTCOUNT 22
 
@@ -109,7 +110,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 	if (haveMathMod && mathModDelimiter && message.find(mathModDelimiter) != message.npos)
 		return(message.c_str());
 
-	if (HIWORD(flags) == 0)
+	if(!(dwFlags & MWF_LOG_BBCODE))
 		goto nobbcode;
 
 	if (iHaveSmileyadd == -1)
@@ -126,6 +127,7 @@ extern "C" const WCHAR *FormatRaw(DWORD dwFlags, const WCHAR *msg, int flags, co
 			message.append(mathModDelimiter);
 	}
 	beginmark = 0;
+	
 	while (TRUE) {
 		for (i = 0; i < NR_CODES; i++) {
 			if ((tempmark = message.find(w_bbcodes_begin[i], 0)) != message.npos)
@@ -306,7 +308,7 @@ extern "C" const char *FormatRaw(DWORD dwFlags, const char *msg, int flags, cons
 	if (haveMathMod && mathModDelimiter && message.find(mathModDelimiter) != message.npos)
 		return(message.c_str());
 
-	if (HIWORD(flags) == 0)
+	if(!(dwFlags & MWF_LOG_BBCODE))
 		goto nobbcode;
 
 	if (iHaveSmileyadd == -1)

@@ -27,91 +27,94 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 //
 
 IDD_CSLIST DIALOGEX 0, 0, 210, 226
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
 CAPTION "Custom Status List"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     CONTROL         "",IDC_CSLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,1,3,207,204
     CONTROL         "A",IDC_ADD,"MButtonClass",WS_TABSTOP,2,210,16,14
     CONTROL         "M",IDC_MODIFY,"MButtonClass",WS_TABSTOP,22,210,16,14
-    CONTROL         "D",IDC_DELETE,"MButtonClass",WS_TABSTOP,42,210,16,14
-    CONTROL         "P",IDC_APPLY,"MButtonClass",WS_TABSTOP,192,210,16,14
-    CONTROL         "E",IDC_EXIT,"MButtonClass",WS_TABSTOP,172,210,16,14
-    CONTROL         "I",IDC_IMPORT,"MButtonClass",WS_TABSTOP,71,210,16,14
-    CONTROL         "W",IDC_WATCH,"MButtonClass",WS_DISABLED | WS_TABSTOP,91,210,16,14
+    CONTROL         "D",IDC_REMOVE,"MButtonClass",WS_TABSTOP,42,210,16,14
+    CONTROL         "I",IDC_IMPORT,"MButtonClass",WS_TABSTOP,65,210,16,14
+    CONTROL         "W",IDC_WATCH,"MButtonClass",WS_DISABLED | WS_TABSTOP,85,210,16,14
+    CONTROL         "F",IDC_FAV,"MButtonClass",WS_DISABLED | WS_TABSTOP,105,210,16,14
     CONTROL         "N",IDC_NOCHNG,"MButtonClass",WS_TABSTOP,152,210,16,14
-    CONTROL         "W",IDC_FAV,"MButtonClass",WS_DISABLED | WS_TABSTOP,111,210,16,14
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,139,211,1,13
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,64,211,1,13
+    CONTROL         "E",IDC_EXIT,"MButtonClass",WS_TABSTOP,172,210,16,14
+    CONTROL         "P",IDC_APPLY,"MButtonClass",WS_TABSTOP,192,210,16,14
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,146,211,1,13
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,61,211,1,13
+    CONTROL         "O",IDC_OPTS,"MButtonClass",WS_TABSTOP,125,210,16,14
 END
 
-IDD_ADDMODIFY DIALOGEX 100, 100, 205, 105
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+IDD_ADDMODIFY DIALOGEX 100, 100, 199, 121
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Add/Modify Custom Status"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Add/Modify",IDC_AM_OK,49,85,50,14
-    PUSHBUTTON      "Cancel",IDC_AM_CN,102,85,50,14
-    LTEXT           "Title:",IDC_ST_XTITLE,97,1,43,8
-    LTEXT           "Message:",IDC_ST_XMESSAGE,5,24,85,8
-    LTEXT           "Icon:",IDC_ST_XICON,5,0,44,8
-    EDITTEXT        IDC_XTITLE,97,11,104,14,ES_AUTOHSCROLL
-    EDITTEXT        IDC_XMESSAGE,5,33,195,46,ES_MULTILINE | ES_AUTOHSCROLL | ES_WANTRETURN | WS_VSCROLL
-    CONTROL         "",IDC_CB_ICON,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,5,11,89,80
+    LTEXT           "Icon:",IDC_ST_XICON,4,2,44,8
+    CONTROL         "",IDC_CB_ICON,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,2,11,84,95
+    LTEXT           "Title:",IDC_ST_XTITLE,89,2,43,8
+    EDITTEXT        IDC_XTITLE,89,11,108,14,ES_AUTOHSCROLL
+    LTEXT           "Message:",IDC_ST_XMESSAGE,4,27,85,8
+    EDITTEXT        IDC_XMESSAGE,2,36,195,66,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "Add/Modify",IDC_AM_OK,49,105,50,14
+    PUSHBUTTON      "Cancel",IDC_AM_CN,102,105,50,14
 END
 
-IDD_DEL DIALOGEX 0, 0, 139, 62
-STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Confirm"
-FONT 8, "MS Shell Dlg", 400, 0, 0x1
-BEGIN
-    CTEXT           "Are you sure?",IDC_STATIC,16,15,105,8
-    DEFPUSHBUTTON   "Yes, delete",IDOK,13,37,50,14
-    PUSHBUTTON      "No, leave",IDCANCEL,75,37,50,14
-END
-
-IDD_RELNOTES DIALOGEX 100, 100, 192, 246
+IDD_RELNOTES DIALOGEX 100, 100, 192, 302
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "CSList Release Notes"
+CAPTION "Custom Status List Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Close",IDOK,137,230,50,14
-    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,104,184,62
+    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,104,184,118
+    GROUPBOX        "Notice",IDC_RNNOTICE,4,55,184,49
+    GROUPBOX        "Special Thanks",IDC_THX,4,224,184,58
     RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
     RTEXT           "Version:",IDC_RNVER,7,14,53,8
     LTEXT           "Custom Status List",IDC_RLNPLGNM2,66,4,98,8
-    LTEXT           "0.0.0.17",IDC_RNVER2,66,14,98,8
-    LTEXT           "- list sorting (ordered by xstatus icon) :)\n- ICQ menu entries can be imported :)\n- THIS RELASE has menu item DIRECTLY IN THE ICQ STATUS MENU instead of global, will be configurable soon :)",IDC_STATIC,13,116,166,44
-    GROUPBOX        "Notice",IDC_RNNOTICE,4,55,184,49
+    LTEXT           "0.0.0.17",IDC_RNVER2,66,14,95,8
     LTEXT           "Plugin development is currently in Beta stage. It's not recommended to generally use, but stable enough for testing purposes. Stable release will be available as soon as possible ;)",IDC_STATIC,20,65,150,34
     RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
     LTEXT           "jarvis (original idea by HANAX)",IDC_RNAUTH2,66,24,115,8
     RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
     LTEXT           "© 2007-8 eternity crew ..\n© 2006-7 HANAX Software",IDC_RNCPR2,66,34,115,18
-    ICON            IDI_ADD,IDC_RNCSICON,163,3,20,20
-    GROUPBOX        "Special Thanks",IDC_THX,4,168,184,58
-    EDITTEXT        IDC_TXHTEXT,7,179,176,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,232,118,10
+    ICON            IDI_ADD,IDC_RNCSICON,163,3,21,20
+    EDITTEXT        IDC_TXHTEXT,7,234,176,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,288,118,10
+    DEFPUSHBUTTON   "Close",IDOK,137,286,50,14
+    CONTROL         "list sorting (ordered by xstatus icon) :)",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,119,155,10
+    CONTROL         "ICQ status entries can be imported",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,129,155,10
+    CONTROL         "new Options dialog (via button)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,139,155,10
+    CONTROL         "menu item is now movable - can be placed in global status menu (at the top and at the bottom), ICQ status menu (also instead of Cusom status menu) or in main menu",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,17,149,155,32
+    CONTROL         "dialog openable only once",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,183,155,10
+    CONTROL         "new icons by inducti0n - many thx :)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,193,155,10
+    CONTROL         "Hotkeys + Modern ToolBar implementation",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,203,155,10
 END
 
-IDD_OPTIONS DIALOGEX 0, 0, 301, 222
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_SYSMENU
+IDD_OPTIONS DIALOGEX 0, 0, 172, 222
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Placement of Menu Item",IDC_MIP,23,42,120,108,WS_DISABLED
-    CTEXT           "TODO :)\nNote: Options will be probably placed elsewhere :)",IDC_TODO,18,156,257,16
-    CONTROL         "Global Status Menu",IDC_MIP_G,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,31,59,77,10
-    CONTROL         "On the top",IDC_MIP_GUP,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,41,69,51,10
-    CONTROL         "At the bottom",IDC_MIP_GDN,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,41,81,61,10
-    CONTROL         "Main Menu",IDC_MIP_M,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,31,93,50,10
-    CONTROL         "Tray Menu",IDC_MIP_T,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,31,104,50,10
-    GROUPBOX        "ICQ Integration",IDC_ICQIGR,147,42,120,108,WS_DISABLED
-    CONTROL         "Follow Extended Statuses set by ICQ Custom Status Menu (TODO)",IDC_IGR_FOLLOW,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,155,54,102,27
-    CONTROL         "Replace ICQ Custom Status Menu (TODO)",IDC_CHECK5,
-                    "Button",BS_AUTOCHECKBOX | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,155,83,104,18
-    LTEXT           "NOTE: Some of these features are only implemented and available in ICQ eternity/PlusPlus++ Mod.",IDC_IGR_NOTE,155,109,105,36,WS_DISABLED
-    LTEXT           "NOTE: Placement in Global Status Menu is available in ICQJ 0.3.7.0 and newer.",IDC_MIP_NOTE,31,117,105,31,WS_DISABLED
+    GROUPBOX        "Menu Item placement",IDC_PLACEMENT_OPTIONS,3,102,165,81
+    CONTROL         "Global Status Menu",IDC_PLACE_GLOBAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,115,119,10
+    CONTROL         "ICQ Status Menu",IDC_PLACE_ICQ_STATUS,"Button",BS_AUTORADIOBUTTON,11,147,125,10
+    CONTROL         "Main Menu",IDC_PLACE_MAIN,"Button",BS_AUTORADIOBUTTON,11,158,134,10
+    CONTROL         "Tray Menu",IDC_PLACE_TRAY,"Button",BS_AUTOCHECKBOX | WS_DISABLED,11,168,122,10
+    CONTROL         "At the top",IDC_PLACE_GLOBAL_TOP,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,17,126,108,10
+    CONTROL         "At the bottom",IDC_PLACE_GLOBAL_BOTTOM,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,17,136,119,10
+    CONTROL         "Hide ""Custom status"" menu\n(ICQ eternity/PlusPlus++ Mod only, restart needed)",IDC_HIDE_CSMENU,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,11,65,149,26
+    GROUPBOX        "List settings",IDC_LIST_SETTINGS,3,0,165,47
+    DEFPUSHBUTTON   "Save Options",IDOK,43,205,82,14
+    CTEXT           "Note: Some options will be applied after restart of Miranda IM",IDC_STATIC,11,185,144,15,WS_DISABLED
+    CONTROL         "Confirm deletion of items",IDC_DEL_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,11,13,148,10
+    CONTROL         "Delete entries in ICQ Custom status menu after Import",IDC_DEL_AFTER_IMPORT,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,11,24,153,16
+    GROUPBOX        "ICQ integration",IDC_ICQ_INTG,3,50,165,50
 END
 
 
@@ -136,7 +139,12 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 185
         TOPMARGIN, 7
-        BOTTOMMARGIN, 239
+        BOTTOMMARGIN, 295
+    END
+
+    IDD_OPTIONS, DIALOG
+    BEGIN
+        VERTGUIDE, 11
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -222,6 +230,7 @@ IDI_FAV                 ICON                    "res\\fav.ico"
 IDI_NOCHNG              ICON                    "res\\nochng.ico"
 IDI_CLEAR               ICON                    "res\\clear.ico"
 IDI_APPLY               ICON                    "res\\apply.ico"
+IDI_OPTIONS             ICON                    "res\\options.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 

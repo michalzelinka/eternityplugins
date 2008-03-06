@@ -1,3 +1,4 @@
+// eternity modified file
 // ---------------------------------------------------------------------------80
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
@@ -42,13 +43,14 @@
 
 #include "icqoscar.h"
 
+
 // -----------------------------------------------------------------------------
 const capstr capSrvRelay  = {CAP_SRV_RELAY};
 const capstr capNewCap	  = {CAP_NEWCAP};
 const capstr capUTF       = {CAP_UTF};
 const capstr capTyping    = {CAP_TYPING};
 const capstr capXtraz     = {CAP_XTRAZ};
-const capstr capAimFile = {CAP_AIM_FILE};
+const capstr capAimFile   = {CAP_AIM_FILE};
 const capstr capPush2Talk = {CAP_PUSH2TALK};
 // this is defined among all clients caps
 //const capstr capIcqLite   = {CAP_ICQ_LITE};
@@ -64,8 +66,8 @@ const capstr capMimPack   = {'M', 'I', 'M', '/', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0
 const capstr capIcqJen    = {'e', 'n', 'q', 'j', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // eternity mod
 const capstr capIcqJs7    = {'i', 'c', 'q', 'j', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capIcqJp     = {'i', 'c', 'q', 'p', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
-const capstr capIcqJs7s	  = {'i', 'c', 'q', 'j', 0x20, 'S', 'e', 'c', 'u', 'r', 'e', 0x20, 'I', 'M', 0x20, 0x20};
-const capstr capIcqJs7old =	{0x69, 0x63, 0x71, 0x6a, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20, 0x20};
+const capstr capIcqJs7s	  = {'i', 'c', 'q', 'j', 0, 'S', 'e', 'c', 'u', 'r', 'e', 0, 'I', 'M', 0, 0};
+const capstr capIcqJs7old =	{0x69, 0x63, 0x71, 0x6a, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capIcqJSin	  = {'s', 'i', 'n', 'j',  0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Miranda ICQJ S!N
 const capstr capAimOscar  = {'M', 'i', 'r', 'a', 'n', 'd', 'a', 'A', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capTrillian  = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xad, 0x22, 0xd6, 0xab, 0xf7, 0x3f, 0x14, 0x09};
@@ -75,19 +77,25 @@ const capstr capSimOld    = {0x97, 0xb1, 0x27, 0x51, 0x24, 0x3c, 0x43, 0x34, 0xa
 const capstr capLicq      = {'L', 'i', 'c', 'q', ' ', 'c', 'l', 'i', 'e', 'n', 't', ' ', 0, 0, 0, 0};
 const capstr capKopete    = {'K', 'o', 'p', 'e', 't', 'e', ' ', 'I', 'C', 'Q', ' ', ' ', 0, 0, 0, 0};
 const capstr capmIcq      = {'m', 'I', 'C', 'Q', ' ', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
+const capstr capClimm     = {'c', 'l', 'i', 'm', 'm', 0xA9, ' ', 'R', '.', 'K', '.', ' ', 0, 0, 0, 0};
 const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capCorePager = {'C', 'O', 'R', 'E', ' ', 'P', 'a', 'g', 'e', 'r', 0, 0, 0, 0, 0, 0};
+const capstr capDiChat    = {'D', '[', 'i', ']', 'C', 'h', 'a', 't', ' ', 0, 0, 0, 0, 0, 0, 0};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
 const capstr capQipPDA    = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '!'};
 const capstr capQipMobile = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', ' ', ' ', ' ', ' ', '"'};
 const capstr capQipInfium = {0x7C, 0x73, 0x75, 0x02, 0xC3, 0xBE, 0x4F, 0x3E, 0xA6, 0x9F, 0x01, 0x53, 0x13, 0x43, 0x1E, 0x1A};
+const capstr capQipPlugins ={0x7c, 0x53, 0x3f, 0xfa, 0x68, 0x00, 0x4f, 0x21, 0xbc, 0xfb, 0xc7, 0xd2, 0x43, 0x9a, 0xad, 0x31}; //QIP Plugins
 const capstr capQip_1     = {0xd3, 0xd4, 0x53, 0x19, 0x8b, 0x32, 0x40, 0x3b, 0xac, 0xc7, 0xd1, 0xa9, 0xe2, 0xb5, 0x81, 0x3e}; // QIP-ProtectMsg (now use for fake id only)
 const capstr capQipSymbian = {0x51, 0xad, 0xd1, 0x90, 0x72, 0x04, 0x47, 0x3d, 0xa1, 0xa1, 0x49, 0xf4, 0xa3, 0x97, 0xa4, 0x1f};
 const capstr capVmICQ	  = {0x56, 0x6d, 0x49, 0x43, 0x51, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capSmapeR    = {'S', 'm', 'a', 'p', 'e', 'r', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capIMPlus	  = {0x8e, 0xcd, 0x90, 0xe7, 0x4f, 0x18, 0x28, 0xf8, 0x02, 0xec, 0xd6, 0x18, 0xa4, 0xe9, 0xde, 0x68};
 const capstr capYapp	  = {0x59, 0x61, 0x70, 0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Yapp
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
@@ -97,6 +105,7 @@ const capstr capComm20012 = {0xa0, 0xe9, 0x3f, 0x37, 0x4c, 0x7f, 0x11, 0xd1, 0x8
 const capstr capStrIcq    = {0xa0, 0xe9, 0x3f, 0x37, 0x4f, 0xe9, 0xd3, 0x11, 0xbc, 0xd2, 0x00, 0x04, 0xac, 0x96, 0xdd, 0x96};
 const capstr capAimIcon   = {0x09, 0x46, 0x13, 0x46, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_BUDDYICON
 const capstr capAimDirect = {0x09, 0x46, 0x13, 0x45, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_DIRECTIM
+const capstr capAimFileShare = {0x09, 0x46, 0x13, 0x48, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00}; // CAP_AIM_FILE_SHARE
 const capstr capIcqLite   = {0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A};
 const capstr capAimChat   = {0x74, 0x8F, 0x24, 0x20, 0x62, 0x87, 0x11, 0xD1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capUim       = {0xA7, 0xE4, 0x0A, 0x96, 0xB3, 0xA0, 0x47, 0x9A, 0xB8, 0x45, 0xC9, 0xE4, 0x67, 0xC5, 0x6B, 0x1F};
@@ -121,15 +130,17 @@ const capstr capIMadering = {'I', 'M', 'a', 'd', 'e', 'r', 'i', 'n', 'g', ' ', '
 const capstr capAimAddins = {0x09, 0x46, 0x13, 0x47, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capAimContactSnd= {0x09, 0x46, 0x13, 0x4b, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
 const capstr capAimUnk2   = {0x09, 0x46, 0x01, 0x02, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x00, 0x00};
+const capstr capAimSendbuddylist = {0x09, 0x46, 0x00, 0x00, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x53, 0x54, 0x13, 0x4B};
+//
 const capstr capIMSecKey1 = {1, 1, 1, 1, 1, 1, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ZoneLabs
 const capstr capIMSecKey2 = {2, 2, 2, 2, 2, 2, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // ZoneLabs
-
+const capstr capUnknown1 = {0x17, 0x8c, 0x2d,0x9b, 0xda, 0xa5, 0x45, 0xbb, 0x8d, 0xdb, 0xf3, 0xbd, 0xbd, 0x53, 0xa1,0x0a};
 
 // -----------------------------------------------------------------------------
 
 typedef struct icq_capability_s
 {
-  DWORD fdwMirandaID;         // A bitmask, we use it in order to save database space
+  DWORD fdwMirandaID;              // A bitmask, we use it in order to save database space
   const BYTE  *CapCLSID;      // A binary representation of a oscar capability
 } icq_capability;
 
@@ -148,8 +159,6 @@ static icq_capability CapabilityRecord[] =
   {CAPF_ICQ_DEVIL,	capIcqDevil},
   {CAPF_DIRECT,		capDirect},
 };
-
-
 
 // Deletes all oscar capabilities for a given contact
 void ClearAllContactCapabilities(HANDLE hContact)
@@ -295,7 +304,7 @@ STDCAPINFO stdCapInfo[] = {
 	{"UTF8 Messages",			0, capUTF,			16},
 	{"Typing Notifications",	0, capTyping,		16},
 	{"ICQ Xtraz",				0, capXtraz,		16},
-	{"File Transfer (Oscar)",	0, capAimFile,		16},
+	{"File Transfer (AIMFile)",	0, capAimFile,		16},
 	{"Push2Talk",				0, capPush2Talk,	16},
 	{"ICQ Lite",				0, capIcqLite,		16},
 	{"RTF Messages",			0, capRTF,			16},
@@ -303,7 +312,6 @@ STDCAPINFO stdCapInfo[] = {
 	{"Voice Chat",				0, capVoiceChat,	16},
 	{"Avatars (ICQDevil)",		0, capIcqDevil,		16},
 	{"Direct Connections",		0, capDirect,		16},
-
 	{"Miranda IM",						0, capMirandaIm,	8},
 	{"Miranda IM Mobile",				0, capMirandaMobile,	13},
 	{"Miranda IM Custom Pack",			0, capMimPack,		4},
@@ -334,6 +342,7 @@ STDCAPINFO stdCapInfo[] = {
 	{"MIP Client",						0, capMipClient,	0xC},
 	{"QIP 2005",						0, capQip,			16},
 	{"QIP Infium",						0, capQipInfium,	16},
+	{"QIP Infium Plugins",				0, capQipPlugins,   16},
 	{"QIP PDA",							0, capQipPDA,		16},
 	{"QIP Mobile (Java)",				0, capQipMobile,	16},
 	{"QIP Mobile (Symbian)",			0, capQipSymbian,	16},
@@ -347,6 +356,8 @@ STDCAPINFO stdCapInfo[] = {
 	{"StrICQ",							0, capStrIcq,		16},
 	{"AIM Buddy Icon",					0, capAimIcon,		16}, // CAP_AIM_BUDDYICON
 	{"AIM Direct IM",					0, capAimDirect,	16}, // CAP_AIM_DIRECTIM
+	{"AIM Send Buddy List",				0, capAimSendbuddylist, 16},
+	{"AIM Send Contact",				0, capAimContactSnd,16},
 	{"ICQ Lite",						0, capIcqLite,		16},
 	{"AIM Chat",						0, capAimChat,		16},
 	{"UIM",								0, capUim,			16},
@@ -362,6 +373,11 @@ STDCAPINFO stdCapInfo[] = {
 	{"Messages Type 2 support",			0, capMsgType2,		16},
 	{"Aim Voice Chat",					0, capAimVoice,		16},
 	{"Live Audio(new VoiceChat)",		0, capAimAudio,		16},
+	{"climm client",					0, capClimm,		0xC},
+	{"IM+ Client",						0, capIMPlus,		16},
+	{"mChct Client",          0, capmChat,   0xA},
+	{"SmapeR Client",					0, capSmapeR,		0x07},
+	{"CORE Pager Client",				0, capCorePager,	0xA},
 	{"Zone Alarm IMsecure key 1",		0, capIMSecKey1,	5},
 	{"Zone Alarm IMsecure key 2",		0, capIMSecKey2,	5}
 };
