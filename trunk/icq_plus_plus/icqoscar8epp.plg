@@ -1,0 +1,250 @@
+<html>
+<body>
+<pre>
+<h1>Build Log</h1>
+<h3>
+--------------------Configuration: icqoscar8epp - Win32 Release--------------------
+</h3>
+<h3>Command Lines</h3>
+Creating command line "rc.exe /l 0x417 /fo"Release/resources.res" /d "NDEBUG" "F:\svn\miranda\miranda\protocols\ICQJ_BM\resources.rc"" 
+Creating temporary file "C:\DOCUME~1\Se7ven\LOCALS~1\Temp\RSP212.tmp" with contents
+[
+/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8epp_EXPORTS" /FR"Release/" /Fp"Release/icqoscar8epp.pch" /Yu"icqoscar.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\chan_01login.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\chan_02data.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\chan_03error.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\chan_04close.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\chan_05ping.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_01service.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_02location.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_03buddy.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_04message.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_09bos.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_0alookup.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_0bstatus.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_13servclist.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_15icqserver.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\fam_17signon.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\directpackets.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_direct.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_directmsg.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_filerequests.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_filetransfer.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_advsearch.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_db.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icqosc_svcs.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\init.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\log.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\UI\askauthentication.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_firstrun.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_opts.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_popups.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_uploadui.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\UI\loginpassword.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\UI\userinfotab.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\constants.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\db.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\dlgproc.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\editlist.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\editstring.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\main.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\changeinfo\upload.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\capabilities.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\cookies.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\forkthread.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\i18n.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\iconlib.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_avatar.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_clients.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_fieldnames.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_http.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_infoupdate.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_packet.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_rates.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_server.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_servlist.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_xstatus.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_xtraz.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\md5.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\stdpackets.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\tlv.c"
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\utilities.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Se7ven\LOCALS~1\Temp\RSP212.tmp" 
+Creating temporary file "C:\DOCUME~1\Se7ven\LOCALS~1\Temp\RSP213.tmp" with contents
+[
+/nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8epp_EXPORTS" /FR"Release/" /Fp"Release/icqoscar8epp.pch" /Yc"icqoscar.h" /Fo"Release/" /Fd"Release/" /FD /c 
+"F:\svn\miranda\miranda\protocols\ICQJ_BM\icqoscar.c"
+]
+Creating command line "cl.exe @C:\DOCUME~1\Se7ven\LOCALS~1\Temp\RSP213.tmp" 
+Creating temporary file "C:\DOCUME~1\Se7ven\LOCALS~1\Temp\RSP214.tmp" with contents
+[
+kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /incremental:no /pdb:"Release/ICQ.pdb" /map:"Release/ICQ.map" /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /implib:"Release/ICQ.lib" /ALIGN:4096 /ignore:4108 
+.\Release\chan_01login.obj
+.\Release\chan_02data.obj
+.\Release\chan_03error.obj
+.\Release\chan_04close.obj
+.\Release\chan_05ping.obj
+.\Release\fam_01service.obj
+.\Release\fam_02location.obj
+.\Release\fam_03buddy.obj
+.\Release\fam_04message.obj
+.\Release\fam_09bos.obj
+.\Release\fam_0alookup.obj
+.\Release\fam_0bstatus.obj
+.\Release\fam_13servclist.obj
+.\Release\fam_15icqserver.obj
+.\Release\fam_17signon.obj
+.\Release\directpackets.obj
+.\Release\icq_direct.obj
+.\Release\icq_directmsg.obj
+.\Release\icq_filerequests.obj
+.\Release\icq_filetransfer.obj
+.\Release\icq_advsearch.obj
+.\Release\icq_db.obj
+.\Release\icqosc_svcs.obj
+.\Release\init.obj
+.\Release\log.obj
+.\Release\askauthentication.obj
+.\Release\icq_firstrun.obj
+.\Release\icq_opts.obj
+.\Release\icq_popups.obj
+.\Release\icq_uploadui.obj
+.\Release\loginpassword.obj
+.\Release\userinfotab.obj
+.\Release\constants.obj
+.\Release\db.obj
+.\Release\dlgproc.obj
+.\Release\editlist.obj
+.\Release\editstring.obj
+.\Release\main.obj
+.\Release\upload.obj
+.\Release\capabilities.obj
+.\Release\cookies.obj
+.\Release\forkthread.obj
+.\Release\i18n.obj
+.\Release\iconlib.obj
+.\Release\icq_avatar.obj
+.\Release\icq_clients.obj
+.\Release\icq_fieldnames.obj
+.\Release\icq_http.obj
+.\Release\icq_infoupdate.obj
+.\Release\icq_packet.obj
+.\Release\icq_rates.obj
+.\Release\icq_server.obj
+.\Release\icq_servlist.obj
+.\Release\icq_xstatus.obj
+.\Release\icq_xtraz.obj
+.\Release\icqoscar.obj
+.\Release\isee.obj
+.\Release\md5.obj
+.\Release\stdpackets.obj
+.\Release\tlv.obj
+.\Release\utilities.obj
+.\Release\resources.res
+]
+Creating command line "link.exe @C:\DOCUME~1\Se7ven\LOCALS~1\Temp\RSP214.tmp"
+<h3>Output Window</h3>
+Compiling resources...
+Compiling...
+icqoscar.c
+F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_xtraz.h(58) : warning C4031: second formal parameter list longer than the first list
+F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_xtraz.h(58) : warning C4028: formal parameter 2 different from declaration
+F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_constants.h(58) : warning C4005: 'DEFAULT_SECURE_LOGIN' : macro redefinition
+        F:\svn\miranda\miranda\protocols\ICQJ_BM\globals.h(44) : see previous definition of 'DEFAULT_SECURE_LOGIN'
+Compiling...
+chan_01login.c
+chan_02data.c
+chan_03error.c
+chan_04close.c
+chan_05ping.c
+fam_01service.c
+fam_02location.c
+fam_03buddy.c
+fam_04message.c
+fam_09bos.c
+fam_0alookup.c
+fam_0bstatus.c
+fam_13servclist.c
+fam_15icqserver.c
+fam_17signon.c
+directpackets.c
+icq_direct.c
+icq_directmsg.c
+icq_filerequests.c
+icq_filetransfer.c
+Generating Code...
+Compiling...
+icq_advsearch.c
+icq_db.c
+icqosc_svcs.c
+init.c
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.h(17) : warning C4030: first formal parameter list longer than the second list
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.h(17) : warning C4028: formal parameter 2 different from declaration
+log.c
+askauthentication.c
+icq_firstrun.c
+icq_opts.c
+icq_popups.c
+win2k.h
+icq_uploadui.c
+loginpassword.c
+userinfotab.c
+constants.c
+db.c
+dlgproc.c
+editlist.c
+editstring.c
+main.c
+upload.c
+capabilities.c
+Generating Code...
+F:\svn\miranda\miranda\protocols\ICQJ_BM\UI\userinfotab.c(205) : warning C4761: integral size mismatch in argument; conversion supplied
+F:\svn\miranda\miranda\protocols\ICQJ_BM\UI\userinfotab.c(246) : warning C4761: integral size mismatch in argument; conversion supplied
+F:\svn\miranda\miranda\protocols\ICQJ_BM\icq_opts.c(794) : warning C4761: integral size mismatch in argument; conversion supplied
+Compiling...
+cookies.c
+forkthread.c
+i18n.c
+iconlib.c
+icq_avatar.c
+icq_clients.c
+icq_fieldnames.c
+icq_http.c
+icq_infoupdate.c
+icq_packet.c
+icq_rates.c
+icq_server.c
+icq_servlist.c
+icq_xstatus.c
+icq_xtraz.c
+isee.c
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.h(17) : warning C4030: first formal parameter list longer than the second list
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.h(17) : warning C4028: formal parameter 2 different from declaration
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(508) : warning C4305: 'function' : truncation from 'const int ' to 'unsigned char '
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(548) : warning C4305: 'function' : truncation from 'const int ' to 'unsigned char '
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(580) : warning C4305: 'function' : truncation from 'const int ' to 'unsigned char '
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(776) : warning C4020: 'packFNACHeader' : too many actual parameters
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(1213) : warning C4047: 'function' : 'void ** ' differs in levels of indirection from 'unsigned char *'
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(1213) : warning C4022: 'SAFE_FREE' : pointer mismatch for actual parameter 1
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(1265) : warning C4020: 'packFNACHeader' : too many actual parameters
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(1334) : warning C4020: 'packFNACHeader' : too many actual parameters
+md5.c
+stdpackets.c
+tlv.c
+utilities.c
+Generating Code...
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(896) : warning C4761: integral size mismatch in argument; conversion supplied
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(978) : warning C4761: integral size mismatch in argument; conversion supplied
+F:\svn\miranda\miranda\protocols\ICQJ_BM\isee.c(703) : warning C4761: integral size mismatch in argument; conversion supplied
+Linking...
+   Creating library Release/ICQ.lib and object Release/ICQ.exp
+
+
+
+<h3>Results</h3>
+ICQ.dll - 0 error(s), 21 warning(s)
+</pre>
+</body>
+</html>
