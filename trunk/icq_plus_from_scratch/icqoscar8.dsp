@@ -4,7 +4,7 @@
 
 # TARGTYPE "Win32 (x86) Dynamic-Link Library" 0x0102
 
-CFG=icqoscar8 - Win32 Debug
+CFG=icqoscar8 - Win32 Debug Unicode
 !MESSAGE This is not a valid makefile. To build this project using NMAKE,
 !MESSAGE use the Export Makefile command and run
 !MESSAGE 
@@ -13,18 +13,20 @@ CFG=icqoscar8 - Win32 Debug
 !MESSAGE You can specify a configuration when running NMAKE
 !MESSAGE by defining the macro CFG on the command line. For example:
 !MESSAGE 
-!MESSAGE NMAKE /f "icqoscar8.mak" CFG="icqoscar8 - Win32 Debug"
+!MESSAGE NMAKE /f "icqoscar8.mak" CFG="icqoscar8 - Win32 Debug Unicode"
 !MESSAGE 
 !MESSAGE Possible choices for configuration are:
 !MESSAGE 
 !MESSAGE "icqoscar8 - Win32 Release" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE "icqoscar8 - Win32 Debug" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "icqoscar8 - Win32 Debug Unicode" (based on "Win32 (x86) Dynamic-Link Library")
+!MESSAGE "icqoscar8 - Win32 Release Unicode" (based on "Win32 (x86) Dynamic-Link Library")
 !MESSAGE 
 
 # Begin Project
 # PROP AllowPerConfigDependencies 0
-# PROP Scc_ProjName ""$/Miranda/miranda/protocols/ICQJ_BM", QLIAAAAA"
-# PROP Scc_LocalPath "."
+# PROP Scc_ProjName ""
+# PROP Scc_LocalPath ""
 CPP=cl.exe
 MTL=midl.exe
 RSC=rc.exe
@@ -40,11 +42,10 @@ RSC=rc.exe
 # PROP Use_Debug_Libraries 0
 # PROP Output_Dir "Release"
 # PROP Intermediate_Dir "Release"
-# PROP Ignore_Export_Lib 1
+# PROP Ignore_Export_Lib 0
 # PROP Target_Dir ""
 # ADD BASE CPP /nologo /MT /W3 /GX /O2 /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /YX /FD /c
-# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /I "./" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FD /c
-# SUBTRACT CPP /Fr
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR /Yu"icqoscar.h" /FD /c
 # ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
 # ADD BASE RSC /l 0x809 /d "NDEBUG"
@@ -54,8 +55,8 @@ BSC32=bscmake.exe
 # ADD BSC32 /nologo
 LINK32=link.exe
 # ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /dll /machine:I386
-# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /pdb:none /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /ALIGN:4096 /ignore:4108
-# SUBTRACT LINK32 /map /debug
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /ALIGN:4096 /ignore:4108
+# SUBTRACT LINK32 /pdb:none
 
 !ELSEIF  "$(CFG)" == "icqoscar8 - Win32 Debug"
 
@@ -84,12 +85,72 @@ LINK32=link.exe
 # ADD LINK32 wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /map /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /pdbtype:sept
 # SUBTRACT LINK32 /pdb:none /incremental:no
 
+!ELSEIF  "$(CFG)" == "icqoscar8 - Win32 Debug Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 1
+# PROP BASE Output_Dir "icqoscar8___Win32_Debug_Unicode"
+# PROP BASE Intermediate_Dir "icqoscar8___Win32_Debug_Unicode"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 1
+# PROP Output_Dir "Debug_Unicode"
+# PROP Intermediate_Dir "Debug_Unicode"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR /Yu"icqoscar.h" /FD /GZ /c
+# ADD CPP /nologo /MDd /W3 /Gm /GX /ZI /Od /I "../../include" /D "WIN32" /D "_DEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR /Yu"icqoscar.h" /FD /GZ /c
+# ADD BASE MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "_DEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x809 /d "_DEBUG"
+# ADD RSC /l 0x809 /d "_DEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /map /debug /debugtype:both /machine:I386 /out:"../../bin/debug/plugins/ICQ.dll" /pdbtype:sept
+# SUBTRACT BASE LINK32 /pdb:none /incremental:no
+# ADD LINK32 wsock32.lib kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /nologo /base:"0x25000000" /dll /map /debug /debugtype:both /machine:I386 /out:"../../bin/debug Unicode/plugins/ICQ.dll" /pdbtype:sept
+# SUBTRACT LINK32 /pdb:none /incremental:no
+
+!ELSEIF  "$(CFG)" == "icqoscar8 - Win32 Release Unicode"
+
+# PROP BASE Use_MFC 0
+# PROP BASE Use_Debug_Libraries 0
+# PROP BASE Output_Dir "icqoscar8___Win32_Release_Unicode"
+# PROP BASE Intermediate_Dir "icqoscar8___Win32_Release_Unicode"
+# PROP BASE Ignore_Export_Lib 0
+# PROP BASE Target_Dir ""
+# PROP Use_MFC 0
+# PROP Use_Debug_Libraries 0
+# PROP Output_Dir "Release_Unicode"
+# PROP Intermediate_Dir "Release_Unicode"
+# PROP Ignore_Export_Lib 0
+# PROP Target_Dir ""
+# ADD BASE CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "_MBCS" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR /Yu"icqoscar.h" /FD /c
+# ADD CPP /nologo /MD /W3 /GX /Zi /O1 /I "../../include" /D "WIN32" /D "NDEBUG" /D "_WINDOWS" /D "UNICODE" /D "_USRDLL" /D "icqoscar8_EXPORTS" /FR /Yu"icqoscar.h" /FD /c
+# ADD BASE MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD MTL /nologo /D "NDEBUG" /mktyplib203 /win32
+# ADD BASE RSC /l 0x417 /d "NDEBUG"
+# ADD RSC /l 0x417 /d "NDEBUG"
+BSC32=bscmake.exe
+# ADD BASE BSC32 /nologo
+# ADD BSC32 /nologo
+LINK32=link.exe
+# ADD BASE LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /map /debug /machine:I386 /out:"../../bin/release/plugins/ICQ.dll" /ALIGN:4096 /ignore:4108
+# SUBTRACT BASE LINK32 /pdb:none
+# ADD LINK32 kernel32.lib user32.lib gdi32.lib winspool.lib comctl32.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib wsock32.lib /nologo /dll /map /debug /machine:I386 /out:"../../bin/release unicode/plugins/ICQ.dll" /ALIGN:4096 /ignore:4108
+# SUBTRACT LINK32 /pdb:none
+
 !ENDIF 
 
 # Begin Target
 
 # Name "icqoscar8 - Win32 Release"
 # Name "icqoscar8 - Win32 Debug"
+# Name "icqoscar8 - Win32 Debug Unicode"
+# Name "icqoscar8 - Win32 Release Unicode"
 # Begin Group "Header Files"
 
 # PROP Default_Filter "h;hpp;hxx;hm;inl"
@@ -179,11 +240,11 @@ SOURCE=.\icq_popups.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_rates.h
+SOURCE=.\icq_proto.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_reguin.h
+SOURCE=.\icq_rates.h
 # End Source File
 # Begin Source File
 
@@ -203,10 +264,6 @@ SOURCE=.\icq_xtraz.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\icqosc_proto.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\icqosc_svcs.h
 # End Source File
 # Begin Source File
@@ -219,10 +276,6 @@ SOURCE=.\init.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\isee.h
-# End Source File
-# Begin Source File
-
 SOURCE=.\log.h
 # End Source File
 # Begin Source File
@@ -231,19 +284,7 @@ SOURCE=.\UI\loginpassword.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\m_icolib.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_icq.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_popupw.h
-# End Source File
-# Begin Source File
-
-SOURCE=.\m_updater.h
+SOURCE=.\oscar_filetransfer.h
 # End Source File
 # Begin Source File
 
@@ -283,19 +324,7 @@ SOURCE=.\icos\auth_revoke.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\check.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\dot.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\changeinfo\expandst.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\hidden.ico
 # End Source File
 # Begin Source File
 
@@ -303,39 +332,11 @@ SOURCE=.\icos\icq.ico
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\list.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\pause.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\privacy.ico
-# End Source File
-# Begin Source File
-
 SOURCE=.\resources.rc
 # End Source File
 # Begin Source File
 
-SOURCE=.\icos\scan.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\set_invis.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\set_vis.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\start.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\stop.ico
+SOURCE=.\icos\srvlist_add.ico
 # End Source File
 # Begin Source File
 
@@ -469,49 +470,29 @@ SOURCE=.\icos\xstatus31.ico
 
 SOURCE=.\icos\xstatus32.ico
 # End Source File
-# Begin Source File
-
-SOURCE=.\icos\xstatus33.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\xstatus34.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\xstatus35.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\xstatus36.ico
-# End Source File
-# Begin Source File
-
-SOURCE=.\icos\xstatus37.ico
-# End Source File
 # End Group
 # Begin Group "FLAP Channels"
 
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\chan_01login.c
+SOURCE=.\chan_01login.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_02data.c
+SOURCE=.\chan_02data.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_03error.c
+SOURCE=.\chan_03error.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_04close.c
+SOURCE=.\chan_04close.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\chan_05ping.c
+SOURCE=.\chan_05ping.cpp
 # End Source File
 # End Group
 # Begin Group "SNAC Families"
@@ -519,43 +500,43 @@ SOURCE=.\chan_05ping.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\fam_01service.c
+SOURCE=.\fam_01service.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_02location.c
+SOURCE=.\fam_02location.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_03buddy.c
+SOURCE=.\fam_03buddy.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_04message.c
+SOURCE=.\fam_04message.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_09bos.c
+SOURCE=.\fam_09bos.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_0alookup.c
+SOURCE=.\fam_0alookup.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_0bstatus.c
+SOURCE=.\fam_0bstatus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_13servclist.c
+SOURCE=.\fam_13servclist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_15icqserver.c
+SOURCE=.\fam_15icqserver.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\fam_17signon.c
+SOURCE=.\fam_17signon.cpp
 # End Source File
 # End Group
 # Begin Group "Direct Connection"
@@ -563,23 +544,23 @@ SOURCE=.\fam_17signon.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\directpackets.c
+SOURCE=.\directpackets.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_direct.c
+SOURCE=.\icq_direct.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_directmsg.c
+SOURCE=.\icq_directmsg.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_filerequests.c
+SOURCE=.\icq_filerequests.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_filetransfer.c
+SOURCE=.\icq_filetransfer.cpp
 # End Source File
 # End Group
 # Begin Group "Miranda Bits"
@@ -587,23 +568,27 @@ SOURCE=.\icq_filetransfer.c
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\icq_advsearch.c
+SOURCE=.\icq_advsearch.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_db.c
+SOURCE=.\icq_db.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icqosc_svcs.c
+SOURCE=.\icq_proto.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\init.c
+SOURCE=.\icqosc_svcs.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\log.c
+SOURCE=.\init.cpp
+# End Source File
+# Begin Source File
+
+SOURCE=.\log.cpp
 # End Source File
 # End Group
 # Begin Group "Documentation"
@@ -627,31 +612,31 @@ SOURCE=".\docs\IcqOscarJ-translation.txt"
 # PROP Default_Filter ""
 # Begin Source File
 
-SOURCE=.\UI\askauthentication.c
+SOURCE=.\UI\askauthentication.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_firstrun.c
+SOURCE=.\icq_firstrun.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_opts.c
+SOURCE=.\icq_opts.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_popups.c
+SOURCE=.\icq_popups.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_uploadui.c
+SOURCE=.\icq_uploadui.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\UI\loginpassword.c
+SOURCE=.\UI\loginpassword.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\UI\userinfotab.c
+SOURCE=.\UI\userinfotab.cpp
 # End Source File
 # End Group
 # Begin Group "Change Info"
@@ -663,121 +648,113 @@ SOURCE=.\changeinfo\changeinfo.h
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\constants.c
+SOURCE=.\changeinfo\constants.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\db.c
+SOURCE=.\changeinfo\db.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\dlgproc.c
+SOURCE=.\changeinfo\dlgproc.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\editlist.c
+SOURCE=.\changeinfo\editlist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\editstring.c
+SOURCE=.\changeinfo\editstring.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\main.c
+SOURCE=.\changeinfo\main.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\changeinfo\upload.c
+SOURCE=.\changeinfo\upload.cpp
 # End Source File
 # End Group
 # Begin Source File
 
-SOURCE=.\capabilities.c
+SOURCE=.\capabilities.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\cookies.c
+SOURCE=.\cookies.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\i18n.c
+SOURCE=.\i18n.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\iconlib.c
+SOURCE=.\iconlib.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_avatar.c
+SOURCE=.\icq_avatar.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_clients.c
+SOURCE=.\icq_clients.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_fieldnames.c
+SOURCE=.\icq_fieldnames.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_http.c
+SOURCE=.\icq_http.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_infoupdate.c
+SOURCE=.\icq_infoupdate.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_packet.c
+SOURCE=.\icq_packet.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_rates.c
+SOURCE=.\icq_rates.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_reguin.c
+SOURCE=.\icq_server.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_server.c
+SOURCE=.\icq_servlist.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_servlist.c
+SOURCE=.\icq_xstatus.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_xstatus.c
+SOURCE=.\icq_xtraz.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\icq_xtraz.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\icqoscar.c
+SOURCE=.\icqoscar.cpp
 # ADD CPP /Yc"icqoscar.h"
 # End Source File
 # Begin Source File
 
-SOURCE=.\isee.c
+SOURCE=.\oscar_filetransfer.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\oscar_filetransfer.c
+SOURCE=.\stdpackets.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\stdpackets.c
+SOURCE=.\tlv.cpp
 # End Source File
 # Begin Source File
 
-SOURCE=.\tlv.c
-# End Source File
-# Begin Source File
-
-SOURCE=.\utilities.c
+SOURCE=.\utilities.cpp
 # End Source File
 # End Target
 # End Project
