@@ -1,0 +1,37 @@
+# Project: CSList
+# Makefile created by Dev-C++ 4.9.9.2
+
+CPP  = g++.exe
+CC   = gcc.exe
+WINDRES = windres.exe
+RES  = CSList_private.res
+OBJ  = cslist.o $(RES)
+LINKOBJ  = cslist.o $(RES)
+LIBS =  -L"C:/devcpp/lib" -lcomctl32 -lgdi32 -lkernel32 -luser32 -lcomdlg32 -lshell32 -luuid  
+INCS =  -I"C:/devcpp/include"  -I"../../include" 
+CXXINCS =  -I"C:/devcpp/lib/gcc/mingw32/3.4.2/include"  -I"C:/devcpp/include/c++/3.4.2/backward"  -I"C:/devcpp/include/c++/3.4.2/mingw32"  -I"C:/devcpp/include/c++/3.4.2"  -I"C:/devcpp/include"  -I"../../include" 
+BIN  = CSList.dll
+CXXFLAGS = $(CXXINCS)   
+CFLAGS = $(INCS)   
+RM = rm -f
+
+.PHONY: all all-before all-after clean clean-custom
+
+all: all-before CSList.dll all-after
+
+
+clean: clean-custom
+	${RM} $(OBJ) $(BIN)
+
+DLLWRAP=dllwrap.exe
+DEFFILE=libCSList.def
+STATICLIB=libCSList.a
+
+$(BIN): $(LINKOBJ)
+	$(DLLWRAP) --output-def $(DEFFILE) --driver-name c++ --implib $(STATICLIB) $(LINKOBJ) $(LIBS) -o $(BIN)
+
+cslist.o: cslist.cpp
+	$(CPP) -c cslist.cpp -o cslist.o $(CXXFLAGS)
+
+CSList_private.res: CSList_private.rc cslist.rc 
+	$(WINDRES) -i CSList_private.rc --input-format=rc -o CSList_private.res -O coff 
