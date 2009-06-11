@@ -5,25 +5,25 @@
 
   Custom Status List plugin for Miranda-IM (www.miranda-im.org)
   Follower of Custom Status History List by HANAX
-  Copyright Â© 2006,2007 HANAX
-  Copyright Â© 2007,2008 jarvis
-   
+  Copyright © 2006,2007 HANAX
+  Copyright © 2007,2008 jarvis
+
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
   as published by the Free Software Foundation; either version 2
   of the License, or (at your option) any later version.
-  
+
   This program is distributed in the hope that it will be useful,
   but WITHOUT ANY WARRANTY; without even the implied warranty of
   MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
   GNU General Public License for more details.
-  
+
   You should have received a copy of the GNU General Public License
   along with this program; if not, write to the Free Software
   Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-  
+
   ----------------------------------------------------------------------------  
-  
+
   File name      : $URL$
   Revision       : $Rev$
   Last change on : $Date$
@@ -43,8 +43,10 @@
 
   TODO
   ----
+  - duplicities detection (during Import, adding, ..)
   - stage 2 of code revision
   - save window positions
+  - resetting custom status on when selected users log in
   - exactly, CSList-like system
   - optionally set Away/NA/DND/Occ
   - saving dialog positions
@@ -53,8 +55,10 @@
 
   0.0.0.18 - fixing trip :)
   --------
-  - fixed memory leak and possible crash when modifying status and then importing 0 DB entries
+  - icon selector shows only icons, that are supported by installed ICQ plugin
+  - fixed memory leak and possible crash when modifying status and then importing 0 DB entries (helpItem not nulled)
   - merged Add/Modify processes together :)
+  - Unicode build, finally :)
 
   0.0.0.17 - I become to be useful :)
   --------
@@ -158,7 +162,7 @@ static int PluginMenuCommand( WPARAM wParam, LPARAM lParam ) {
   else if ( opened == 1 )
   {
     opened++;
-    MessageBox( NULL, "Some instance of Custom Status List is already opened.", "Custom Status List", MB_OK );
+    MessageBox( NULL, _T( "Some instance of Custom Status List is already opened." ), _T( "Custom Status List" ), MB_OK );
     opened--;
   }
   return 0;
@@ -189,27 +193,43 @@ __declspec( dllexport ) const MUUID* MirandaPluginInterfaces( void ) {
 
 int __declspec( dllexport ) Load( PLUGINLINK *link ) {
   pluginLink = link;
-  CreateServiceFunction( MS_CSLIST_SHOWLIST, PluginMenuCommand );
+
+  { // are we running under Unicode core?
+		char szVer[MAX_PATH];
+
+		CallService( MS_SYSTEM_GETVERSIONTEXT, MAX_PATH, ( LPARAM )szVer );
+		_strlwr( szVer ); // make sure it is lowercase
+		gbUnicodeCore = ( strstr( szVer, "unicode" ) != NULL );
+    if ( !gbUnicodeCore )
+    {
+      pluginInfoEx.flags = 0;
+      pluginInfo.flags = 0;
+    }
+  }
+
+  hSvcShowList = CreateServiceFunction( MS_CSLIST_SHOWLIST, PluginMenuCommand );
 
   cslist_init_icons();
 
-  if ( !hHookMenuBuild )
-  {
+  if ( DBGetContactSettingByte( NULL, "ICQ", "XStatusEnabled", 1 ) )
+  { // if xstatuses are enabled, declare, if we can use status menu or main menu only
     if ( bStatusMenu = ServiceExists( MS_CLIST_ADDSTATUSMENUITEM ) )
-      hHookMenuBuild = HookEvent( ME_CLIST_PREBUILDSTATUSMENU, CListMW_BuildStatusItems );
+      hHookMenuBuild = HookEvent( ME_CLIST_PREBUILDSTATUSMENU, cslist_init_menu_item );
     else
-      InitMenuItem( TRUE, 1 );
+      cslist_init_menu_item( 0, 0 );
   }
 
-  HookEvent( ME_SYSTEM_MODULESLOADED, onPluginsLoaded );
-  HookEvent( ME_OPT_INITIALISE, onOptionsInit );
+  hHookOnPluginsLoaded = HookEvent( ME_SYSTEM_MODULESLOADED, onPluginsLoaded );
+  hHookOnOptionsInit = HookEvent( ME_OPT_INITIALISE, onOptionsInit );
+  { // Katy's easter-egg :))
+    hHookOnKatynkaIsLoggedIn = HookEvent( ME_DB_CONTACT_SETTINGCHANGED, cslist_KatysEasterEgg );
+  }
   { // fix for ANSI Windows - Add and Modify dialogs not loaded when clicking - troubles with not loaded ComboBoxEx
     INITCOMMONCONTROLSEX icc;
     icc.dwSize = sizeof( icc );
     icc.dwICC = ICC_USEREX_CLASSES;
     InitCommonControlsEx( &icc );
   }
-
   return 0;
 }
 
@@ -217,6 +237,19 @@ int __declspec( dllexport ) Load( PLUGINLINK *link ) {
 // ############################## UNLOADER #####################################
 
 int __declspec( dllexport ) Unload( void ) {
+  int i;
+  // unhooking, unservicing & unhandling
+  UnhookEvent( hHookMenuBuild );
+  UnhookEvent( hHookOnPluginsLoaded );
+  UnhookEvent( hHookOnOptionsInit );
+  UnhookEvent( hHookOnKatynkaIsLoggedIn );
+  DestroyServiceFunction( hSvcShowList );
+  for ( i = 0; i < SIZEOF( cslforms ); i++ )
+    cslforms[i].hIcoLibItem = NULL;
+  hList = NULL;
+  hXCombo = NULL;
+  hIml = NULL;
+  hDlg = NULL;
   return 0;
 }
 
@@ -280,16 +313,17 @@ static int onPluginsLoaded( WPARAM wparam, LPARAM lparam )
   {
 	  TBButton button = { 0 };
 		SKINICONDESC sid = { 0 };
-    char szFile[MAX_PATH];
-    GetModuleFileNameA( hInst, szFile, MAX_PATH );
+    TCHAR szFile[MAX_PATH];
+    GetModuleFileName( hInst, szFile, MAX_PATH );
 
     sid.cbSize = sizeof( sid );
-		sid.ptszSection = _T( "ToolBar" );
-		sid.ptszDefaultFile = szFile;
+    sid.flags = SIDF_ALL_TCHAR;
+		sid.ptszSection = L"ToolBar";
+		sid.ptszDefaultFile = ( TCHAR * )szFile;
 		sid.cx = sid.cy = 16;
 
-		sid.pszName = CSLIST_MODULE_LONG_NAME;
-		sid.ptszDescription = _T( CSLIST_MODULE_LONG_NAME );
+		sid.pszName = "CSList_TB_Icon";
+		sid.ptszDescription = L"Custom Status List";
 		sid.iDefaultIndex = -IDI_CSLIST;
 		hMainIcon = CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
 
@@ -314,9 +348,6 @@ static int onPluginsLoaded( WPARAM wparam, LPARAM lparam )
   { // take care of DB entries
     // not needed :) current structure allows to write them into DB when it's needed :)
   }
-  { // Katy's easter-egg :))
-    //HookEvent( ME_DB_CONTACT_SETTINGCHANGED, cslist_KatysEasterEgg );
-  }
   return 0;
 }
 
@@ -330,10 +361,10 @@ int onOptionsInit( WPARAM wparam, LPARAM lparam )
   odp.cbSize = sizeof( odp );
   odp.position = 955000000;
   odp.hInstance = hInst;
-  odp.pszTemplate = MAKEINTRESOURCE( IDD_OPTIONS );
-  odp.pszTitle = Translate( CSLIST_MODULE_LONG_NAME );
+  odp.pszTemplate = MAKEINTRESOURCEA( IDD_OPTIONS );
+  odp.ptszTitle = TranslateTS( ( TCHAR * )CSLIST_MODULE_LONG_NAME );
   odp.pfnDlgProc = CSListOptionsProc;
-  odp.pszGroup = Translate( "Status" );
+  odp.ptszGroup = TranslateTS( ( TCHAR * )"Status" );
   odp.flags = ODPF_BOLDGROUPS;
 
   CallService( MS_OPT_ADDPAGE, wparam, ( LPARAM )&odp );
@@ -407,15 +438,15 @@ INT_PTR CALLBACK CSListProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
       LvCol.mask = LVCF_TEXT | LVCF_FMT | LVCF_WIDTH | LVCF_SUBITEM;
       LvCol.fmt = LVCFMT_LEFT;
       LvCol.cx = 0x00;
-      LvCol.pszText = " ";
+      LvCol.pszText = L"";
       LvCol.cx = 0x16;
       //ListView_SetExtendedListViewStyle( hList, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP );
       ListView_SetExtendedListViewStyleEx( hList, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP | LVS_EX_INFOTIP );
       SendMessage( hList, LVM_INSERTCOLUMN , 0, ( LPARAM )&LvCol );
-      LvCol.pszText = "Title";
+      LvCol.pszText = TranslateT( "Title" );
       LvCol.cx = 0x64;
       SendMessage( hList, LVM_INSERTCOLUMN, 1, ( LPARAM )&LvCol );
-      LvCol.pszText = "Message";
+      LvCol.pszText = TranslateT( "Message" );
       LvCol.cx = 0xa8;
       SendMessage( hList, LVM_INSERTCOLUMN, 2, ( LPARAM )&LvCol );
       memset( &LvItem, 0, sizeof( LvItem ) );
@@ -425,12 +456,15 @@ INT_PTR CALLBACK CSListProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lPar
       cslist_sort_list();
 
       // ............................................. creating iconized buttons
-			for ( i = 0; i < SIZEOF(buttons); ++i )
+			for ( i = 0; i < SIZEOF( cslforms ); i++ )
 			{
-				SendDlgItemMessage( hwndDlg, buttons[i].idc, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadIconExEx( buttons[i].icon, buttons[i].iconNoIcoLib ) );
-				SendDlgItemMessage( hwndDlg, buttons[i].idc, BUTTONSETASFLATBTN, 0, 0 ); //maybe set as BUTTONSETDEFAULT?
-				SendDlgItemMessage( hwndDlg, buttons[i].idc, BUTTONADDTOOLTIP, ( WPARAM )TranslateTS( buttons[i].title ), BATF_TCHAR );
+        if ( cslforms[i].idc < 0 )
+          continue;
+				SendDlgItemMessage( hwndDlg, cslforms[i].idc, BM_SETIMAGE, IMAGE_ICON, ( LPARAM )LoadIconExEx( cslforms[i].iconIcoLib, cslforms[i].iconNoIcoLib ) );
+				SendDlgItemMessage( hwndDlg, cslforms[i].idc, BUTTONSETASFLATBTN, 0, 0 ); //maybe set as BUTTONSETDEFAULT?
+				SendDlgItemMessage( hwndDlg, cslforms[i].idc, BUTTONADDTOOLTIP, ( WPARAM )TranslateTS( cslforms[i].title ), BATF_TCHAR );
 			}
+      SetWindowText( hwndDlg, TranslateT( "Custom Status List" ) );
     }
     break;
 // ######################## COMMANDS ###########################################
@@ -456,8 +490,8 @@ savenexit: // stick #1
             helpStatus.cbSize = sizeof( ICQ_CUSTOM_STATUS );
             helpStatus.flags = CSSF_MASK_STATUS | CSSF_MASK_NAME | CSSF_MASK_MESSAGE;
             helpStatus.status = &icon;
-            helpStatus.pszName = title;
-            helpStatus.pszMessage = message;
+            helpStatus.ptszName = ( TCHAR * )title;
+            helpStatus.ptszMessage = ( TCHAR * )message;
             CallService( PS_ICQ_SETCUSTOMSTATUSEX, 0, ( LPARAM )&helpStatus );
           }
           flag = 0;
@@ -484,15 +518,14 @@ savenexit: // stick #1
               {
                 ModifiedPos = iSelect;
                 cslist_modify_item();
-                AMResult = 0;
                 ModifiedPos = -1;
-                bChanged = 1;
               }
-              else {
+              else
+              {
                 cslist_add_item();
-                AMResult = 0;
-                bChanged = 1;
               }
+              AMResult = 0;
+              bChanged = 1;
             }
             action = 0;
             cslist_clear_help_item();
@@ -530,25 +563,34 @@ INT_PTR CALLBACK CSListAddModifyProc( HWND hwndAMDlg, UINT uMsg, WPARAM wParam, 
     {
       // .........................................creating comboboxex for xicons
       // TODO: changing statics and dialog title in order of action :)
-      int i;
-      if ( action == 0 )
+      int i, maxCount;
+      if ( action ^ 1 ) // action == 1
       {
-        SetWindowText( hwndAMDlg, "Add Custom Status" );
-        SetDlgItemText( hwndAMDlg, IDC_AM_OK, "Add" );
+        SetWindowText( hwndAMDlg, TranslateT( "Add new item" ) );
+        SetDlgItemText( hwndAMDlg, IDC_AM_OK, TranslateT( "Add" ) );
       }
       else
       {
-        SetWindowText( hwndAMDlg, "Modify Custom Status" );
-        SetDlgItemText( hwndAMDlg, IDC_AM_OK, "Modify" );
+        SetWindowText( hwndAMDlg, TranslateT( "Modify selected item" ) );
+        SetDlgItemText( hwndAMDlg, IDC_AM_OK, TranslateT( "Modify" ) );
       }
-        
+      SetDlgItemText( hwndAMDlg, IDC_AM_CN, TranslateT( "Cancel" ) );
+      SetDlgItemText( hwndAMDlg, IDC_ST_XICON, TranslateT( "Icon:" ) );
+      SetDlgItemText( hwndAMDlg, IDC_ST_XTITLE, TranslateT( "Title:" ) );
+      SetDlgItemText( hwndAMDlg, IDC_ST_XMESSAGE, TranslateT( "Message:" ) );
+
       hXCombo = GetDlgItem( hwndAMDlg, IDC_CB_ICON );
       SendMessage( hXCombo, CBEM_SETIMAGELIST, 0, ( LPARAM )hIml );
       ZeroMemory( &CbItem, sizeof( CbItem ) );
-      for ( i = 0; i < SIZEOF( xstatuses ); i++ )
+
+      if ( DBGetContactSettingByte( NULL, "ICQ", "NonStandartXstatus", 0 ) )
+        maxCount = SIZEOF( xstatuses );
+      else
+        maxCount = 32;
+      for ( i = 0; i < maxCount; i++ )
       {
         CbItem.mask = CBEIF_IMAGE | CBEIF_TEXT | CBEIF_SELECTEDIMAGE;
-        CbItem.pszText = _T( xstatuses[i].xname );
+        CbItem.pszText = TranslateTS( xstatuses[i].xname );
         CbItem.iImage = i; // or xstatuses[i].xnum? x)
         CbItem.iItem = i;
         CbItem.iSelectedImage = i;
@@ -787,30 +829,29 @@ int null_snprintf( char *buffer, size_t count, const char* fmt, ... ) // depreca
   return len;
 }
 
-static int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam )
+static int cslist_init_menu_item( WPARAM wParam, LPARAM lParam )
 {
-  int place = DBGetContactSettingByte( NULL, CSLIST_MODULE_SHORT_NAME, "placement", 11 );
-  InitMenuItem( TRUE, place );
-  return 0;
-}
-
-void InitMenuItem( BOOL bAllowStatus, int miPlacement ) // TODO: merge with fnc above - this is not icq mod xo) - but..allow xstatuses is future todo?
-{
-  CLISTMENUITEM mi;
+  CLISTMENUITEM mi = { 0 };
+  int miPlacement = 3;
+  if ( hHookMenuBuild != NULL )
+    miPlacement = DBGetContactSettingByte( NULL, CSLIST_MODULE_SHORT_NAME, "placement", 11 );
   ZeroMemory( &mi, sizeof( mi ) );
   mi.cbSize = sizeof( mi );
   mi.position = -0x7FFFFFFF; // top
-  if ( miPlacement == 12 ) mi.position = 2000040000; // bottom
   mi.flags = 0;
-  //mi.hIcon = LoadSkinnedIcon(SKINICON_OTHER_MIRANDA);
   mi.hIcon = LoadIconExEx( "csl_icon", IDI_CSLIST );
-  mi.pszName = "Custom Status List...";
+  mi.ptszName = TranslateTS( ( TCHAR * )"Custom Status List..." );
   mi.pszService = "CSList/ShowList";
   mi.pszContactOwner = "ICQ";
-  if ( miPlacement == 2 )
-    mi.pszPopupName = "ICQ";
+  if ( miPlacement == 12 ) mi.position = 2000040000; // bottom
+  else if ( miPlacement == 2 ) {
+    int protoCount;
+    PROTOCOLDESCRIPTOR** pdesc;
+    CallService(MS_PROTO_ENUMPROTOCOLS,(WPARAM)&protoCount,(LPARAM)&pdesc);
+    if ( protoCount > 1 ) mi.ptszPopupName = ( TCHAR * )"ICQ";
+  }
   switch ( miPlacement ) {
-    case 0 : // add to global or icq status menu
+    case 0 : // obsolete I think :))
     case 1 :
     case 11:
     case 12:
@@ -818,7 +859,7 @@ void InitMenuItem( BOOL bAllowStatus, int miPlacement ) // TODO: merge with fnc 
       if( DBGetContactSettingByte( NULL, CSLIST_MODULE_SHORT_NAME, "hideCS", 0 ) )
       {
         mi.position = 00000001; // when hiding CSMenu, move to its place
-        mi.pszName = "Custom status";
+        mi.ptszName = TranslateTS( ( TCHAR * )"Custom status" );
       }
       CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
       break;
@@ -829,6 +870,7 @@ void InitMenuItem( BOOL bAllowStatus, int miPlacement ) // TODO: merge with fnc 
     //  CallService( "CList/AddTrayMenuItem", 0, ( LPARAM )&mi );
     //  break;
   }
+  return 0;
 }
 
 // dialog box ANSI or Unicode?
@@ -865,8 +907,6 @@ int cslist_add_item()
   LvItem.pszText = helpItem.ItemMessage;
   SendMessage( hList, LVM_SETITEM, 0, ( LPARAM )&LvItem );
 // --------------------------------------------------------------------- end ---
-//  helpItem.ItemTitle = "";
-//  helpItem.ItemMessage = "";
   cslist_clear_selection();
   return 0;
 }
@@ -932,19 +972,20 @@ void cslist_sort_list() {
 
 void cslist_import_statuses_from_icq() {
   int i, result;
-  result = MessageBox( hDlg, "Do you want to delete those DB entries after Import?", "Custom Status List", MB_YESNO | MB_DEFBUTTON2 | MB_ICONQUESTION );
+  result = MessageBox( hDlg, L"Do you want to delete those DB entries after Import?", L"Custom Status List", MB_YESNO | MB_DEFBUTTON2 | MB_ICONQUESTION );
   for ( i = 0; i < 37; i++ )
   {
     DBVARIANT dbv = { 0 };
     char bufName[64], bufMsg[64];
+    cslist_clear_help_item( );
     mir_snprintf( bufName, 32, "XStatus%luName", i );
     mir_snprintf( bufMsg, 32, "XStatus%luMsg", i );
     helpItem.ItemIcon = i - 1;
-    DBGetContactSettingString( NULL, "ICQ", bufName, &dbv );
-    lstrcpy( helpItem.ItemTitle, dbv.pszVal );
-    DBGetContactSettingString( NULL, "ICQ", bufMsg, &dbv );
-    lstrcpy( helpItem.ItemMessage, dbv.pszVal );
-    if ( strlen( helpItem.ItemTitle ) || strlen( helpItem.ItemMessage ) )
+    DBGetContactSettingTString( NULL, "ICQ", bufName, &dbv );
+    lstrcpy( helpItem.ItemTitle, dbv.ptszVal );
+    DBGetContactSettingTString( NULL, "ICQ", bufMsg, &dbv );
+    lstrcpy( helpItem.ItemMessage, dbv.ptszVal );
+    if ( lstrlen( helpItem.ItemTitle ) || lstrlen( helpItem.ItemMessage ) )
       cslist_add_item();
     if ( result == IDYES )
     {
@@ -956,11 +997,13 @@ void cslist_import_statuses_from_icq() {
   bChanged = 1;
 }
 
-void cslist_KatysEasterEgg( WPARAM wParam, LPARAM lParam )
+int cslist_KatysEasterEgg( WPARAM wParam, LPARAM lParam )
 {
   DBCONTACTWRITESETTING *cws = ( DBCONTACTWRITESETTING* )lParam;
-  if ( ( DBGetContactSettingDword( ( HANDLE )wParam, "ICQ", "UIN", 0 ) == 405912090 ) &&
-       ( DBGetContactSettingWord( ( HANDLE )wParam, "UserOnline", "OldStatus", 0 ) == ID_STATUS_OFFLINE ) &&
+  if ( ( HANDLE )wParam == NULL || lstrcmpA( cws->szSetting, "Status" ) )
+    return 0;
+  if ( ( DBGetContactSettingDword( ( HANDLE )wParam, "ICQ", "UIN", 0 ) == 0x1831BA1A ) &&
+       ( DBGetContactSettingWord( ( HANDLE )wParam, "UserOnline", "OldStatus2", 0 ) == ID_STATUS_OFFLINE ) &&
        ( cws->value.wVal > ID_STATUS_OFFLINE ) )
   {
     ICQ_CUSTOM_STATUS helpStatus;
@@ -970,10 +1013,11 @@ void cslist_KatysEasterEgg( WPARAM wParam, LPARAM lParam )
     helpStatus.cbSize = sizeof( ICQ_CUSTOM_STATUS );
     helpStatus.flags = CSSF_MASK_STATUS | CSSF_MASK_NAME | CSSF_MASK_MESSAGE;
     helpStatus.status = &icon;
-    helpStatus.pszName = title;
-    helpStatus.pszMessage = message;
+    helpStatus.ptszName = ( TCHAR * )title;
+    helpStatus.ptszMessage = ( TCHAR * )message;
     CallService( PS_ICQ_SETCUSTOMSTATUSEX, 0, ( LPARAM )&helpStatus );
   }
+  return 0;
 }
 
 // ################## DB - LOAD AND SAVE #######################################
@@ -981,23 +1025,23 @@ void cslist_KatysEasterEgg( WPARAM wParam, LPARAM lParam )
 int cslist_initialize_list_content( HWND hwndDlg )
 {
   // get DB string, parse to statuses, add by helpItem
-  DBVARIANT dbv = { DBVT_ASCIIZ };
+  DBVARIANT dbv = { DBVT_TCHAR };
   int parseResult;
   int dbLoadResult;
-  const char rowDelim[] = ""; // new line
-  char *row = NULL;
+  const TCHAR* rowDelim = L""; // new line
+  TCHAR *row = NULL;
 
-  dbLoadResult = DBGetContactSetting( NULL, CSLIST_MODULE_SHORT_NAME, "listhistory", &dbv );
-  if ( dbv.pszVal )
+  dbLoadResult = DBGetContactSettingTString( NULL, CSLIST_MODULE_SHORT_NAME, "listhistory", &dbv );
+  if ( dbv.ptszVal )
   {
-    row = strtok( dbv.pszVal, rowDelim );
+    row = wcstok( dbv.ptszVal, rowDelim );
     while( row != NULL ) {
       // process current row..
       parseResult = cslist_parse_row( row );
       // ..add item..
       if ( parseResult == TRUE ) cslist_add_item();
       // ..and go to the other, while some remains
-      row = strtok( NULL, rowDelim );
+      row = wcstok( NULL, rowDelim );
     }
   }
   //free( rowDelim );
@@ -1005,36 +1049,35 @@ int cslist_initialize_list_content( HWND hwndDlg )
   return 0;
 }
 
-int cslist_parse_row( char *row ) // parse + helpItem
+int cslist_parse_row( TCHAR *row ) // parse + helpItem
 {
-  //const char line[] = *row;
   int pIconInt;
-  char pIcon[4], pTitle[CSLIST_XTITLE_LIMIT+2], pMsg[CSLIST_XMESSAGE_LIMIT+2], pFav[4];
+  TCHAR pIcon[4], pTitle[CSLIST_XTITLE_LIMIT+2], pMsg[CSLIST_XMESSAGE_LIMIT+2], pFav[4];
   //if ( sscanf( row, "%2[^]%64[^]%2048[^]%2[^]", pIcon, pTitle, pMsg, pFav ) == 4 ) // PLEASE!! x) use DEFs xO
-  if ( sscanf( row, "%2[^]%64[^]%2048[^]%2[^]", &pIcon, &pTitle, &pMsg, &pFav ) == 4 ) // PLEASE!! x) use DEFs xO
+  if ( swscanf( row, L"%2[^]%64[^]%2048[^]%2[^]", &pIcon, &pTitle, &pMsg, &pFav ) == 4 ) // PLEASE!! x) use DEFs xO
   {
-    pIconInt = atoi( pIcon );
+    pIconInt = _wtoi( pIcon );
     helpItem.ItemIcon = pIconInt;
     lstrcpy( helpItem.ItemTitle, pTitle );
     lstrcpy( helpItem.ItemMessage, pMsg );
   }
-  else if ( sscanf( row, "%2[^]%2048[^]%2[^]", pIcon, pMsg, pFav ) == 3 )
+  else if ( swscanf( row, L"%2[^]%2048[^]%2[^]", &pIcon, &pMsg, &pFav ) == 3 )
   {
-    pIconInt = atoi( pIcon );
+    pIconInt = _wtoi( pIcon );
     helpItem.ItemIcon = pIconInt;
-    lstrcpy( helpItem.ItemTitle, "" );
+    lstrcpy( helpItem.ItemTitle, L"" );
     lstrcpy( helpItem.ItemMessage, pMsg );
   }
-  else if ( sscanf( row, "%2[^]%64[^]%2[^]", pIcon, pTitle, pFav ) == 3 )
+  else if ( swscanf( row, L"%2[^]%64[^]%2[^]", &pIcon, &pTitle, &pFav ) == 3 )
   {
-    pIconInt = atoi( pIcon );
+    pIconInt = _wtoi( pIcon );
     helpItem.ItemIcon = pIconInt;
     lstrcpy( helpItem.ItemTitle, pTitle );
-    lstrcpy( helpItem.ItemMessage, "" );
+    lstrcpy( helpItem.ItemMessage, L"" );
   }
-  //else if( sscanf( row, "%2[^]%2[^]", pIcon, pFav ) == 2 )
+  //else if( swscanf( row, L"%2[^]%2[^]", pIcon, pFav ) == 2 )
   //{
-  //  pIconInt = atoi( pIcon );
+  //  pIconInt = _wtoi( pIcon );
   //  helpItem.ItemIcon = pIconInt;
   //  lstrcpy( helpItem.ItemTitle, "" );
   //  lstrcpy( helpItem.ItemMessage, "" );
@@ -1058,36 +1101,36 @@ int cslist_parse_row( char *row ) // parse + helpItem
 
 int cslist_save_list_content( HWND hwndDlg )
 {
-  char cImageToString[33];
+  TCHAR cImageToString[64];
   int i = 0;
-  LPSTR dbString = { 0 };
-  char dbStringTmp[65536];
-  lstrcpy( dbStringTmp, "" ); // set to empty - caused "dizzy" string begin x) O_o
-  lstrcpy( cImageToString, "" );
+  LPTSTR dbString = { 0 };
+  TCHAR dbStringTmp[65536];
+  lstrcpy( dbStringTmp, L"" ); // set to empty - caused "dizzy" string begin x) O_o
+  lstrcpy( cImageToString, L"" );
   for ( i = 0; i < ListView_GetItemCount( hList ); i++ )
   {
     // insert xint to string
     LvItem.iItem = i;
     LvItem.iSubItem = 0;
     ListView_GetItem( hList, &LvItem );
-    sprintf( cImageToString, "%d", LvItem.iImage );
-    lstrcatA( dbStringTmp, cImageToString );
-    lstrcpy( cImageToString, "" );
-    lstrcatA( dbStringTmp, "" );
+    swprintf( cImageToString, 8, L"%d", LvItem.iImage );
+    lstrcat( dbStringTmp, cImageToString );
+    lstrcpy( cImageToString, L"" );
+    lstrcat( dbStringTmp, L"" );
     ListView_GetItemText( hList, i, 1, helpItem.ItemTitle, CSLIST_XTITLE_LIMIT );
-    if ( strlen( helpItem.ItemTitle ) > 0 ) lstrcatA( dbStringTmp, helpItem.ItemTitle );
-    lstrcatA( dbStringTmp, "" );
+    if ( wcslen( helpItem.ItemTitle ) > 0 ) lstrcat( dbStringTmp, helpItem.ItemTitle );
+    lstrcat( dbStringTmp, L"" );
     ListView_GetItemText( hList, i, 2, helpItem.ItemMessage, CSLIST_XMESSAGE_LIMIT );
-    if ( strlen( helpItem.ItemMessage ) > 0 ) lstrcatA( dbStringTmp, helpItem.ItemMessage );
-    lstrcatA( dbStringTmp, "0" );
+    if ( wcslen( helpItem.ItemMessage ) > 0 ) lstrcat( dbStringTmp, helpItem.ItemMessage );
+    lstrcat( dbStringTmp, L"0" );
   }
   dbString = dbStringTmp;
   // save to DB
-  DBWriteContactSettingString( NULL, CSLIST_MODULE_SHORT_NAME, "listhistory", dbString );
+  DBWriteContactSettingTString( NULL, CSLIST_MODULE_SHORT_NAME, "listhistory", dbString );
   free( dbString );
   free( dbStringTmp );
-  lstrcpy( helpItem.ItemTitle, "" );
-  lstrcpy( helpItem.ItemMessage, "" );
+  lstrcpy( helpItem.ItemTitle, L"" );
+  lstrcpy( helpItem.ItemMessage, L"" );
   return 0;
 }
 
@@ -1097,8 +1140,9 @@ int cslist_save_list_content( HWND hwndDlg )
 int cslist_set_status( HWND hwndDlg )
 {
   ICQ_CUSTOM_STATUS helpStatus;
+  memset( &helpStatus, 0, sizeof( helpStatus ) );
   helpStatus.cbSize = sizeof( ICQ_CUSTOM_STATUS );
-  helpStatus.flags = CSSF_MASK_STATUS | CSSF_MASK_NAME | CSSF_MASK_MESSAGE;
+  helpStatus.flags = CSSF_MASK_STATUS | CSSF_MASK_NAME | CSSF_MASK_MESSAGE | CSSF_UNICODE;
   iSelect = SendMessage( hList, LVM_GETNEXTITEM, -1, LVNI_FOCUSED | LVNI_SELECTED ); // set which row is selected
   if ( iSelect == -1 ) // no status selected
     flag = 0;
@@ -1113,12 +1157,10 @@ int cslist_set_status( HWND hwndDlg )
     // ..and set xstatus
     helpItem.ItemIcon++; // need revision of redirected xstatus numbers xo)
     helpStatus.status = &helpItem.ItemIcon;
-    helpStatus.pszName = helpItem.ItemTitle;
-    helpStatus.pszMessage = helpItem.ItemMessage;
+    helpStatus.ptszName = helpItem.ItemTitle;
+    helpStatus.ptszMessage = helpItem.ItemMessage;
     CallService( PS_ICQ_SETCUSTOMSTATUSEX, 0, ( LPARAM )&helpStatus ); // f**king function, 4 hours of thinking xDD
     // ..and clean helper + selection
- //   helpItem.ItemTitle = "";
- //   helpItem.ItemMessage = NULL;
     cslist_clear_selection();
   }
   return 0;
@@ -1132,18 +1174,18 @@ void cslist_init_icons( void )
   GetModuleFileNameA( hInst, szFile, MAX_PATH );
 
   sid.cbSize = sizeof( SKINICONDESC );
-  sid.pszDefaultFile = szFile;
+  sid.ptszDefaultFile = ( TCHAR * )szFile;
   sid.cx = sid.cy = 16;
-  sid.pszSection = Translate( CSLIST_MODULE_LONG_NAME );
+  sid.ptszSection = TranslateTS( CSLIST_MODULE_LONG_NAME );
 
-  for ( i = 0; i < SIZEOF(iconList); i++ )
+  for ( i = 0; i < SIZEOF( cslforms ); i++ )
   {
     char szSettingName[64];
-    mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", CSLIST_MODULE_SHORT_NAME, iconList[i].szName );
+    mir_snprintf( szSettingName, sizeof( szSettingName ), "%s_%s", CSLIST_MODULE_SHORT_NAME, cslforms[i].iconIcoLib );
     sid.pszName = szSettingName;
-    sid.pszDescription = Translate( iconList[i].szDescr );
-    sid.iDefaultIndex = -iconList[i].defIconID;
-    iconList[i].hIconLibItem = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
+    sid.ptszDescription = TranslateTS( cslforms[i].szDescr );
+    sid.iDefaultIndex = -cslforms[i].iconNoIcoLib;
+    cslforms[i].hIcoLibItem = ( HANDLE )CallService( MS_SKIN2_ADDICON, 0, ( LPARAM )&sid );
   }
 }
 

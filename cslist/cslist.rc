@@ -61,37 +61,34 @@ BEGIN
     PUSHBUTTON      "Cancel",IDC_AM_CN,102,105,50,14
 END
 
-IDD_RELNOTES DIALOGEX 100, 100, 192, 302
+IDD_RELNOTES DIALOGEX 0, 0, 192, 269
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom Status List Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,104,184,118
+    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,104,184,83
     GROUPBOX        "Notice",IDC_RNNOTICE,4,55,184,49
-    GROUPBOX        "Special Thanks",IDC_THX,4,224,184,58
+    GROUPBOX        "Special Thanks",IDC_THX,4,189,184,58
     RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
     RTEXT           "Version:",IDC_RNVER,7,14,53,8
     LTEXT           "Custom Status List",IDC_RLNPLGNM2,66,4,98,8
-    LTEXT           "0.0.0.17",IDC_RNVER2,66,14,95,8
+    LTEXT           "0.0.0.18 (Unicode)",IDC_RNVER2,66,14,95,8
     LTEXT           "Plugin development is currently in Beta stage. It's not recommended to generally use, but stable enough for testing purposes. Stable release will be available as soon as possible ;)",IDC_STATIC,20,65,150,34
     RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
     LTEXT           "jarvis (original idea by HANAX)",IDC_RNAUTH2,66,24,115,8
     RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
     LTEXT           "© 2007-8 eternity crew ..\n© 2006-7 HANAX Software",IDC_RNCPR2,66,34,115,18
-    ICON            IDI_ADD,IDC_RNCSICON,163,3,21,20
-    EDITTEXT        IDC_TXHTEXT,7,234,176,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,288,118,10
-    DEFPUSHBUTTON   "Close",IDOK,137,286,50,14
-    CONTROL         "list sorting (ordered by xstatus icon) :)",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,119,155,10
-    CONTROL         "ICQ status entries can be imported",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,129,155,10
-    CONTROL         "new Options dialog (via button)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,139,155,10
-    CONTROL         "menu item is now movable - can be placed in global status menu (at the top and at the bottom), ICQ status menu (also instead of Cusom status menu) or in main menu",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,17,149,155,32
-    CONTROL         "dialog openable only once",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,183,155,10
-    CONTROL         "new icons by inducti0n - many thx :)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,193,155,10
-    CONTROL         "Hotkeys + Modern ToolBar implementation",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,203,155,10
+    ICON            IDI_ADD,IDC_RNCSICON,163,3,20,20
+    EDITTEXT        IDC_TXHTEXT,7,199,176,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
+    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,253,118,10
+    DEFPUSHBUTTON   "Close",IDOK,137,251,50,14
+    CONTROL         "Unicode build, finally :)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,119,155,10
+    CONTROL         "fixed memory leak and possible crash when modifying status and then importing 0 DB entries",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,17,158,155,26
+    CONTROL         "merged Add/Modify processes together :)",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,129,155,10
+    CONTROL         "icon selector shows only icons, that are supported by installed ICQ plugin",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,17,139,155,18
 END
 
 IDD_OPTIONS DIALOGEX 0, 0, 172, 222
@@ -139,7 +136,7 @@ BEGIN
         LEFTMARGIN, 7
         RIGHTMARGIN, 185
         TOPMARGIN, 7
-        BOTTOMMARGIN, 295
+        BOTTOMMARGIN, 262
     END
 
     IDD_OPTIONS, DIALOG
@@ -156,8 +153,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,0,17
- PRODUCTVERSION 0,0,0,17
+ FILEVERSION 0,0,0,18
+ PRODUCTVERSION 0,0,0,18
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -174,12 +171,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Offers List of your Custom Statuses. All acclaims go to HANAX, original publisher and inventor of this idea."
             VALUE "FileDescription", "Custom Status List"
-            VALUE "FileVersion", "0, 0, 0, 17"
+            VALUE "FileVersion", "0, 0, 0, 18"
             VALUE "InternalName", "cslist"
             VALUE "LegalCopyright", "© 2007-2008 eternity crew .., © 2006-2007 HANAX"
             VALUE "OriginalFilename", "cslist.dll"
             VALUE "ProductName", "Custom Status List"
-            VALUE "ProductVersion", "0, 0, 0, 17"
+            VALUE "ProductVersion", "0, 0, 0, 18"
         END
     END
     BLOCK "VarFileInfo"
