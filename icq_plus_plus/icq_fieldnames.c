@@ -274,7 +274,9 @@ char *LookupFieldNameUtf(struct fieldnames_t *table, int code, char *str, size_t
     
     // Tried to get unexisting field name, you have an
     // error in the data or in the table
+#ifdef _DEBUG
     _ASSERT(FALSE);
+#endif
   }
 
   return NULL;

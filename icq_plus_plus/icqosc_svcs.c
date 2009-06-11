@@ -75,6 +75,8 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
   case PFLAGNUM_2:
     nReturn = PF2_ONLINE | PF2_SHORTAWAY | PF2_LONGAWAY | PF2_LIGHTDND | PF2_HEAVYDND |
       PF2_FREECHAT | PF2_INVISIBLE;
+    if (gbAimEnabled)
+      nReturn |= PF2_ONTHEPHONE;
     break;
 
   case PFLAGNUM_3:
@@ -89,6 +91,11 @@ int IcqGetCaps(WPARAM wParam, LPARAM lParam)
 #ifdef DBG_CAPMTN
     nReturn |= PF4_SUPPORTTYPING;
 #endif
+    break;
+    
+  case PFLAGNUM_5:
+    if (gbAimEnabled)
+      nReturn |= PF2_ONTHEPHONE;
     break;
 
   case PFLAG_UNIQUEIDTEXT:
@@ -1364,7 +1371,14 @@ int IcqGetAwayMsg(WPARAM wParam,LPARAM lParam)
       {
 
       case ID_STATUS_ONLINE:
-        wMessageType = MTYPE_AUTOONLINE;
+				{
+					DBVARIANT dbv = { DBVT_TCHAR };
+					DBGetContactSettingTString( ccs->hContact, gpszICQProtoName, "MirVer", &dbv );
+					if ( lstrcmp( dbv.ptszVal, _T( "ICQ 6" ) ) == 0 )
+						wMessageType = MTYPE_AUTOAWAY; // works with ICQ 6
+					else // other clients
+						wMessageType = MTYPE_AUTOONLINE; // works with ICQJ Plus Mod + most of all clients
+				}
         break;
 
       case ID_STATUS_AWAY:
@@ -2354,6 +2368,8 @@ int IcqRevokeAuthorization(WPARAM wParam, LPARAM lParam)
       return 0;
 
     icq_sendRevokeAuthServ(dwUin, szUid);
+		// auth revoked, add contact menu item
+		ICQWriteContactSettingByte((HANDLE)wParam, "Grant", 1);
   }
 
   return 0;
@@ -2419,6 +2435,16 @@ int IcqAddServerContact(WPARAM wParam, LPARAM lParam)
 }
 
 int IcqSendtZer(WPARAM wParam, LPARAM lParam) {
+  if (wParam && wParam) {
+    DWORD dwUin = ICQGetContactSettingDword((HANDLE)wParam, "UIN", 0);
+    if (!dwUin)
+      return 0;
+    SendtZer((HANDLE)wParam, dwUin, tZers[(int)lParam].szId, tZers[(int)lParam].szTxt, tZers[(int)lParam].szUrl);
+  }
+  return 0;
+}
+
+int IcqTzerDlg(WPARAM wParam, LPARAM lParam) {
   if (wParam && icqOnline)
     DialogBoxParam(hInst, MAKEINTRESOURCE(IDD_TZER), NULL, tZersWndProc, (LPARAM)(HANDLE)wParam);
   return 0;

@@ -3,11 +3,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -53,7 +53,6 @@ const capstr capXtraz     = {CAP_XTRAZ};
 const capstr capAimFile   = {CAP_AIM_FILE};
 const capstr capPush2Talk = {CAP_PUSH2TALK};
 // this is defined among all clients caps
-//const capstr capIcqLite   = {CAP_ICQ_LITE};
 const capstr capRTF       = {CAP_RTF};
 const capstr capXtrazChat = {CAP_XTRAZ_CHAT};
 const capstr capVoiceChat = {CAP_VOICE_CHAT};
@@ -82,8 +81,9 @@ const capstr capAndRQ     = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 
 const capstr capRAndQ     = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capmChat     = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm      = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capBayan     = {0x62, 0x61, 0x79, 0x61, 0x6e, 0x49, 0x43, 0x51, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capCorePager = {'C', 'O', 'R', 'E', ' ', 'P', 'a', 'g', 'e', 'r', 0, 0, 0, 0, 0, 0};
-const capstr capDiChat    = {'D', '[', 'i', ']', 'C', 'h', 'a', 't', ' ', 0, 0, 0, 0, 0, 0, 0};
+const capstr capDiChat    = {'D', '[', 'i', ']', 'C', 'h', 'a', 't', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capNaim      = {0xFF, 0xFF, 0xFF, 0xFF, 'n', 'a', 'i', 'm', 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capAnastasia = {0x44, 0xE5, 0xBF, 0xCE, 0xB0, 0x96, 0xE5, 0x47, 0xBD, 0x65, 0xEF, 0xD6, 0xA3, 0x7E, 0x36, 0x02};
 const capstr capQip       = {0x56, 0x3F, 0xC8, 0x09, 0x0B, 0x6F, 0x41, 'Q', 'I', 'P', ' ', '2', '0', '0', '5', 'a'};
@@ -95,8 +95,15 @@ const capstr capQip_1     = {0xd3, 0xd4, 0x53, 0x19, 0x8b, 0x32, 0x40, 0x3b, 0xa
 const capstr capQipSymbian = {0x51, 0xad, 0xd1, 0x90, 0x72, 0x04, 0x47, 0x3d, 0xa1, 0xa1, 0x49, 0xf4, 0xa3, 0x97, 0xa4, 0x1f};
 const capstr capVmICQ	  = {0x56, 0x6d, 0x49, 0x43, 0x51, 0x20, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capSmapeR    = {'S', 'm', 'a', 'p', 'e', 'r', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capPigeon    = {'P', 'I', 'G', 'E', 'O', 'N', '!', 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capDigsbyBeta= {0x09, 0x46, 0x01, 0x05, 0x4c, 0x7f, 0x11, 0xd1, 0x82, 0x22, 0x44, 0x45, 0x45, 0x53, 0x54, 0x00};
+const capstr capJapp      = {0x6a, 0x61, 0x70, 0x70, 0xa9, 0x20, 0x62, 0x79, 0x20, 0x53, 0x65, 0x72, 0x67, 0x6f, 0x00, 0x00};
 const capstr capIMPlus	  = {0x8e, 0xcd, 0x90, 0xe7, 0x4f, 0x18, 0x28, 0xf8, 0x02, 0xec, 0xd6, 0x18, 0xa4, 0xe9, 0xde, 0x68};
 const capstr capYapp	  = {0x59, 0x61, 0x70, 0x70, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0}; // Yapp
+const capstr capQutIm     = {'q', 'u', 't', 'i', 'm', 0x30, 0x2e, 0x31, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capJabberJIT = {'J', 'I', 'T', ' ', 0x76, 0x2E, 0x31, 0x2E, 0x78, 0x2E, 0x78, 0, 0, 0, 0, 0};
+const capstr capIcqKid2   = {'I', 'c', 'q', 'K', 'i', 'd', '2', 0x00, 0x05, 0x02, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
+const capstr capWebIcqPro = {'W', 'e', 'b', 'I', 'c', 'q', 'P', 'r', 'o', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capIm2       = {0x74, 0xED, 0xC3, 0x36, 0x44, 0xDF, 0x48, 0x5B, 0x8B, 0x1C, 0x67, 0x1A, 0x1F, 0x86, 0x09, 0x9F}; // IM2 Ext Msg
 const capstr capMacIcq    = {0xdd, 0x16, 0xf2, 0x02, 0x84, 0xe6, 0x11, 0xd4, 0x90, 0xdb, 0x00, 0x10, 0x4b, 0x9b, 0x4b, 0x7d};
 const capstr capIs2001    = {0x2e, 0x7a, 0x64, 0x75, 0xfa, 0xdf, 0x4d, 0xc8, 0x88, 0x6f, 0xea, 0x35, 0x95, 0xfd, 0xb6, 0xdf};
@@ -152,7 +159,6 @@ static icq_capability CapabilityRecord[] =
   {CAPF_XTRAZ,		capXtraz},
   {CAPF_AIM_FILE,	capAimFile},
   {CAPF_PUSH2TALK,	capPush2Talk},
-  {CAPF_ICQ_LITE,	capIcqLite},
   {CAPF_RTF,		capRTF},
   {CAPF_XTRAZ_CHAT,	capXtrazChat},
   {CAPF_VOICE_CHAT,	capVoiceChat},
@@ -365,7 +371,7 @@ STDCAPINFO stdCapInfo[] = {
 	{"ABV ICQ",							0, capAbv,			16},
 	{"Netvigator ICQ",					0, capNetvigator,	16},
 	{"tZers",							0, captZers,		16}, // CAP_TZERS
-	{"ICQ 6 (HTML msgs)",				0, capHtmlMsgs,		16}, // icq6
+	{"HTML Messages",				0, capHtmlMsgs,		16}, // icq6
 	{"Live Video",						0, capLiveVideo,	16},
 	{"Simp Lite",						0, capSimpLite,		16},
 	{"Simp Pro",						0, capSimpPro,		16},

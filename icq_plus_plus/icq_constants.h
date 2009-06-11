@@ -3,12 +3,12 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
-// Copyright © 2007,2008 jarvis
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -95,6 +95,12 @@
 #define ICQ_STATUSF_FFC             0x0020
 #define ICQ_STATUSF_INVISIBLE       0x0100
 
+#define ICQ_STATUS_DEPRESS                       0x4000
+#define ICQ_STATUS_EVIL                          0x3000
+#define ICQ_STATUS_HOME                          0x5000 
+#define ICQ_STATUS_WORK                          0x6000
+#define ICQ_STATUS_LUNCH                         0x2001
+
 // Status values (used to set own status)
 #define ICQ_STATUS_ONLINE           0x0000
 #define ICQ_STATUS_AWAY             0x0001
@@ -146,7 +152,6 @@
 
 
 #define CAP_PUSH2TALK				0xE3, 0x62, 0xC1, 0xE9, 0x12, 0x1A, 0x4B, 0x94, 0xA6, 0x26, 0x7A, 0x74, 0xDE, 0x24, 0x27, 0x0D
-#define CAP_ICQ_LITE				0x17, 0x8C, 0x2D, 0x9B, 0xDA, 0xA5, 0x45, 0xBB, 0x8D, 0xDB, 0xF3, 0xBD, 0xBD, 0x53, 0xA1, 0x0A
 #define CAP_XTRAZ_CHAT				0x67, 0x36, 0x15, 0x15, 0x61, 0x2D, 0x4C, 0x07, 0x8F, 0x3D, 0xBD, 0xE6, 0x40, 0x8E, 0xA0, 0x41
 #define CAP_VOICE_CHAT				0xB9, 0x97, 0x08, 0xB5, 0x3A, 0x92, 0x42, 0x02, 0xB0, 0x69, 0xF1, 0xE7, 0x57, 0xBB, 0x2E, 0x17
 
@@ -159,7 +164,6 @@
 #define CAPF_XTRAZ                  0x00000010
 #define CAPF_AIM_FILE               0x00000040
 #define CAPF_PUSH2TALK				0x00000080
-#define CAPF_ICQ_LITE				0x00000100
 #define CAPF_RTF					0x00000200
 #define CAPF_HTML                   0x00000008
 #define CAPF_CONTACTS               0x00004000
@@ -395,8 +399,11 @@
 #define CLASS_AWAY                  0x0020
 #define CLASS_ICQ                   0x0040
 #define CLASS_WIRELESS              0x0080
+#define CLASS_FORWARDING            0x0200
+#define CLASS_BOT                   0x0400
 
 // Reply types for SNAC 15/02 & 15/03
+#define CLI_DELETE_OFFLINE_MSGS_REQ 0x003E
 #define CLI_META_INFO_REQ           0x07D0
 #define SRV_META_INFO_REPLY         0x07DA
 
@@ -558,13 +565,13 @@
 
 
 // Internal Constants
-#define ICQ_THISPLUG_VERSION        0x80035826 // actual icq eternity/PlusPlus++
-#define ICQ_RELNOTES                38 // actual eternity relnotes
+#define ICQ_THISPLUG_VERSION        0x8003582C // actual icq eternity/PlusPlus++
+#define ICQ_RELNOTES                44 // actual eternity relnotes
 // eternity version constant
 #define ICQ_PLUG_VERSION            0x80035869 // actual icq plus (+0.0.8x.0 to know if it's + or ++ :))
-#define ICQ_JOEWHALE_VERSION        0x80030A0A // actual Joe@Whale
-#define ICQ_BM_VERSION              0x81030A09 // actual BM
-#define ICQ_SIN_VERSION             0x80030A1F // last S!N
+#define ICQ_JOEWHALE_VERSION        0x80050004 // actual Joe@Whale
+#define ICQ_BM_VERSION              0x80050004 // actual BM
+#define ICQ_SIN_VERSION             0x80050003 // actual S!N
 #define ICQ_S7SSS_VERSION           0x80035869 // last S7&SSS
 #define ICQ_VERSION                 8
 #define DC_TYPE                     DC_NORMAL // Used for DC settings
@@ -601,7 +608,7 @@
 #define CLIENT_VERSION_MAJOR        0x0006
 #define CLIENT_VERSION_MINOR        0x0000
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x1797
+#define CLIENT_VERSION_BUILD        0x1b67
 #define CLIENT_DISTRIBUTION         0x00007535
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"

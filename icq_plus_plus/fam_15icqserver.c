@@ -174,9 +174,10 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
   }
   databuf = dataTlv->pData;
   wPackLen -= 4;
-  
+#ifdef _DEBUG
   _ASSERTE(dataTlv->wLen == wPackLen);
   _ASSERTE(wPackLen >= 10);
+#endif
 
   if ((dataTlv->wLen == wPackLen) && (wPackLen >= 10))
   {
@@ -185,7 +186,9 @@ static void handleExtensionServerInfo(unsigned char *buf, WORD wPackLen, WORD wF
     unpackLEWord(&databuf, &wRequestType);
     unpackWord(&databuf, &wCookie);
     
+#ifdef _DEBUG
     _ASSERTE(wBytesRemaining == (wPackLen - 2));
+#endif
     if (wBytesRemaining == (wPackLen - 2))
     {
       wPackLen -= 10;      
@@ -217,7 +220,9 @@ static void handleExtensionMetaResponse(unsigned char *databuf, WORD wPacketLen,
   WORD wReplySubtype;
   BYTE bResultCode;
   
+#ifdef _DEBUG
   _ASSERTE(wPacketLen >= 3);
+#endif
   if (wPacketLen >= 3)
   {
     // Reply subtype
@@ -391,7 +396,9 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
       unpackLEWord(&databuf, &wLen);
       wPacketLen -= 2;
       
+#ifdef _DEBUG
       _ASSERTE(wLen <= wPacketLen);
+#endif
       if (wLen > wPacketLen)
         break;
       
@@ -521,7 +528,9 @@ static void parseSearchReplies(unsigned char *databuf, WORD wPacketLen, WORD wCo
   if (!bParsingOK)
   {
     NetLog_Server("Warning: Parsing error in 15/03 search reply type x%x", wReplySubtype);
+#ifdef _DEBUG
     _ASSERTE(!bParsingOK);
+#endif
   }
 }
 
@@ -767,7 +776,9 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       count = *databuf++;
       // 4 is the maximum allowed personal interests, if count is
       // higher it's likely a parsing error
+#ifdef _DEBUG
       _ASSERTE(count <= 4);
+#endif
       for (i = 0; i < 4; i++)
       {
         if (i < count)
@@ -806,7 +817,9 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       count = *databuf++;
       // 3 is the maximum allowed backgrounds, if count is
       // higher it's likely a parsing error
+#ifdef _DEBUG
       _ASSERTE(count <= 3);
+#endif
       for (i = 0; i < 3; i++)
       {
         if (i < count)
@@ -835,7 +848,9 @@ static void parseUserInfoRequestReplies(unsigned char *databuf, WORD wPacketLen,
       count = *databuf++;
       // 3 is the maximum allowed affiliations, if count is
       // higher it's likely a parsing error
+#ifdef _DEBUG
       _ASSERTE(count <= 3);
+#endif
       for (i = 0; i < 3; i++)
       {
         if (i < count)

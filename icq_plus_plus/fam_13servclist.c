@@ -1677,7 +1677,7 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 //  char szText[MAX_PATH];
   char szPopup[MAX_PATH];
 //  WORD wTextLen;
-  BOOL NotOnList = FALSE;
+  BOOL InDB = FALSE;
 
   bResponse = 0xFF;
 
@@ -1691,42 +1691,36 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 
   hContact = HContactFromUID(dwUin, szUid, &bAdded);
 
-//  szNick = NickFromHandle(hContact);
-
-  if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 1)) 
-  {
-	  NotOnList = TRUE;
-  }
-
-  if (hContact != INVALID_HANDLE_VALUE) //szNick = NickFromHandle(hContact);
-
-  if (wLen > 0)
-  {
-    unpackByte(&buf, &bResponse);
-    wLen -= 1;
-  }
-  if (wLen >= 2)
-  {
-    unpackWord(&buf, &nReasonLen);
-    wLen -= 2;
-    if (wLen >= nReasonLen)
-    {
-      szReason = (char*)_alloca(nReasonLen+1);
-      unpackString(&buf, szReason, nReasonLen);
-      szReason[nReasonLen] = '\0';
-    }
-  }
+	InDB = CallService(MS_DB_CONTACT_IS, (WPARAM)hContact, 0);
+	if (hContact != INVALID_HANDLE_VALUE)
+	{
+		if (wLen > 0)
+		{
+			unpackByte(&buf, &bResponse);
+			wLen -= 1;
+		}
+		if (wLen >= 2)
+		{
+			unpackWord(&buf, &nReasonLen);
+			wLen -= 2;
+			if (wLen >= nReasonLen)
+			{
+				szReason = (char*)_alloca(nReasonLen+1);
+				unpackString(&buf, szReason, nReasonLen);
+				szReason[nReasonLen] = '\0';
+			}
+		}
+	}
 
   switch (bResponse)
   {
 
   case 0:
 	SkinPlaySound("AuthDenied"); // Added by BM
-	//DBWriteContactSettingByte(hContact, gpszICQProtoName, "Auth", 1);
 #ifdef _DEBUG
     NetLog_Server("Authorization request %s by %s", "denied", strUID(dwUin, szUid));
 #endif
-	if (NotOnList)
+	if (!InDB)
 	{
 		CHECKCONTACT chk = {0};
 		chk.hContact=hContact;
@@ -1742,13 +1736,11 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 	else
 	{
 		mir_snprintf(szPopup, sizeof(szPopup), ICQTranslateUtf("User \"%s\" was denied your authorization request.(may be checking for invisible status)"), NickFromHandleUtf(hContact));
-//		dbei.eventType = ICQEVENTTYPE_AUTH_DENIED;
 		if(bLogAuthHistory)
 			HistoryLog(hContact,dwUin, "was denied your authorization request", ICQEVENTTYPE_AUTH_DENIED, DBEF_READ);
 		else
 			HistoryLog(0,0, "was denied your authorization request", ICQEVENTTYPE_AUTH_DENIED, 0);
 		LogToFile(hContact, dwUin, 0, ICQEVENTTYPE_AUTH_DENIED);
-//		mir_snprintf(szText, sizeof(szText), "Authorization request denied by %s (%u): %s", szNick, dwUin, nReasonLen?szReason:"");
 	}
     break;
 
@@ -1758,7 +1750,7 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
 #ifdef _DEBUG
     NetLog_Server("Authorization request %s by %s", "granted", strUID(dwUin, szUid));
 #endif
-	if (NotOnList)
+	if (!InDB)
 	{
 		CHECKCONTACT chk = {0};
 		chk.dwUin=dwUin;
@@ -1783,7 +1775,7 @@ static void handleRecvAuthResponse(unsigned char *buf, WORD wLen)
     break;
 
   default:
-	  if (NotOnList)
+	  if (!InDB)
 	  {
 		  CHECKCONTACT chk = {0};
 		  chk.dwUin=dwUin;

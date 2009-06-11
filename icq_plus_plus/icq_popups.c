@@ -42,12 +42,12 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
 
 
 
-static void LoadDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting, BYTE bDef)
+void LoadDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting, BYTE bDef)
 {
   CheckDlgButton(hwndDlg, idCtrl, ICQGetContactSettingByte(NULL, szSetting, bDef));
 }
 
-static void StoreDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting)
+void StoreDBCheckState(HWND hwndDlg, int idCtrl, const char* szSetting)
 {
   ICQWriteContactSettingByte(NULL, szSetting, (BYTE)IsDlgButtonChecked(hwndDlg, idCtrl));
 }

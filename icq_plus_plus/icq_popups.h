@@ -2,11 +2,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -49,6 +49,8 @@ BOOL bPopSelfRem;
 BOOL bInfoRequestPopUp;
 BOOL bAuthPopUp;
 BOOL bUinPopup;
+BOOL bPopupsForHidden;
+BOOL bPopupsForIgnored;
 
 extern HANDLE hPopUpsList;
 
@@ -78,6 +80,5 @@ extern HANDLE hPopUpsList;
 void InitPopupOpts(WPARAM wParam);
 
 int ShowPopUpMsg(HANDLE hContact, DWORD dwUin, const char* szTitle, const char* szMsg, BYTE bType);
-
 
 #endif /* __ICQ_POPUPS_H */

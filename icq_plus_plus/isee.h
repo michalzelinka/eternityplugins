@@ -30,7 +30,6 @@
 // Last change by : $Author: sss123next $
 //BOOL ASD = FALSE;
 
-
 #define hIconInst hInst
 
 #define CLI_ADDTEMPVISIBLE          0x000A

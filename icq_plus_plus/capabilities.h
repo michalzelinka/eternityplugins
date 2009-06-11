@@ -3,11 +3,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -103,6 +103,7 @@ extern const capstr capAndRQ;
 extern const capstr capRAndQ;
 extern const capstr capmChat;
 extern const capstr capJimm;
+extern const capstr capBayan;
 extern const capstr capCorePager;
 extern const capstr capDiChat;
 extern const capstr capNaim;
@@ -114,8 +115,15 @@ extern const capstr capQipPDA;
 extern const capstr capQipMobile;
 extern const capstr capVmICQ;
 extern const capstr capSmapeR;
+extern const capstr capPigeon;
+extern const capstr capDigsbyBeta;
+extern const capstr capJapp;
 extern const capstr capIMPlus;
 extern const capstr capYapp;
+extern const capstr capQutIm;
+extern const capstr capJabberJIT;
+extern const capstr capIcqKid2;
+extern const capstr capWebIcqPro;
 extern const capstr capQipInfium;
 extern const capstr capQipPlugins;
 extern const capstr capIm2;

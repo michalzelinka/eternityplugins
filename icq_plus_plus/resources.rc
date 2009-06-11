@@ -64,36 +64,36 @@ BEGIN
     LTEXT           "Please enter your ICQ account details to continue:",IDC_STATIC,7,9,186,20
     LTEXT           "ICQ number:",IDC_STATIC,21,37,65,8
     LTEXT           "Password:",IDC_STATIC,21,57,66,8
-    PUSHBUTTON      "Create UIN",IDC_REG,13,80,50,14
+    PUSHBUTTON      "Register UIN",IDC_REG,13,80,57,14
 END
 
-IDD_ASKAUTH DIALOGEX 0, 0, 186, 95
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Enter an authorization request"
+IDD_ASKAUTH DIALOGEX 0, 0, 178, 83
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+CAPTION "Enter an Authorization request"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "&Send",IDOK,34,74,50,14
-    PUSHBUTTON      "&Cancel",IDCANCEL,98,74,50,14
-    EDITTEXT        IDC_EDITAUTH,7,7,172,59,ES_AUTOHSCROLL
+    DEFPUSHBUTTON   "&Send",IDOK,19,66,65,14
+    PUSHBUTTON      "&Cancel",IDCANCEL,91,66,65,14
+    EDITTEXT        IDC_EDITAUTH,3,3,172,59,ES_AUTOHSCROLL
 END
 
-IDD_CONFIRM DIALOGEX 0, 0, 166, 60
-STYLE DS_SETFONT | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
+IDD_CONFIRM DIALOGEX 0, 0, 166, 55
+STYLE DS_SETFONT | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Confirmation"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CTEXT           "Are you sure?",IDC_CONFIRMATION,10,9,146,25
-    DEFPUSHBUTTON   "&No",IDCANCEL,94,41,50,15
-    PUSHBUTTON      "&Yes",IDOK,22,41,50,15
+    DEFPUSHBUTTON   "&No",IDCANCEL,91,30,60,15
+    PUSHBUTTON      "&Yes",IDOK,15,30,60,15
 END
 
 IDD_LOGINPW DIALOGEX 0, 0, 157, 68
-STYLE DS_SETFONT | DS_MODALFRAME | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
+STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Enter ICQ Password"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     EDITTEXT        IDC_LOGINPW,17,16,122,14,ES_PASSWORD | ES_AUTOHSCROLL
-    CONTROL         "Remember this session password",IDC_SAVEPASS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,19,33,120,10
+    CONTROL         "Remember this session password",IDC_SAVEPASS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,33,137,10
     DEFPUSHBUTTON   "OK",IDOK,25,48,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,82,48,50,14
     LTEXT           "Enter a password for UIN %d:",IDC_INSTRUCTION,7,7,142,8
@@ -113,24 +113,28 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,36,277,10
     CONTROL         "Update contacts' details on the server's list when I change them in mine",IDC_SAVETOSERVER,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,48,277,10
-    GROUPBOX        "ICQ avatars",IDC_STATIC,4,126,292,52
-    CONTROL         "Enable avatar support",IDC_ENABLEAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,137,174,10
+    GROUPBOX        "ICQ avatars",IDC_STATIC,4,136,291,42
+    CONTROL         "Enable avatar support",IDC_ENABLEAVATARS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,146,140,10
     CONTROL         "Load avatars automatically (like ICQ Lite)",IDC_AUTOLOADAVATARS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,157,210,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,157,276,10
     CONTROL         "Allow bigger owner avatars (up to 128x128) [experimental]",IDC_BIGGERAVATARS,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,167,274,10
     LTEXT           "You will need to reconnect to the ICQ network for the changes you have made on this page to take effect.",IDC_RECONNECTREQD,4,183,279,16,NOT WS_VISIBLE
     CTEXT           "Note: The options marked with an asterisk have important side-effects or caveats that may not be initially apparent documented in the help.",IDC_STATIC,12,198,275,16
     PUSHBUTTON      "Force update of list from server at next connect",IDC_FORCEREFRESH,121,61,169,14
     CONTROL         "Check avatar validity before saving",IDC_STRICTAVATARCHECK,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,147,174,10
-    GROUPBOX        "Not on list contacts",IDC_STATIC,4,79,291,46
-    CONTROL         "Do not add contacts that request info",IDC_DELETE_TMP_CONTACTS,
-                    "Button",BS_AUTORADIOBUTTON,13,88,176,10
-    CONTROL         "Add contacts that request info to special group:",IDC_ADD_TMP_CONTACTS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,149,146,146,10
+    GROUPBOX        "Contacts not on the list",IDC_STATIC,4,79,291,57
+    CONTROL         "Don't add contacts that request my profile",IDC_DELETE_TMP_CONTACTS,
+                    "Button",BS_AUTORADIOBUTTON,13,88,179,10
+    CONTROL         "Add contacts that request my profile to group:",IDC_ADD_TMP_CONTACTS,
                     "Button",BS_AUTORADIOBUTTON,13,99,176,10
     EDITTEXT        IDC_TMP_CONTACTS_GROUP,193,96,63,14,ES_AUTOHSCROLL
-    CONTROL         "add temporarily",IDC_ADDTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,110,125,10
+    CONTROL         "add temporarily only",IDC_ADDTEMP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,110,86,10
+    CONTROL         "send ""You were added""",IDC_TMPSNDADDED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,116,111,87,10
+    CONTROL         "request authorization",IDC_TMPREQAUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,205,111,90,10
+    CONTROL         "Remove temporary contacts after login",IDC_REMOVE_TEMP,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,27,121,160,10
 END
 
 IDD_OPT_ICQFEATURES DIALOGEX 0, 0, 296, 230
@@ -139,10 +143,10 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Messaging",IDC_STATIC,4,0,291,74
-    CONTROL         "Enable unicode messaging support",IDC_UTFENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,8,134,10
-    CONTROL         "Send all messages in unicode if possible",IDC_UTFALL,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,17,136,10
-    RTEXT           "Use this codepage for Ansi <-> Unicode translation :",IDC_UTFSTATIC,12,29,174,10
+    CONTROL         "Enable Unicode messaging support",IDC_UTFENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,8,134,10
+    CONTROL         "Send all messages in Unicode if possible",IDC_UTFALL,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,17,146,10
+    RTEXT           "Use this codepage for ANSI <-> Unicode translation:",IDC_UTFSTATIC,8,29,178,10
     COMBOBOX        IDC_UTFCODEPAGE,190,26,99,51,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
     CONTROL         "Make me temporarily visible to contacts I send message to",IDC_TEMPVISIBLE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,40,284,10
@@ -155,32 +159,33 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,84,222,10
     CONTROL         "Passive mode, i.e. do not initiate new connections",IDC_DCPASSIVE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,94,221,11
-    CONTROL         "Enable Custom status support",IDC_XSTATUSENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,120,144,10
+    CONTROL         "Enable Custom status support",IDC_XSTATUSENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,120,153,10
     CONTROL         "Reset Custom status on status change",IDC_XSTATUSRESET,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,139,143,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,139,153,10
     CONTROL         "Auto-retrieve Custom status details",IDC_XSTATUSAUTO,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,129,143,10
-    CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,161,123,8
-    CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,8,176,122,10
-    CONTROL         "Block unknown clients",IDC_KILLUNKNOWN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,149,127,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,129,153,10
+    CONTROL         "Block known Spam Bots",IDC_KILLSPAMBOTS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,174,114,10
+    CONTROL         "Enable AIM support",IDC_AIMENABLE,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,8,187,116,10
+    CONTROL         "Block unknown clients",IDC_KILLUNKNOWN,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,162,115,10
     CONTROL         "Accept RTF (if ID Miranda)",IDC_RTF,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,155,9,135,10
-    CONTROL         "Show DC icon in contact list",IDC_DCICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,120,125,10
-    LTEXT           "X-Status icon slot:",IDC_ICON_POS_TEXT,147,211,59,8
-    LTEXT           "DC icon slot:",IDC_DC_ICON_POS_TEXT,15,135,41,8
-    COMBOBOX        IDC_DC_ICON_POS,56,133,75,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    COMBOBOX        IDC_XSTATUS_ICON_POS,209,208,79,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Replace Custom status name in menu*",IDC_REPLACEXTEXT,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,158,141,10
-    RTEXT           "*need restart",IDC_NEEDRESTART,32,206,61,8
+    CONTROL         "Show DC icon in contact list",IDC_DCICON,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,8,120,114,10
+    LTEXT           "Custom status icon slot:",IDC_ICON_POS_TEXT,136,214,84,11
+    LTEXT           "DC icon slot:",IDC_DC_ICON_POS_TEXT,8,135,114,8
+    COMBOBOX        IDC_DC_ICON_POS,8,144,70,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    COMBOBOX        IDC_XSTATUS_ICON_POS,221,212,68,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Replace Custom status name in menu *",IDC_REPLACEXTEXT,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,158,153,10
+    CTEXT           "* restart required",IDC_NEEDRESTART,8,211,119,8
     CONTROL         "Display Custom status icon in contact list",IDC_XSTATUS_SHOW,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,148,141,10
-    GROUPBOX        "xStatus options",IDC_STATIC,140,110,155,112
-    CONTROL         "Force to reread xstatus",IDC_FORCEXSTATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,168,140,10
-    GROUPBOX        "Other",IDC_STATIC,4,110,133,84
-    CONTROL         "Update contacts xStatuses every",IDC_XSTUPDATE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,189,141,10
-    LTEXT           "minutes",IDC_STATIC,190,200,42,8
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,148,152,10
+    GROUPBOX        "Custom status options",IDC_STATIC,131,110,164,120
+    CONTROL         "Force to reread xstatus",IDC_FORCEXSTATUS,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,168,153,10
+    GROUPBOX        "Other",IDC_STATIC,4,110,123,98
+    CONTROL         "Update contacts' Custom status every",IDC_XSTUPDATE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,189,153,10
+    LTEXT           "minutes",IDC_STATIC,190,200,53,8
     EDITTEXT        IDC_XSTUPDATERATE,161,199,26,12,ES_AUTOHSCROLL | ES_NUMBER
-    CONTROL         "Enable non-standart statuses*",IDC_XSTNONSTD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,147,179,140,8
+    CONTROL         "Enable non-standart statuses *",IDC_XSTNONSTD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,135,179,153,8
 END
 
 IDD_OPT_ICQPRIVACY DIALOGEX 0, 0, 300, 229
@@ -201,7 +206,7 @@ BEGIN
                     "Button",BS_AUTORADIOBUTTON,14,86,277,10
     CONTROL         "I want to be asked when someone wants to add me to their Contact List",IDC_ADD_AUTH,
                     "Button",BS_AUTORADIOBUTTON | WS_TABSTOP,14,97,266,10
-    CONTROL         "Allow others to view my Online / Offline status from the web (Web Aware)",IDC_WEBAWARE,
+    CONTROL         "Allow others to view my Online/Offline status from the web (Web Aware)",IDC_WEBAWARE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,128,276,10
     CONTROL         "Allow others to view my primary e-mail address",IDC_PUBLISHPRIMARY,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,14,138,276,10
@@ -221,16 +226,20 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Options",IDC_STATIC,4,4,305,164
-    CONTROL         "Enable popup support",IDC_POPUPS_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,14,127,9
+    CONTROL         "Enable popup support",IDC_POPUPS_ENABLED,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,14,255,9
     CONTROL         "Display errors using popups",IDC_POPUPS_LOG_ENABLED,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,23,125,10
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,23,252,10
     DEFPUSHBUTTON   "Previe&w",IDC_PREVIEW,250,216,52,12
-    CONTROL         "Show contact's UIN in Popups",IDC_UINPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,32,153,9
-    CONTROL         "Show popups for hidden/notonlist users",IDC_POPUP_FOR_NOTONLIST,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,42,158,10
+    CONTROL         "Show contact's UIN in popups",IDC_UINPOPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,32,250,9
+    CONTROL         "Show popups for users not on my list",IDC_POPUP_FOR_NOTONLIST,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,42,264,10
+    CONTROL         "Show popups for ignored users",IDC_POPUP_FOR_IGNORED,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,51,158,10
+    CONTROL         "Show popups for  hidden users",IDC_POPUP_FOR_HIDDEN,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,60,158,10
     PUSHBUTTON      "More...",IDC_POPUPS_OPTIONS,195,216,50,12
-    CONTROL         "&Use Windows colors",IDC_USEWINCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,11,61,117,8
-    CONTROL         "Use system &icons",IDC_USESYSICONS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,11,52,109,8
+    CONTROL         "&Use Windows colors",IDC_USEWINCOLORS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,11,81,117,8
+    CONTROL         "Use system &icons",IDC_USESYSICONS,"Button",BS_AUTOCHECKBOX | BS_NOTIFY | WS_TABSTOP,11,71,109,8
 END
 
 IDD_INFO_ICQ DIALOGEX 0, 0, 294, 170
@@ -253,11 +262,13 @@ BEGIN
     EDITTEXT        IDC_IDLETIME,74,72,139,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
     LTEXT           "Status:",IDC_STATIC,5,83,71,8
     EDITTEXT        IDC_STATUS,74,82,131,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
-    PUSHBUTTON      "&Check Status",IDC_GETSTATUS,75,96,66,12,NOT WS_VISIBLE
-    PUSHBUTTON      "&Retrieve IP",IDC_RETRIEVE,148,96,66,12,NOT WS_VISIBLE
-    PUSHBUTTON      "&Ignore Check",IDC_IGNORECHECK,4,96,66,12,NOT WS_VISIBLE
-    CTEXT           "",IDC_IGNORE,72,110,77,8
-    LTEXT           "UIN:",IDC_UINSTATIC,5,5,57,8
+    PUSHBUTTON      "&Check Status",IDC_GETSTATUS,75,104,66,12,NOT WS_VISIBLE
+    PUSHBUTTON      "&Retrieve IP",IDC_RETRIEVE,148,104,66,12,NOT WS_VISIBLE
+    PUSHBUTTON      "&Ignore Check",IDC_IGNORECHECK,4,104,66,12,NOT WS_VISIBLE
+    CTEXT           "",IDC_IGNORE,72,118,77,8
+    LTEXT           "UIN:",IDC_UINSTATIC,5,5,68,8
+    LTEXT           "Additional status:",IDC_STATIC,6,93,71,8
+    EDITTEXT        IDC_ICQ_STATUS,74,91,131,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
 END
 
 IDD_ICQADVANCEDSEARCH DIALOGEX 0, 0, 335, 247
@@ -330,7 +341,7 @@ EXSTYLE WS_EX_CONTROLPARENT
 CAPTION "Manage ICQ Server Contacts"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Select contacts to store:",IDC_STATIC11,5,5,91,8
+    LTEXT           "Select contacts to store:",IDC_STATIC11,5,5,156,8
     CONTROL         "",IDC_CLIST,"CListControl",WS_TABSTOP | 0x2c9,5,14,155,222,WS_EX_CLIENTEDGE
     DEFPUSHBUTTON   "Synchronize",IDOK,238,222,56,14
     PUSHBUTTON      "Cancel",IDCANCEL,298,222,55,14
@@ -380,12 +391,12 @@ STYLE DS_SETFONT | DS_3DLOOK | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    LTEXT           "Protocol Version:",IDC_STATIC,1,3,67,8
+    LTEXT           "Protocol Version:",IDC_STATIC,1,3,75,8
     EDITTEXT        IDC_VERSION,76,3,137,12,ES_AUTOHSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
-    LTEXT           "Client Name:",IDC_STATIC,1,18,67,8
+    LTEXT           "Client Name:",IDC_STATIC,1,18,75,8
     EDITTEXT        IDC_MIRVER,109,18,104,20,ES_MULTILINE | ES_AUTOVSCROLL | ES_READONLY | NOT WS_BORDER | NOT WS_TABSTOP
-    ICON            IDI_ICQ,IDC_CLIENTICON,78,16,21,20,SS_CENTERIMAGE | SS_REALSIZEIMAGE
-    LTEXT           "Flags:",IDC_FLAGS,1,32,65,8
+    ICON            IDI_ICQ,IDC_CLIENTICON,78,16,20,20,SS_CENTERIMAGE | SS_REALSIZEIMAGE
+    LTEXT           "Flags:",IDC_FLAGS,1,32,75,8
     LISTBOX         IDC_CLIENTCAPS,1,45,217,105,LBS_SORT | LBS_OWNERDRAWFIXED | LBS_HASSTRINGS | LBS_NOINTEGRALHEIGHT | LBS_WANTKEYBOARDINPUT | LBS_EXTENDEDSEL | WS_VSCROLL | WS_TABSTOP
 END
 
@@ -395,20 +406,20 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "Client ID",IDC_STATIC,4,0,287,85
-    COMBOBOX        IDC_CHANGEID,45,10,107,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Client ID:",IDC_IDSTATIC,13,12,31,8
-    CONTROL         "Show my real ClientID for ICQJ Mod users",IDC_HIDEID,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,56,151,10
+    COMBOBOX        IDC_CHANGEID,75,10,101,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "Client ID:",IDC_IDSTATIC,13,12,60,8
+    CONTROL         "Show my real Client ID for ICQJ Mod users",IDC_HIDEID,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,56,251,10
     CONTROL         "Send custom protocol version:",IDC_VERSION_CHECKBOX,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,68,109,10
-    EDITTEXT        IDC_SET_VERSION,125,66,25,12,ES_AUTOHSCROLL | ES_NUMBER
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,13,68,131,10
+    EDITTEXT        IDC_SET_VERSION,145,66,25,12,ES_AUTOHSCROLL | ES_NUMBER
     GROUPBOX        "Capabilities",IDC_STATIC,4,89,287,29
     CONTROL         "Send custom capabilities",IDC_CUSTOM_CAP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,100,152,10
     CTEXT           "",IDC_FAKEWARNING,3,124,284,58
-    LTEXT           "..and if MirandaIM, use this ICQ mod:",IDC_ENIFMIR,13,25,136,8
-    COMBOBOX        IDC_ENIFMIRCBX,45,35,107,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "(range 0-255)",IDC_STATIC,155,68,55,8,WS_DISABLED
-    PUSHBUTTON      "Edit capabilities",IDC_CAPSBOX,173,98,114,14
+    LTEXT           "..and if identified as MirandaIM, use this ICQ mod:",IDC_ENIFMIR,13,25,263,8
+    COMBOBOX        IDC_ENIFMIRCBX,75,35,101,30,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    LTEXT           "(range 0-255)",IDC_STATIC,176,68,65,8,WS_DISABLED
+    PUSHBUTTON      "Manage capabilities",IDC_CAPSBOX,173,98,114,14
 END
 
 IDD_OPT_ICQ DIALOGEX 0, 0, 301, 222
@@ -417,13 +428,13 @@ EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     GROUPBOX        "ICQ",IDC_STICQGROUP,3,0,298,63
-    RTEXT           "ICQ number:",IDC_STATIC11,24,12,51,8
+    RTEXT           "ICQ number:",IDC_STATIC11,11,12,65,8
     EDITTEXT        IDC_ICQNUM,80,10,106,12,ES_AUTOHSCROLL | ES_NUMBER
-    RTEXT           "Password:",IDC_STATIC12,24,26,51,8
+    RTEXT           "Password:",IDC_STATIC12,11,26,65,8
     EDITTEXT        IDC_PASSWORD,80,24,106,12,ES_PASSWORD | ES_AUTOHSCROLL
     LTEXT           "Hint: If you don't enter your password here, Miranda will ask for the password everytime you try to go online.",IDC_STATIC,12,41,280,19
     GROUPBOX        "Connection settings",IDC_STATIC,3,67,297,154
-    LTEXT           "Login Server:",IDC_STATIC,12,79,55,8
+    LTEXT           "Login Server:",IDC_STATIC,11,79,51,8
     LTEXT           "Port:",IDC_STATIC,182,79,25,8
     EDITTEXT        IDC_ICQPORT,208,77,29,12,ES_AUTOHSCROLL
     PUSHBUTTON      "Edit",IDC_SERVERBOX,244,77,50,12
@@ -431,14 +442,14 @@ BEGIN
     CONTROL         "Secure (MD5) login",IDC_SECURE,"Button",BS_AUTOCHECKBOX | BS_TOP | WS_TABSTOP,11,153,282,10
     CONTROL         "Send 'Keep-alives' (enable this if you use a proxy server and frequently get disconnected)",IDC_KEEPALIVE,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,11,166,282,18
-    CONTROL         "Ignore concurrent error messages",IDC_NOERRMULTI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,185,150,10
-    LTEXT           "Show connection error messages:",IDC_STATIC,12,199,148,8
+    CONTROL         "Ignore concurrent error messages",IDC_NOERRMULTI,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,185,276,10
+    LTEXT           "Show connection error messages:",IDC_STATIC,12,199,233,8
     CONTROL         "Slider1",IDC_LOGLEVEL,"msctls_trackbar32",TBS_BOTH | TBS_NOTICKS | WS_TABSTOP,18,209,52,10
     LTEXT           "",IDC_LEVELDESCR,71,209,226,8,SS_NOPREFIX
     COMBOBOX        IDC_ICQSERVER,63,77,110,47,CBS_DROPDOWN | WS_VSCROLL | WS_TABSTOP
     PUSHBUTTON      "Register new UIN",IDC_REGUIN,205,9,79,26
-    CONTROL         "Try to connect to next server in list if connection error occured (Server AutoChange)",IDC_AUTOCHANGE,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,12,141,284,8
+    CONTROL         "Try to connect to next server in list if connection error occured",IDC_AUTOCHANGE,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,141,283,10
     LTEXT           "HTTP User Agent for proxy",IDC_STATIC,12,123,103,8
     COMBOBOX        IDC_HTTPUSERAGENT,121,122,172,87,CBS_DROPDOWN | CBS_SORT | WS_VSCROLL | WS_TABSTOP
 END
@@ -446,7 +457,7 @@ END
 IDD_ICQ_SRV_LIST DIALOGEX 0, 0, 272, 241
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Manage ICQ Servers List"
+CAPTION "ICQ Servers List"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "List1",IDC_SERVERS,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | LVS_NOSORTHEADER | WS_BORDER | WS_TABSTOP,11,16,245,160
@@ -463,16 +474,16 @@ END
 
 IDD_ICQ_CAPS_LIST DIALOGEX 0, 0, 204, 213
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
-CAPTION "Manage ICQ Capabilities List"
+CAPTION "Manage ICQ Capabilities"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     GROUPBOX        "Capabilities List",IDC_STATIC,0,1,203,161
-    PUSHBUTTON      "+",IDC_CAPL_ADD,0,198,35,14
-    PUSHBUTTON      ">>",IDC_CAPL_MODIFY,40,198,35,14
-    PUSHBUTTON      "X",IDC_CAPL_DELETE,80,198,35,14
+    PUSHBUTTON      "Add",IDC_CAPL_ADD,0,198,54,14
+    PUSHBUTTON      "Modify",IDC_CAPL_MODIFY,61,198,40,14
+    PUSHBUTTON      "Delete",IDC_CAPL_DELETE,109,198,40,14
     PUSHBUTTON      "Close",IDOK,153,198,50,14
     CONTROL         "",IDC_CAPABILITIES,"SysListView32",LVS_REPORT | LVS_ALIGNLEFT | WS_BORDER | WS_TABSTOP,4,10,195,149
-    LTEXT           "Capability text:",IDC_STATIC,4,166,131,8
+    LTEXT           "Capability value:",IDC_STATIC,4,166,195,8
     EDITTEXT        IDC_CAPL_EDIT,4,175,195,14,ES_AUTOHSCROLL
 END
 
@@ -481,39 +492,45 @@ STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_VISIBLE
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
-    GROUPBOX        "Other...",IDC_STATIC,2,130,287,45
-    CONTROL         "Enable tZer support",IDC_TZER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,142,212,10
+    GROUPBOX        "Other options",IDC_STATIC,2,148,287,40
+    CONTROL         "Enable tZers support",IDC_TZER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,159,275,10
     CONTROL         "Enable Passive Status Discovery",IDC_PSD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,19,207,10
     CONTROL         "Enable Active Status Discovery",IDC_ASD,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,10,149,10
     GROUPBOX        "Status Discovery System",IDC_STATIC,2,0,287,78
-    GROUPBOX        "Stealth away message request",IDC_STATIC,2,81,287,24
-    CONTROL         "Usermenu entry",IDC_INCUSER,"Button",BS_AUTORADIOBUTTON,6,91,119,10
-    CONTROL         "Global (affects every plugin)",IDC_INCGLOBAL,"Button",BS_AUTORADIOBUTTON,145,90,137,11
-    CONTROL         "Always show auth items in menu",IDC_SHOW_AUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,153,192,10
+    GROUPBOX        "Incognito away message request",IDC_STATIC,2,80,287,24
+    CONTROL         "Contact menu entry",IDC_INCUSER,"Button",BS_AUTORADIOBUTTON | WS_GROUP,6,90,131,10
+    CONTROL         "Global (affects every plugin)",IDC_INCGLOBAL,"Button",BS_AUTORADIOBUTTON,145,89,137,11
+    CONTROL         "Always show authorization items in menu",IDC_SHOW_AUTH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,170,275,10
     CONTROL         "Disable Passive Status Discovery for hidden contacts",IDC_NOPSD_FOR_HIDDEN,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,29,227,10
     PUSHBUTTON      "Options",IDC_ASDOPTIONS,160,8,50,10
+    GROUPBOX        "Advanced Features && Users Status Scan Placement",IDC_STATIC,2,106,287,40
+    CONTROL         "Protocol status menu",IDC_INSTATUSMENU,"Button",BS_AUTORADIOBUTTON | WS_GROUP,145,118,136,10
+    CONTROL         "Main menu",IDC_INMAINMENU,"Button",BS_AUTORADIOBUTTON,6,118,132,10
+    CONTROL         "Place Users Status Scan inside Advanced Features menu",IDC_USRCHKPOS,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,130,281,10
 END
 
 IDD_ICQ_REG_UIN DIALOGEX 0, 0, 314, 150
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Create new UIN"
+CAPTION "Register new UIN"
 FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_UIN_IMAGE,"Static",SS_BITMAP | SS_CENTERIMAGE | SS_SUNKEN,12,42,163,64
-    EDITTEXT        IDC_PICTURE_CONTENT,86,26,71,12,ES_UPPERCASE | ES_AUTOHSCROLL
-    LTEXT           "3. Picture Content:",IDC_STATIC,12,27,62,8
-    LTEXT           "1. New UIN password:",IDC_STATIC,12,13,73,8
-    EDITTEXT        IDC_NEWUIN_PASS,86,11,71,12,ES_PASSWORD | ES_AUTOHSCROLL
-    PUSHBUTTON      "2. Show Picture",IDC_PICTURE,169,9,133,14
+    EDITTEXT        IDC_PICTURE_CONTENT,93,26,64,12,ES_UPPERCASE | ES_AUTOHSCROLL
+    LTEXT           "3. Picture code:",IDC_STATIC,12,27,79,8
+    LTEXT           "1. New UIN password:",IDC_STATIC,12,13,79,8
+    EDITTEXT        IDC_NEWUIN_PASS,93,11,64,12,ES_PASSWORD | ES_AUTOHSCROLL
+    PUSHBUTTON      "2. Show picture",IDC_PICTURE,169,9,133,14
     PUSHBUTTON      "4. Register",IDC_REGISTER,169,24,133,14,WS_DISABLED
     CTEXT           "5. New UIN info",IDC_NEWUININFO,193,40,99,66
     CONTROL         "Create a new ICQ account using the ICQ website (https://www.icq.com/register/)",IDC_NEWUINLINK,
                     "Hyperlink",WS_TABSTOP,11,118,273,8
     CONTROL         "Retrieve a lost password or ICQ number (https://www.icq.com/password/)",IDC_LOOKUPLINK,
-                    "Hyperlink",WS_TABSTOP,11,132,259,8
-    GROUPBOX        "UIN registration  options",IDC_STATIC,4,1,306,144
+                    "Hyperlink",WS_TABSTOP,11,132,274,8
+    GROUPBOX        "UIN registration options",IDC_STATIC,4,1,306,144
 END
 
 IDD_OPT_ICQ_EVENTS DIALOGEX 0, 0, 294, 231
@@ -523,113 +540,113 @@ FONT 8, "MS Shell Dlg", 0, 0, 0x1
 BEGIN
     CONTROL         "",IDC_LOG_REMOVE_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,21,13,10
     CONTROL         "",IDC_LOG_IGNORECHECK_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,31,12,10
-    LTEXT           "Checking ignore state:",IDC_STATIC,6,31,116,8
-    LTEXT           "Removed himself from my Serverlist:",IDC_STATIC,6,21,156,8
-    LTEXT           "File",IDC_STATIC,170,11,34,8
-    LTEXT           "History",IDC_STATIC,225,11,48,8
+    LTEXT           "Checking ignore state:",IDC_STATIC,6,31,157,8
+    LTEXT           "Removed himself from my server-list:",IDC_STATIC,6,21,156,8
+    LTEXT           "File",IDC_STATIC,170,11,48,8
+    LTEXT           "History",IDC_STATIC,225,11,53,8
     CONTROL         "",IDC_LOG_REMOVE_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,21,16,10
     CONTROL         "",IDC_LOG_IGNORECHECK_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,31,13,10
     EDITTEXT        IDC_FILEPATH,6,130,193,12,ES_AUTOHSCROLL
     CONTROL         "",IDC_BROWSE,"MButtonClass",WS_TABSTOP,201,130,14,10
-    LTEXT           "Checking real status:",IDC_STATIC,6,41,138,8
+    LTEXT           "Checking real status:",IDC_STATIC,6,41,157,8
     CONTROL         "",IDC_LOG_CHECKSTATUS_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,41,16,10
     CONTROL         "",IDC_LOG_CHECKSTATUS_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,41,16,10
-    LTEXT           "Client change:",IDC_STATIC,6,51,118,8
+    LTEXT           "Client change:",IDC_STATIC,6,51,157,8
     CONTROL         "",IDC_LOG_CLIENTCHANGE_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,51,16,10
     CONTROL         "",IDC_LOG_CLIENTCHANGE_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,51,16,10
-    LTEXT           "Auth grant/denied:",IDC_STATIC,6,61,124,8
+    LTEXT           "Authorization grant/denied:",IDC_STATIC,6,61,156,8
     CONTROL         "",IDC_LOG_AUTH_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,61,16,10
     CONTROL         "",IDC_LOG_AUTH_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,61,16,10
-    CONTROL         "Write events to contact history (if not set writing to system history)",IDC_LOG_TO_HCONTACT_HISTORY,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,114,233,10
+    CONTROL         "Write events to contact history (logging to system history if not set)",IDC_LOG_TO_HCONTACT_HISTORY,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,114,275,10
     CONTROL         "",IDC_LOG_REQUEST_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,71,16,10
     CONTROL         "",IDC_LOG_REQUEST_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,71,16,10
-    LTEXT           "Request your info",IDC_STATIC,6,71,143,8
+    LTEXT           "Requesting your profile:",IDC_STATIC,6,71,157,8
     GROUPBOX        "Events log",IDC_STATIC,2,7,287,153
     CONTROL         "",IDC_LOG_ASD_FILE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,170,80,16,10
     CONTROL         "",IDC_LOG_ASD_HISTORY,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,225,80,16,10
-    LTEXT           "Detected via ASD/PSD",IDC_STATIC,6,80,143,8
+    LTEXT           "Detected via ASD/PSD:",IDC_STATIC,6,80,157,8
 END
 
 IDD_OPT_POPUPS2 DIALOGEX 0, 0, 293, 311
 STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 EXSTYLE WS_EX_CONTROLPARENT
-CAPTION "Advanced PopUps options"
+CAPTION "Advanced Popup Options"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     PUSHBUTTON      "Ok",IDC_OK,231,283,50,14
-    LTEXT           "Warning",IDC_STATIC,15,36,60,8
+    LTEXT           "Warning",IDC_STATIC,15,36,68,8
     CONTROL         "",IDC_POPUP_LOG1_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,35,39,10
     CONTROL         "",IDC_POPUP_LOG1_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,35,39,10
     EDITTEXT        IDC_POPUP_LOG1_TIMEOUT,185,34,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Error",IDC_STATIC,15,51,60,8
+    LTEXT           "Error",IDC_STATIC,15,51,68,8
     CONTROL         "",IDC_POPUP_LOG2_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,50,39,10
     CONTROL         "",IDC_POPUP_LOG2_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,50,39,10
     EDITTEXT        IDC_POPUP_LOG2_TIMEOUT,185,49,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Fatal",IDC_STATIC,15,66,60,8
+    LTEXT           "Fatal",IDC_STATIC,15,66,68,8
     CONTROL         "",IDC_POPUP_LOG3_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,65,39,10
     CONTROL         "",IDC_POPUP_LOG3_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,65,39,10
     EDITTEXT        IDC_POPUP_LOG3_TIMEOUT,185,64,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Spam detected",IDC_STATIC,15,81,60,8
+    LTEXT           "Spam detected",IDC_STATIC,15,81,68,8
     CONTROL         "",IDC_POPUP_SPAM_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,80,39,10
     CONTROL         "",IDC_POPUP_SPAM_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,80,39,10
     EDITTEXT        IDC_POPUP_SPAM_TIMEOUT,185,79,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "User Found",IDC_STATIC,15,110,60,8
+    LTEXT           "User Found",IDC_STATIC,15,110,68,8
     CONTROL         "",IDC_POPUP_LOG4_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,109,39,10
     CONTROL         "",IDC_POPUP_LOG4_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,109,39,10
     EDITTEXT        IDC_POPUP_LOG4_TIMEOUT,185,107,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Active Status Scan",IDC_STATIC,15,124,60,8
+    LTEXT           "Active Status Scan",IDC_STATIC,15,124,68,8
     CONTROL         "",IDC_POPUP_LOG5_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,123,39,10
     CONTROL         "",IDC_POPUP_LOG5_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,123,39,10
     EDITTEXT        IDC_POPUP_LOG5_TIMEOUT,185,122,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Unknown detected",IDC_STATIC,15,95,60,8
+    LTEXT           "Unknown detected",IDC_STATIC,15,95,68,8
     CONTROL         "",IDC_POPUP_UNKNOWN_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,94,39,10
     CONTROL         "",IDC_POPUP_UNKNOWN_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,94,39,10
     EDITTEXT        IDC_POPUP_UNKNOWN_TIMEOUT,185,93,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Visibility",IDC_STATIC,15,138,60,8
+    LTEXT           "Visibility",IDC_STATIC,15,138,68,8
     CONTROL         "",IDC_POPUP_LOG6_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,138,39,10
     CONTROL         "",IDC_POPUP_LOG6_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,138,39,10
     EDITTEXT        IDC_POPUP_LOG6_TIMEOUT,185,136,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Enabled ?",IDC_STATIC,230,9,38,8
+    LTEXT           "Enabled?",IDC_STATIC,230,9,48,8
     CONTROL         "",IDC_SPAM_POPUP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,81,11,10
     CONTROL         "",IDC_WAS_FOUND_POPUP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,109,11,10
     CONTROL         "",IDC_SCAN_POPUP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,124,11,10
     CONTROL         "",IDC_UNKNOWN_POPUP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,95,11,10
     CONTROL         "",IDC_VIS_POPUP_ENABLE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,138,11,10
-    LTEXT           "Back Color",IDC_STATIC,83,9,42,8
-    LTEXT           "Text Color",IDC_STATIC,133,9,40,8
-    LTEXT           "Timeout",IDC_STATIC,187,9,26,8
-    LTEXT           "Note",IDC_STATIC,15,21,60,8
+    LTEXT           "Back Color",IDC_STATIC,83,9,50,8
+    LTEXT           "Text Color",IDC_STATIC,133,9,52,8
+    LTEXT           "Timeout",IDC_STATIC,187,9,40,8
+    LTEXT           "Note",IDC_STATIC,15,21,68,8
     CONTROL         "",IDC_POPUP_LOG0_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,20,39,10
     CONTROL         "",IDC_POPUP_LOG0_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,20,39,10
     EDITTEXT        IDC_POPUP_LOG0_TIMEOUT,185,19,34,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_CLIENT_CHANGE_POPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,152,12,10
     CONTROL         "",IDC_POPSELFREM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,192,9,10
     CONTROL         "",IDC_IGNCHECKPOP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,179,10,10
-    LTEXT           "Change Client",IDC_STATIC,15,152,46,8
+    LTEXT           "Change Client",IDC_STATIC,15,152,68,8
     CONTROL         "",IDC_POPUP_CLIENT_CHANGE_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,152,39,10
     CONTROL         "",IDC_POPUP_CLIENT_CHANGE_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,152,39,10
     EDITTEXT        IDC_POPUP_CLIENT_CHANGE_TIMEOUT,185,151,34,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_INFO_REQUEST_POPUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,165,11,10
-    LTEXT           "Info Request",IDC_STATIC,15,166,43,8
+    LTEXT           "Info Request",IDC_STATIC,15,166,68,8
     CONTROL         "",IDC_POPUP_INFO_REQUEST_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,166,39,10
     CONTROL         "",IDC_POPUP_INFO_REQUEST_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,166,39,10
     EDITTEXT        IDC_POPUP_INFO_REQUEST_TIMEOUT,185,164,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Check Ignore State",IDC_STATIC,15,179,63,8
+    LTEXT           "Check Ignore State",IDC_STATIC,15,179,68,8
     CONTROL         "",IDC_POPUP_IGNORECHECK_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,179,39,10
     CONTROL         "",IDC_POPUP_IGNORECHECK_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,179,39,10
     EDITTEXT        IDC_POPUP_IGNORECHECK_TIMEOUT,185,178,34,12,ES_AUTOHSCROLL | ES_NUMBER
-    LTEXT           "Removed Himself",IDC_STATIC,15,192,55,8
+    LTEXT           "Removed Himself",IDC_STATIC,15,192,68,8
     CONTROL         "",IDC_POPUP_REMOVE_HIMSELF_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,192,39,10
     CONTROL         "",IDC_POPUP_REMOVE_HIMSELF_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,192,39,10
     EDITTEXT        IDC_POPUP_REMOVE_HIMSELF_TIMEOUT,185,191,34,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_POPAUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,206,9,10
-    LTEXT           "Auth",IDC_STATIC,15,206,55,8
+    LTEXT           "Authorization",IDC_STATIC,15,206,68,8
     CONTROL         "",IDC_POPUP_AUTH_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,206,39,10
     CONTROL         "",IDC_POPUP_AUTH_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,206,39,10
     EDITTEXT        IDC_POPUP_AUTH_TIMEOUT,185,204,34,12,ES_AUTOHSCROLL | ES_NUMBER
     CONTROL         "",IDC_POPXUPDATER,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,235,219,9,10
-    LTEXT           "XStatus Updater",IDC_STATIC,15,220,55,8
+    LTEXT           "Custom status Updater",IDC_STATIC,15,218,68,17
     CONTROL         "",IDC_POPUP_XUPDATER_BACKCOLOR,"ColourPicker",WS_TABSTOP,83,220,39,10
     CONTROL         "",IDC_POPUP_XUPDATER_TEXTCOLOR,"ColourPicker",WS_TABSTOP,133,220,39,10
     EDITTEXT        IDC_POPUP_XUPDATER_TIMEOUT,185,218,34,12,ES_AUTOHSCROLL | ES_NUMBER
@@ -641,18 +658,18 @@ CAPTION "ICQ eternity/PlusPlus++ Mod About/Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
     DEFPUSHBUTTON   "Close",IDOK,135,129,50,14
-    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,79,184,47
-    RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
-    RTEXT           "Version:",IDC_RNVER,7,14,53,8
-    LTEXT           "ICQ eternity/PlusPlus++ Mod",IDC_RLNPLGNM2,66,4,98,8
-    LTEXT           "0.3.88.37",IDC_RNVER2,66,14,98,8
-    LTEXT           "svn merge",IDC_CHNG1,20,92,150,8
-    RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
-    LTEXT           "jarvis (based on ICQ Plus Mod)",IDC_RNAUTH2,66,24,115,8
-    RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
-    LTEXT           "© 2000-2008 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",IDC_RNCPR2,66,34,115,42
-    ICON            IDI_ICQ,IDC_RNCSICON,163,3,20,20
-    LTEXT           "prepairing to merge with Plus Mod, this Mod will be private (me&friends) most probably :)",IDC_CHNG2,20,101,150,17
+    GROUPBOX        "Latest Changes",IDC_STATIC,4,79,184,47
+    RTEXT           "Plugin name:",IDC_STATIC,7,4,53,8
+    RTEXT           "Version:",IDC_STATIC,7,14,53,8
+    LTEXT           "ICQ eternity/PlusPlus++ Mod",IDC_STATIC,66,4,98,8
+    LTEXT           "0.3.88.44",IDC_STATIC,66,14,98,8
+    LTEXT           "ICQ Plus SVN merge",IDC_STATIC,20,92,150,8
+    RTEXT           "Author:",IDC_STATIC,7,24,53,8
+    LTEXT           "jarvis (based on ICQ Plus Mod)",IDC_STATIC,66,24,115,8
+    RTEXT           "Copyright:",IDC_STATIC,7,34,53,8
+    LTEXT           "© 2000-2009 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",IDC_STATIC,66,34,115,42
+    ICON            IDI_ICQ,IDC_STATIC,163,3,20,20
+    LTEXT           "fixed leaking menu items due to latest genmenu patches",IDC_STATIC,20,101,150,17
     CONTROL         "Check1",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,92,9,10
     CHECKBOX        "Check1",IDC_CHECK4,7,101,9,10,WS_DISABLED
 END
@@ -665,9 +682,9 @@ BEGIN
     DEFPUSHBUTTON   "OK",IDOK,15,65,50,14
     PUSHBUTTON      "Cancel",IDCANCEL,84,65,50,14
     COMBOBOX        IDC_TZER_COMBO,11,43,129,92,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    LTEXT           "Name: ",IDC_STATIC,11,6,24,8
+    LTEXT           "Text: ",IDC_STATIC,11,6,129,8
     EDITTEXT        IDC_TZER_NAME,11,15,129,12,ES_AUTOHSCROLL
-    LTEXT           "tZer:",IDC_STATIC,11,33,21,9
+    LTEXT           "tZer:",IDC_STATIC,11,33,129,9
 END
 
 IDD_OPT_ASD DIALOGEX 0, 0, 335, 204
@@ -680,16 +697,17 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,111,317,10
     CONTROL         "Detect via malformed xtraz (icq6) (by [sin])",IDC_DETECT_VIA_XTRAZ,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,123,317,10
-    CONTROL         "Detect via malformed url (old miranda, some other clients)",IDC_DETECT_VIA_URL,
+    CONTROL         "Detect via malformed URL (old miranda, some other clients)",IDC_DETECT_VIA_URL,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,134,317,10
     PUSHBUTTON      "Ok",IDC_OK,278,183,50,14
-    CONTROL         "Detect unauthorized contacts status (reported by D@rkNeo)",IDC_DETECT_UNAUTHORIZED,
+    CONTROL         "Detect unauthorized contacts' status (reported by D@rkNeo)",IDC_DETECT_UNAUTHORIZED,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,145,317,10
-    CONTROL         "Detect via Auth server bug",IDC_DETECT_VIA_AUTH,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,156,317,10
+    CONTROL         "Detect via server authorization bug",IDC_DETECT_VIA_AUTH,
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,156,317,10
     GROUPBOX        "Methods",IDC_STATIC,3,99,325,80
     GROUPBOX        "Options",IDC_STATIC,3,3,325,92
     CONTROL         "Check entire list on startup",IDC_ASDSTARTUP,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,14,309,10
-    CONTROL         "Disable Statuscheck in invisible status",IDC_NOASD,
+    CONTROL         "Disable status check in invisible status",IDC_NOASD,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,36,308,10
     CONTROL         "Enable only for offline and invisible contacts (can fix some ASD problems)",IDC_ASD_FOR_OFFLINE,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,11,25,307,10
@@ -727,8 +745,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,88,38
- PRODUCTVERSION 0,8,0,10
+ FILEVERSION 0,3,88,44
+ PRODUCTVERSION 0,7,0,44
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -745,12 +763,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced eternity/PlusPlus++ modification"
-            VALUE "FileVersion", "0, 3, 88, 38"
+            VALUE "FileVersion", "0, 3, 88, 44"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2008 Joe Kucera, Angeli-Ka, Bio, Martin Oberg, Richard Hughes, Jon Keating, Se7en, [sss], jarvis, chaos.persei, [sin], nullbie, Big Muscle"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Oberg, Richard Hughes, Jon Keating, Se7en, [sss], jarvis, chaos.persei, [sin], nullbie, Big Muscle"
             VALUE "OriginalFilename", "ICQ.dll"
             VALUE "ProductName", "ICQ Protocol Support"
-            VALUE "ProductVersion", "0, 8, 0, 10"
+            VALUE "ProductVersion", "0, 7, 0, 44"
         END
     END
     BLOCK "VarFileInfo"
@@ -781,7 +799,7 @@ BEGIN
         RIGHTMARGIN, 295
         VERTGUIDE, 4
         VERTGUIDE, 8
-        VERTGUIDE, 147
+        VERTGUIDE, 135
         BOTTOMMARGIN, 219
     END
 
@@ -829,6 +847,7 @@ BEGIN
         RIGHTMARGIN, 289
         VERTGUIDE, 2
         VERTGUIDE, 6
+        VERTGUIDE, 145
         VERTGUIDE, 289
         HORZGUIDE, 101
         HORZGUIDE, 163

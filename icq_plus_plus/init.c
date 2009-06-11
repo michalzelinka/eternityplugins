@@ -3,12 +3,12 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
-// Copyright © 2007,2008 jarvis
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -90,10 +90,13 @@ BOOL bInfoRequestPopUp = FALSE;
 BOOL bAuthPopUp = FALSE;
 BOOL bXUpdaterPopUp = FALSE;
 BOOL bUinPopup = FALSE;
+BOOL bPopupsForHidden = FALSE;
+BOOL bPopupsForIgnored = FALSE;
 //visibility variable
 BYTE bVisibility = 0;
 BOOL bIncognitoRequest = FALSE;
 BOOL bIncognitoGlobal = FALSE;
+BOOL bPrivacyMenuPlacement = FALSE;
 BOOL bShowAuth = FALSE;
 //BOOL bStealthRequest = FALSE;
 BOOL bPSD = TRUE;
@@ -129,6 +132,8 @@ BOOL bASDUnauthorized = FALSE; //work in progress
 BOOL bASDViaAuth = FALSE;
 //other settings
 BOOL bTmpContacts = FALSE;
+BOOL bTmpAuthRequet = TRUE;
+BOOL bTmpSendAdded = TRUE;
 BOOL gbSecureIM = FALSE;
 char* TmpGroupName = 0;
 BOOL bAddTemp = FALSE;
@@ -142,18 +147,29 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   "IcqOscarJ " ICQ_THISMODNAME " Protocol",
-  PLUGIN_MAKE_VERSION(0,3,88,38),
-  "Support for ICQ network, enhanced. [based on ICQJ Plus 0.3.8.105 testing build #98 rc 2 + IcqOscarJ 0.3.10.10 svn 7388]",
+  PLUGIN_MAKE_VERSION(0,3,88,44),
+  "Support for ICQ network, enhanced. [based on IcqOscarJ + ICQJ Plus Mod | built "__DATE__" at "__TIME__"]",
   "J.Kucera, Bio, M.berg, R.Hughes, Jon Keating, BM, S7, [sss], chaos.persei, Faith, jarvis, ghazan, baloo, nullbie etc",
   "mike.taussick@seznam.cz, sss123next@list.ru, chaos.persei@gmail.com, sin@miranda-me.org, jokusoftware@miranda-im.org",
   "(C) 2000-2008 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",
-  "http://dev.mirandaim.ru/jarvis/, http://dev.mirandaim.ru/~sss/",
+  "http://dev.mirandaim.ru/~jarvis/",
   0,
   0,   //doesn't replace anything built-in :: eternity mod uuid
   { 0xdfbe27d6, 0x32de, 0x47ac, { 0xb1, 0x45, 0xcd, 0xf5, 0x46, 0xa9, 0x4a, 0x58 } }
 };
 
 /* version info
+0.3.88.44 - fixed leaking menu items due to latest genmenu patches
+0.3.88.43 - fixes
+          - modified some stupidities around contact menu auth items
+0.3.88.42 - plus svn merge
+          - repaired reading of all kinds of status messages
+0.3.88.41 - svn merge
+0.3.88.40 - possibly last 0.3 (old-gen) version :)
+          - svn merge
+          - typos, translations and other visual bugs hunting
+0.3.88.39 - fixed ICQ Plus commit 109 not connecting
+          - Privacy menu and Users status scan movable between Proto menu and Main menu
 0.3.88.38 - some cosmetic clearings in clients detection
 0.3.88.37 - svn merge, prepairing to merge with Plus Mod - this plugin will be only for private use :)
 0.3.88.36 - back to work, man :) .. svn merge
@@ -216,6 +232,7 @@ static char UnicodeAware[32];
 
 static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam);
 static int OnSystemPreShutdown(WPARAM wParam,LPARAM lParam);
+static int OnContactSettingChanged( WPARAM wParam, LPARAM lParam );
 static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam);
 static int IconLibIconsChanged(WPARAM wParam, LPARAM lParam);
 
@@ -277,7 +294,7 @@ static HANDLE ICQCreateHookableEvent(const char* szEvent)
 }
 
 
-static int EnumCustomCapsProc(const char *szSetting,LPARAM lParam)
+int EnumCustomCapsProc(const char *szSetting,LPARAM lParam)
 {
 	DBVARIANT dbv;
 	DBCONTACTGETSETTING dbcgs;
@@ -307,7 +324,7 @@ static int EnumCustomCapsProc(const char *szSetting,LPARAM lParam)
 
 void RegEventType(int EventType, char* EventDescription)
 {
-	DBEVENTTYPEDESCR evt;
+	DBEVENTTYPEDESCR evt={0};
 	evt.cbSize=sizeof(evt);
 	evt.module=gpszICQProtoName;
 	evt.eventType=EventType;
@@ -352,6 +369,8 @@ void InitVars()
   bPopSelfRem = ICQGetContactSettingByte(NULL, "PopSelfRem", 1);
   bInfoRequestPopUp = ICQGetContactSettingByte(NULL, "InfoRequestPopUp", 0);
   bAuthPopUp = ICQGetContactSettingByte(NULL, "AuthPopUp", 0);
+  bPopupsForIgnored = ICQGetContactSettingByte(NULL, "PopUpForIgnored", 0);
+  bPopupsForHidden = ICQGetContactSettingByte(NULL, "PopUpForHidden", 0);
   bXUpdaterPopUp = ICQGetContactSettingByte(NULL, "XUpdaterPopUp", 0);
   bPSD = ICQGetContactSettingByte(NULL, "PSD", 1);
   bNoASDInInvisible = ICQGetContactSettingByte(NULL, "NoASDInInvisible", 1);
@@ -374,9 +393,12 @@ void InitVars()
   bTmpContacts = ICQGetContactSettingByte(NULL, "TempContacts", 0);
   TmpGroupName = UniGetContactSettingUtf(NULL,gpszICQProtoName,"TmpContactsGroup", Translate("General"));
   bAddTemp = ICQGetContactSettingByte(NULL, "AddTemp", 0);
+  bTmpAuthRequet = ICQGetContactSettingByte(NULL, "TmpReqAuth", 1);
+  bTmpSendAdded = ICQGetContactSettingByte(NULL, "TmpSndAdded", 1);
   bNoStatusReply = ICQGetContactSettingByte(NULL,"NoStatusReply", 0);
   bServerAutoChange = ICQGetContactSettingByte(NULL,"ServerAutoChange", 1);
   bIncognitoGlobal = ICQGetContactSettingByte(NULL, "IncognitoGlobal", 0);
+  bPrivacyMenuPlacement = ICQGetContactSettingByte(NULL,"PrivacyPlacement", 0);
   bShowAuth = ICQGetContactSettingByte(NULL, "ShowAuth", 0);
   bUinPopup = ICQGetContactSettingByte(NULL, "UinPopup", 0);
   bNoPSDForHidden = ICQGetContactSettingByte(NULL, "NoPSDForHidden", 1);
@@ -448,6 +470,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   HookEvent(ME_SYSTEM_MODULESLOADED, OnSystemModulesLoaded);
   HookEvent(ME_SYSTEM_PRESHUTDOWN, OnSystemPreShutdown);
+  HookEvent(ME_DB_CONTACT_SETTINGCHANGED, OnContactSettingChanged);
 
   InitializeCriticalSection(&connectionHandleMutex);
   InitializeCriticalSection(&localSeqMutex);
@@ -476,6 +499,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
 
   // Initialize temporary DB settings
   ICQCreateResidentSetting("Status"); // NOTE: XStatus cannot be temporary
+	ICQCreateResidentSetting("ICQStatus");
   ICQCreateResidentSetting("TemporaryVisible");
   ICQCreateResidentSetting("TickTS");
   ICQCreateResidentSetting("IdleTS");
@@ -581,6 +605,7 @@ int __declspec(dllexport) Load(PLUGINLINK *link)
   ICQCreateServiceFunction(MS_SETVIS, IcqSetVis);
   ICQCreateServiceFunction(MS_INCOGNITO_REQUEST, IncognitoAwayRequest);
   ICQCreateServiceFunction(MS_SEND_TZER, IcqSendtZer);
+  ICQCreateServiceFunction(MS_TZER_DIALOG, IcqTzerDlg);
 
   ICQCreateServiceFunction(MS_XSTATUS_SHOWDETAILS, IcqShowXStatusDetails);
 
@@ -960,16 +985,16 @@ static int OnSystemModulesLoaded(WPARAM wParam,LPARAM lParam)
 	mi.cbSize = sizeof(mi);
 	mi.position = -2000005000;
 	mi.flags = 0;
-	mi.hIcon = IconLibGetIcon("incognito");
+	mi.hIcon = IconLibGetIcon("incognito_request");
 	mi.pszContactOwner = gpszICQProtoName;
 	mi.pszName = LPGEN("Incognito Away-Request");
 	mi.pszService = pszServiceName;
 	hUserMenuIncognito=(HANDLE)CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi);
-	IconLibReleaseIcon("incognito");
+	IconLibReleaseIcon("incognito_request");
 
 	
 	strcpy(pszServiceName, gpszICQProtoName);
-	strcat(pszServiceName, MS_SEND_TZER);
+	strcat(pszServiceName, MS_TZER_DIALOG);
 
 	ZeroMemory(&mi, sizeof(mi));
 	mi.cbSize = sizeof(mi);
@@ -1013,6 +1038,24 @@ static int OnSystemPreShutdown(WPARAM wParam,LPARAM lParam)
 
 
 
+static int OnContactSettingChanged(WPARAM wParam,LPARAM lParam)
+{
+  DBCONTACTWRITESETTING *cws = ( DBCONTACTWRITESETTING* )lParam;
+  HANDLE hCSCContact = ( HANDLE )wParam;
+
+  if( hCSCContact == NULL || lstrcmpA( cws->szSetting, "Status" ) )
+    return 0;
+  if ( cws->value.wVal == ID_STATUS_OFFLINE )
+  { // if contact goes offline, delete x-status details
+    DBDeleteContactSetting( hCSCContact, gpszICQProtoName, "XStatusId" );
+    DBDeleteContactSetting( hCSCContact, gpszICQProtoName, "XStatusMsg" );
+    DBDeleteContactSetting( hCSCContact, gpszICQProtoName, "XStatusName" );
+  }
+  return 0;
+}
+
+
+
 void CListShowMenuItem(HANDLE hMenuItem, BYTE bShow)
 {
   CLISTMENUITEM mi = {0};
@@ -1049,7 +1092,7 @@ static int icq_PrebuildContactMenu(WPARAM wParam, LPARAM lParam)
 
   CListShowMenuItem(hUserMenuAuth, bShowAuth?1:ICQGetContactSettingByte((HANDLE)wParam, "Auth", 0) && icqOnline);
   CListShowMenuItem(hUserMenuGrant, bShowAuth?1:ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0) && icqOnline);
-  CListShowMenuItem(hUserMenuRevoke, icqOnline);
+  CListShowMenuItem(hUserMenuRevoke, bShowAuth?1:!ICQGetContactSettingByte((HANDLE)wParam, "Grant", 0) && icqOnline);
   CListShowMenuItem(hUserMenuSetVis, icqOnline);
   CListShowMenuItem(hUserMenuSetInvis, icqOnline);
   CListShowMenuItem(hUserMenuStatus, icqOnline && gbASD);

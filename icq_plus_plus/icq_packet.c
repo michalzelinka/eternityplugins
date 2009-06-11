@@ -644,7 +644,9 @@ void unpackWideString(unsigned char **buf, WCHAR *string, WORD len)
 
   // We have a stray byte at the end, this means that the buffer had an odd length
   // which indicates an error.
+#ifdef _DEBUG
   _ASSERTE(len == 0);
+#endif
   if (len != 0)
   {
     // We dont copy the last byte but we still need to increase the buffer pointer

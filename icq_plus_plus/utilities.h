@@ -161,7 +161,7 @@ BOOL invis_for(DWORD dwUin, HANDLE hContact);
 
 typedef struct{
 	DWORD dwUin; //contact uin (dword)
-	HANDLE hContact;  //(HANDLE)
+	HANDLE hContact;  //hContact(HANDLE)
 	int PSD; //value for calling setuserstatus (-1 for disable)
 	BOOL popup; //set TRUE for show popup (BOOL)
 	int popuptype; //set popup event type (int)

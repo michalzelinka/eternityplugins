@@ -267,8 +267,7 @@ void GetAvatarFileName(int dwUin, char* szUid, char* pszDest, int cbLen)
       strcpy(pszDest + tPathLen, "avatar" );
     else 
     {
-      char* szLastDot = strstr(szBuf, ".");
-      if (szLastDot) while (strstr(szLastDot+1, ".")) szLastDot = strstr(szLastDot+1, ".");
+      char* szLastDot = strrchr(szBuf, '.');
       if (szLastDot) szLastDot[0] = '\0';
       strcpy(pszDest + tPathLen, szBuf);
       strcat(pszDest + tPathLen, "_avt");
@@ -932,7 +931,7 @@ static DWORD __stdcall icq_avatarThread(avatarthreadstartinfo *atsi)
 
     InitializeCriticalSection(&atsi->localSeqMutex);
 
-    atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 16384);
+    atsi->hAvatarPacketRecver = (HANDLE)CallService(MS_NETLIB_CREATEPACKETRECVER, (WPARAM)atsi->hConnection, 32768);
     packetRecv.cbSize = sizeof(packetRecv);
     packetRecv.dwTimeout = dwKeepAliveInterval < KEEPALIVE_INTERVAL ? dwKeepAliveInterval: KEEPALIVE_INTERVAL; // timeout - for stopThread to work
     while(!atsi->stopThread)

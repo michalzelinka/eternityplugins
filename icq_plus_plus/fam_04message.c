@@ -2,11 +2,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -3205,6 +3205,13 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
   // Error code
   unpackWord(&buf, &wError);
   wLen -= 2;
+  
+  { // offline retrieval process in progress, note that we received missed message notification
+    offline_message_cookie *cookie;
+    
+    if (FindCookieByType(CKT_OFFLINEMESSAGE, NULL, NULL, (void**)&cookie))
+      cookie->nMissed++;
+  }
 
   switch (wError)
   {
@@ -3257,10 +3264,32 @@ static void handleMissedMsg(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dw
 static void handleOffineMessagesReply(unsigned char *buf, WORD wLen, WORD wFlags, DWORD dwRef)
 {
   offline_message_cookie *cookie;
+  icq_packet packet;
 
   if (FindCookie(dwRef, NULL, &cookie))
   {
     NetLog_Server("End of offline msgs, %u received", cookie->nMessages);
+    if (cookie->nMissed)
+    { // NASTY WORKAROUND!!
+      // The ICQ server has a bug that causes offline messages to be received again and again when some
+      // missed message notification is present (most probably it is not processed correctly and causes
+      // the server to fail the purging process); try to purge them using the old offline messages
+      // protocol.  2008/05/21
+      NetLog_Server("Warning: Received %u missed message notifications, trying to fix the server.", cookie->nMissed);
+      
+      // This will delete the messages stored on server
+      serverPacketInit(&packet, 24);
+      packFNACHeader(&packet, ICQ_EXTENSIONS_FAMILY, ICQ_META_CLI_REQ);
+      packWord(&packet, 1);             // TLV Type
+      packWord(&packet, 10);            // TLV Length
+      packLEWord(&packet, 8);           // Data length
+      packLEDWord(&packet, dwLocalUIN); // My UIN
+      packLEWord(&packet, CLI_DELETE_OFFLINE_MSGS_REQ); // Ack offline msgs
+      packLEWord(&packet, 0x0000);      // Request sequence number (we dont use this for now)
+      
+      // Send it
+      sendServPacket(&packet);
+    }
 
     ReleaseCookie(dwRef);
   }
@@ -3367,8 +3396,9 @@ void sendTypingNotification(HANDLE hContact, WORD wMTNCode)
   BYTE byUinlen;
   DWORD dwUin;
   uid_str szUID;
-
+#ifdef _DEBUG
   _ASSERTE((wMTNCode == MTN_FINISHED) || (wMTNCode == MTN_TYPED) || (wMTNCode == MTN_BEGUN));
+#endif
 
   if (ICQGetContactSettingUID(hContact, &dwUin, &szUID))
     return; // Invalid contact

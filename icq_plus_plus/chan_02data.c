@@ -210,8 +210,8 @@ void LogFamilyError(WORD wFamily, WORD wError)
     case 0x0E: msg = "Incorrect SNAC format"; break;
     case 0x0F: msg = "Insufficient rights"; break;
     case 0x10: msg = "In local permit/deny (recipient blocked)"; break;
-    case 0x11: msg = "Sender too evil"; break;
-    case 0x12: msg = "Receiver too evil"; break;
+    case 0x11: msg = "Sender is too evil"; break;
+    case 0x12: msg = "Receiver is too evil"; break;
     case 0x13: msg = "User temporarily unavailable"; break;
     case 0x14: msg = "No match"; break;
     case 0x15: msg = "List overflow"; break;
@@ -220,12 +220,11 @@ void LogFamilyError(WORD wFamily, WORD wError)
     case 0x18: msg = "Not while on AOL"; break;
     case 0x19: msg = "Query failed"; break;
     case 0x1A: msg = "Timeout"; break;
-    case 0x1B: msg = "Error text"; break; // ?
     case 0x1C: msg = "General failure"; break;
     case 0x1D: msg = "Progress"; break;
     case 0x1E: msg = "In free area"; break;
-    case 0x1F: msg = "Parental controls"; break;
-    case 0x20: msg = "Remote restricted"; break;
+    case 0x1F: msg = "Restricted by parental controls"; break;
+    case 0x20: msg = "Remote restricted by parental controls"; break;
     default:   msg = ""; break;
   }
 

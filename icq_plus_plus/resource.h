@@ -34,7 +34,6 @@
 #define IDI_SERVLIST_ADD                136
 #define IDD_TZER                        137
 #define IDI_SEND_TZER                   138
-#define IDI_TZER                        139
 #define IDD_ICQ_CAPS_LIST               140
 #define IDI_ICON2                       141
 #define IDD_CONFIRM                     151
@@ -228,6 +227,8 @@
 #define IDC_CHECK4                      1044
 #define IDC_DETECT_VIA_ZTRAZ            1044
 #define IDC_DETECT_VIA_XTRAZ            1044
+#define IDC_USRCHKPOS                   1044
+#define IDC_TMPSNDADDED                 1044
 #define IDC_KILLSPAMBOTS                1045
 #define IDC_LIST1                       1045
 #define IDC_CLIENTCAPS                  1045
@@ -236,9 +237,11 @@
 #define IDC_CHECK5                      1045
 #define IDC_DETECT_VIA_URL              1045
 #define IDC_CAPABILITIES                1045
+#define IDC_TMPREQAUTH                  1045
 #define IDC_CLIENTICON                  1046
 #define IDC_SCAN_POPUP_ENABLE           1046
 #define IDC_DETECT_UNAUTHORIZED         1046
+#define IDC_REMOVE_TEMP                 1046
 #define IDC_TIMESTAMPS                  1047
 #define IDC_UNKNOWN_POPUP_ENABLE        1047
 #define IDC_DETECT_VIA_AUTH             1047
@@ -296,7 +299,9 @@
 #define IDC_X                           1076
 #define IDC_XSTNONSTD                   1076
 #define IDC_INCUSER                     1077
+#define IDC_POPUP_FOR_IGNORED           1077
 #define IDC_INCGLOBAL                   1078
+#define IDC_POPUP_FOR_HIDDEN            1079
 #define IDC_FAKEWARNING                 1079
 #define IDC_REQUEST_LOG_FILE            1080
 #define IDC_LOG_REQUEST_FILE            1080
@@ -308,10 +313,8 @@
 #define IDC_HTTPUSERAGENT               1084
 #define IDC_ENIFMIR                     1084
 #define IDC_ENIFMIRCBX                  1085
-#define IDC_COMBO1                      1086
-#define IDC_CHNG1                       1087
-#define IDC_CHNG2                       1088
-#define IDC_CHNG3                       1089
+#define IDC_INSTATUSMENU                1086
+#define IDC_INMAINMENU                  1087
 #define IDC_CAPL_ADD                    1090
 #define IDC_CAPL_MODIFY                 1091
 #define IDC_CAPL_DELETE                 1092
@@ -337,6 +340,8 @@
 #define IDC_SYSTEMUPTIME                1253
 #define IDC_IDLETIME                    1254
 #define IDC_STATUS                      1255
+#define IDC_STATUS2                     1256
+#define IDC_ICQ_STATUS                  1256
 #define IDC_SLOWSEND                    1301
 #define IDC_ONLYSERVERACKS              1302
 #define IDC_LOGLEVEL                    1331

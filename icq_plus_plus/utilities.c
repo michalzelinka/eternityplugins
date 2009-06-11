@@ -3,12 +3,12 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Thief, Angeli-Ka, nullbie
-// Copyright © 2007,2008 jarvis
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Thief, Angeli-Ka, nullbie
+// Copyright  2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -101,21 +101,17 @@ int IcqStatusToMiranda(WORD nIcqStatus)
 
   if (nIcqStatus & ICQ_STATUSF_INVISIBLE)
     nMirandaStatus = ID_STATUS_INVISIBLE;
-  else
-    if (nIcqStatus & ICQ_STATUSF_DND)
+  else if (nIcqStatus & ICQ_STATUSF_DND)
       nMirandaStatus = ID_STATUS_DND;
-  else
-    if (nIcqStatus & ICQ_STATUSF_OCCUPIED)
+  else if (nIcqStatus & ICQ_STATUSF_OCCUPIED)
       nMirandaStatus = ID_STATUS_OCCUPIED;
-  else
-    if (nIcqStatus & ICQ_STATUSF_NA)
+  else if (nIcqStatus & ICQ_STATUSF_NA)
       nMirandaStatus = ID_STATUS_NA;
-  else
-    if (nIcqStatus & ICQ_STATUSF_AWAY)
+  else if (nIcqStatus & ICQ_STATUSF_AWAY)
       nMirandaStatus = ID_STATUS_AWAY;
-  else
-    if (nIcqStatus & ICQ_STATUSF_FFC)
+  else if (nIcqStatus & ICQ_STATUSF_FFC)
       nMirandaStatus = ID_STATUS_FREECHAT;
+
   else
     // Can be discussed, but I think 'online' is the most generic ICQ status
     nMirandaStatus = ID_STATUS_ONLINE;
@@ -165,7 +161,9 @@ WORD MirandaStatusToIcq(int nMirandaStatus)
 
   case ID_STATUS_OFFLINE:
     // Oscar doesnt have anything that maps to this status. This should never happen.
+#ifdef _DEBUG
     _ASSERTE(nMirandaStatus != ID_STATUS_OFFLINE);
+#endif
     nIcqStatus = 0;
     break;
 
@@ -212,7 +210,9 @@ int MirandaStatusToSupported(int nMirandaStatus)
 
     // This is not supposed to happen.
   default:
+#ifdef _DEBUG
     _ASSERTE(0);
+#endif
     // Online seems to be a good default.
     nSupportedStatus = ID_STATUS_ONLINE;
     break;
@@ -1361,13 +1361,15 @@ int GetGMTOffset(void)
 BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
 {
 	DWORD uin = DBGetContactSettingDword(hContact,gpszICQProtoName,"UIN",0);
+	// Don't send statusmessage to unknown contacts
+	//Don't send any status message reply, if on
+	if(bNoStatusReply)
+	  return FALSE;
+	if (hContact == INVALID_HANDLE_VALUE)
+	  return FALSE;
   // Privacy control
   if (ICQGetContactSettingByte(NULL, "StatusMsgReplyCList", 0))
   {
-    // Don't send statusmessage to unknown contacts
-    if (hContact == INVALID_HANDLE_VALUE)
-      return FALSE;
-
     // Don't send statusmessage to temporary contacts or hidden contacts
     if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) ||
       DBGetContactSettingByte(hContact, "CList", "Hidden", 0))
@@ -1382,13 +1384,8 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
     }
   }
 
-  //Don't send any status message reply, if on
-  if(bNoStatusReply)
-	  return FALSE;
-
   // Dont send messages to people you are hiding from
-  if (hContact != INVALID_HANDLE_VALUE &&
-	  ICQGetContactSettingWord(hContact, "ApparentMode", 0) == ID_STATUS_OFFLINE)
+  if (ICQGetContactSettingWord(hContact, "ApparentMode", 0) == ID_STATUS_OFFLINE)
   {
 	  CHECKCONTACT chk = {0};
 	  chk.hContact = hContact;
@@ -1423,11 +1420,14 @@ BOOL validateStatusMessageRequest(HANDLE hContact, WORD byMessageType)
     return FALSE;
   }
 
-  if (hContact != INVALID_HANDLE_VALUE && gnCurrentStatus==ID_STATUS_INVISIBLE)
+  if (gnCurrentStatus==ID_STATUS_INVISIBLE)
   {
-    if (!ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
-    { // Allow request to temporary visible contacts
-      return FALSE;
+    if(invis_for(ICQGetContactSettingUIN(hContact), hContact))
+    {
+      if (!ICQGetContactSettingByte(hContact, "TemporaryVisible", 0))
+      { // Allow request to temporary visible contacts
+        return FALSE;
+      }
     }
   }
 
@@ -2240,9 +2240,10 @@ int GetCacheByID(int ID, icq_contacts_cache *icc)
 BOOL invis_for(DWORD dwUin, HANDLE hContact)  //this function checking are you invisible for hContact or dwUin, need optimization... (modified by Bio)
 {
 	WORD wApparent;
+	if (hContact == NULL && !dwUin)
+	  return FALSE;
 
 	// Block all users from seeing you
-//	if ( bVisibility==0x02 || !dwUin )
 	if ( bVisibility==0x02) //we support AIM which do not use UIN's
 	{
 		NetLog_Server("we invisible for %u, blocking all unsafe requests", dwUin);
@@ -2311,18 +2312,27 @@ BOOL invis_for(DWORD dwUin, HANDLE hContact)  //this function checking are you i
 void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups, write events, log to file, call PSD, parsing temporary contacts, NEED TO BE FINISHED
 {
 	BYTE Hidden = DBGetContactSettingByte(chk.hContact, "CList", "Hidden", 0);
+	BOOL Ignored = 0;
 	BYTE InDb = CallService(MS_DB_CONTACT_IS, (WPARAM)chk.hContact, 0);
 	BYTE NotOnList = DBGetContactSettingByte(chk.hContact,"CList","NotOnList",0);
 	BOOL Cancel = FALSE;
 	BOOL showpopup = TRUE;
 	char popmsg[512] = {0}, eventmsghistory[512] = {0}, eventmsgfile[512] = {0};
-	if(!InDb||NotOnList||Hidden)
+	if(chk.hContact == NULL)
+	  return;
+	if(DBGetContactSettingDword(chk.hContact, "Ignore", "Mask1", 0) == 0x0000007F)
+	  Ignored = TRUE;
+	if(!InDb||NotOnList)
 	{
 		if(!bPopUpForNotOnList)
 			showpopup = FALSE;
 		if(bNoPSDForHidden)
 			Cancel = TRUE;
 	}
+	if(Hidden && !bPopupsForHidden)
+	  showpopup = FALSE;
+	if(Ignored && !bPopupsForIgnored)
+	  showpopup = FALSE;
 	if(!chk.popuptype)                  //
 		chk.popup=FALSE;				//
 	if(!chk.icqeventtype)				//
@@ -2335,21 +2345,26 @@ void CheckContact(CHECKCONTACT chk) //dwUin necessary, function for show popups,
 		if (bTmpContacts == 1)
 		{
 			int added;
+			static BOOL TmpContact;
 			chk.hContact = HContactFromUIN(chk.dwUin, &added);
-			if(NotOnList)
+			TmpContact = DBGetContactSettingByte(chk.hContact, gpszICQProtoName, "TmpContact", 0);
+			if(NotOnList && !TmpContact)
 			{
-				{
-					DBCONTACTWRITESETTING dbcws;
-					dbcws.value.type = DBVT_UTF8;
-					dbcws.value.pszVal = TmpGroupName;
-					dbcws.szModule = "CList";
-					dbcws.szSetting = "Group";
-					CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)chk.hContact, (LPARAM)&dbcws);    
-				}	
+			  uid_str szUid;
+			  DWORD TmpUin;
+        DBWriteContactSettingStringUtf(chk.hContact, "CList", "Group", TmpGroupName);
 				DBWriteContactSettingByte(chk.hContact,"CList","Hidden",0);
 				DBWriteContactSettingByte(chk.hContact,"CList","NotOnList",bAddTemp);
+				if(bAddTemp)
+					DBWriteContactSettingByte(chk.hContact, gpszICQProtoName, "TmpContact", bAddTemp);
 				DBWriteContactSettingByte(chk.hContact, gpszICQProtoName, "CheckSelfRemove", 1);//excluding from checkselfremove				
-				//				DBWriteContactSettingByte(hContact, gpszICQProtoName, "FoundedContact", 1); //mark founded contacts
+				//DBWriteContactSettingByte(chk.hContact, gpszICQProtoName, "FoundedContact", 1); //mark founded contacts
+				ICQGetContactSettingUID(chk.hContact, &TmpUin, &szUid);
+				if(bTmpAuthRequet && szUid)
+				  icq_sendAuthReqServ(TmpUin, szUid, Translate("Automated authorization request"));
+				if(bTmpSendAdded)
+				  icq_sendYouWereAddedServ(chk.dwUin, ICQGetContactSettingDword(NULL, "UIN", 0));
+				ShowPopUpMsg(chk.hContact, chk.dwUin, NickFromHandleUtf(chk.hContact), Translate("Added to temporary group"), LOG_NOTE); //temporary solution
 			}
 		}
 		if(InDb)
@@ -2727,7 +2742,7 @@ void SetTimeStamps(DWORD *dwFT1, DWORD *dwFT2, DWORD *dwFT3)
  	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
 		break;
 	case 2:											//qip
- 	  SetDwFT(dwFT1, "dwFT1", 0x08000300);
+ 	  SetDwFT(dwFT1, "dwFT1", 0x08000700);
  	  SetDwFT(dwFT2, "dwFT2", 0x00000000);
  	  SetDwFT(dwFT3, "dwFT3", 0x00000000);
 		break;
@@ -2876,5 +2891,32 @@ void SetTimeStamps(DWORD *dwFT1, DWORD *dwFT2, DWORD *dwFT3)
 		else*/
  	  SetDwFT(dwFT3, "dwFT3", gbSecureIM ? 0x5AFEC0DE : 0x00000000);
 		break;
+	}
+}
+
+void RemoveTempUsers()
+{
+	HANDLE hContact;
+	HANDLE ToRemove[2048];
+	int i = 0;
+	int a = 0;
+	hContact = ICQFindFirstContact();
+	if(hContact)
+	{
+		do
+		{
+			if(DBGetContactSettingByte(hContact, "CList", "NotOnList", 0) && !DBGetContactSettingWord(hContact, gpszICQProtoName, "ServerId", 0))
+			{
+				ToRemove[i] = hContact;
+				i++;
+			}
+		}
+		while (hContact = ICQFindNextContact(hContact));
+		ToRemove[i] = INVALID_HANDLE_VALUE;
+		while(ToRemove[a] != INVALID_HANDLE_VALUE)
+		{
+			CallService(MS_DB_CONTACT_DELETE, (WPARAM)ToRemove[a], 0);
+			a++;
+		}
 	}
 }

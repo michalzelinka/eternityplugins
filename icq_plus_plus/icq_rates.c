@@ -155,7 +155,9 @@ WORD ratesGroupFromSNAC(rates* pRates, WORD wFamily, WORD wCommand)
         }
       }
     }
+#ifdef _DEBUG
     _ASSERTE(0);
+#endif
   }
 
   return 0; // Failure
