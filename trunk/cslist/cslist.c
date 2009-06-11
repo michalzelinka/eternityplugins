@@ -5,8 +5,8 @@
 
   Custom Status List plugin for Miranda-IM (www.miranda-im.org)
   Follower of Custom Status History List by HANAX
-  Copyright © 2006,2007 HANAX
-  Copyright © 2007,2008 jarvis
+  Copyright  2006,2007 HANAX
+  Copyright  2007,2008 jarvis
 
   This program is free software; you can redistribute it and/or
   modify it under the terms of the GNU General Public License
@@ -162,7 +162,7 @@ static int PluginMenuCommand( WPARAM wParam, LPARAM lParam ) {
   else if ( opened == 1 )
   {
     opened++;
-    MessageBox( NULL, _T( "Some instance of Custom Status List is already opened." ), _T( "Custom Status List" ), MB_OK );
+    MessageBox( NULL, L"Some instance of Custom Status List is already opened.", L"Custom Status List", MB_OK );
     opened--;
   }
   return 0;
@@ -194,6 +194,7 @@ __declspec( dllexport ) const MUUID* MirandaPluginInterfaces( void ) {
 int __declspec( dllexport ) Load( PLUGINLINK *link ) {
   pluginLink = link;
 
+  /*
   { // are we running under Unicode core?
 		char szVer[MAX_PATH];
 
@@ -206,6 +207,7 @@ int __declspec( dllexport ) Load( PLUGINLINK *link ) {
       pluginInfo.flags = 0;
     }
   }
+  */
 
   hSvcShowList = CreateServiceFunction( MS_CSLIST_SHOWLIST, PluginMenuCommand );
 
@@ -275,7 +277,7 @@ static int onPluginsLoaded( WPARAM wparam, LPARAM lparam )
   	
 	  upd.cbSize = sizeof( upd );
 	  upd.szComponentName = pluginInfo.shortName;
-	  if ( gMirandaVersion < PLUGIN_MAKE_VERSION( 0, 7, 0, 0 ) ) 
+	  if ( gMirandaVersion < PLUGIN_MAKE_VERSION( 0, 7, 0, 0 ) )
 		  upd.pbVersion = ( BYTE * )CreateVersionStringPlugin( ( PLUGININFO * )&pluginInfo, szCurrentVersion ); // updater support for < 0.7 core
 	  else
 		  upd.pbVersion = ( BYTE * )CreateVersionStringPluginEx( ( PLUGININFOEX * )&pluginInfoEx, szCurrentVersion );
@@ -1034,14 +1036,14 @@ int cslist_initialize_list_content( HWND hwndDlg )
   dbLoadResult = DBGetContactSettingTString( NULL, CSLIST_MODULE_SHORT_NAME, "listhistory", &dbv );
   if ( dbv.ptszVal )
   {
-    row = wcstok( dbv.ptszVal, rowDelim );
+    row = tcstok( dbv.ptszVal, rowDelim );
     while( row != NULL ) {
       // process current row..
       parseResult = cslist_parse_row( row );
       // ..add item..
       if ( parseResult == TRUE ) cslist_add_item();
       // ..and go to the other, while some remains
-      row = wcstok( NULL, rowDelim );
+      row = tcstok( NULL, rowDelim );
     }
   }
   //free( rowDelim );
@@ -1053,35 +1055,67 @@ int cslist_parse_row( TCHAR *row ) // parse + helpItem
 {
   int pIconInt;
   TCHAR pIcon[4], pTitle[CSLIST_XTITLE_LIMIT+2], pMsg[CSLIST_XMESSAGE_LIMIT+2], pFav[4];
-  //if ( sscanf( row, "%2[^]%64[^]%2048[^]%2[^]", pIcon, pTitle, pMsg, pFav ) == 4 ) // PLEASE!! x) use DEFs xO
+  
+#if defined( _UNICODE )
   if ( swscanf( row, L"%2[^]%64[^]%2048[^]%2[^]", &pIcon, &pTitle, &pMsg, &pFav ) == 4 ) // PLEASE!! x) use DEFs xO
+#else
+  if ( sscanf( row, "%2[^]%64[^]%2048[^]%2[^]", pIcon, pTitle, pMsg, pFav ) == 4 ) // PLEASE!! x) use DEFs xO
+#endif
   {
+#if defined( _UNICODE )
     pIconInt = _wtoi( pIcon );
+#else
+    pIconInt = atoi( pIcon );
+#endif
     helpItem.ItemIcon = pIconInt;
     lstrcpy( helpItem.ItemTitle, pTitle );
     lstrcpy( helpItem.ItemMessage, pMsg );
   }
+#if defined( _UNICODE )
   else if ( swscanf( row, L"%2[^]%2048[^]%2[^]", &pIcon, &pMsg, &pFav ) == 3 )
+#else
+  else if ( sscanf( row, "%2[^]%2048[^]%2[^]", pIcon, pMsg, pFav ) == 3 )
+#endif
   {
+#if defined( _UNICODE )
     pIconInt = _wtoi( pIcon );
+#else
+    pIconInt = atoi( pIcon );
+#endif
     helpItem.ItemIcon = pIconInt;
     lstrcpy( helpItem.ItemTitle, L"" );
     lstrcpy( helpItem.ItemMessage, pMsg );
   }
+#if defined( _UNICODE )
   else if ( swscanf( row, L"%2[^]%64[^]%2[^]", &pIcon, &pTitle, &pFav ) == 3 )
+#else
+  else if ( sscanf( row, "%2[^]%64[^]%2[^]", pIcon, pTitle, pFav ) == 3 )
+#endif
   {
+#if defined( _UNICODE )
     pIconInt = _wtoi( pIcon );
+#else
+    pIconInt = atoi( pIcon );
+#endif
     helpItem.ItemIcon = pIconInt;
     lstrcpy( helpItem.ItemTitle, pTitle );
     lstrcpy( helpItem.ItemMessage, L"" );
   }
-  //else if( swscanf( row, L"%2[^]%2[^]", pIcon, pFav ) == 2 )
-  //{
-  //  pIconInt = _wtoi( pIcon );
-  //  helpItem.ItemIcon = pIconInt;
-  //  lstrcpy( helpItem.ItemTitle, "" );
-  //  lstrcpy( helpItem.ItemMessage, "" );
-  //} // why allow empty xstatuses? O_o
+//#if defined( _UNICODE )
+//  else if( swscanf( row, L"%2[^]%2[^]", &pIcon, &pFav ) == 2 )
+//#else
+//  else if( sscanf( row, "%2[^]%2[^]", pIcon, pFav ) == 2 )
+//#endif
+//  {
+//#if defined( _UNICODE )
+//    pIconInt = _wtoi( pIcon );
+//#else
+//    pIconInt = atoi( pIcon );
+//#endif
+//    helpItem.ItemIcon = pIconInt;
+//    lstrcpy( helpItem.ItemTitle, "" );
+//    lstrcpy( helpItem.ItemMessage, "" );
+//  } // why allow empty xstatuses? O_o
   else {
     //free(row);
     //free(pIcon);
@@ -1113,7 +1147,7 @@ int cslist_save_list_content( HWND hwndDlg )
     LvItem.iItem = i;
     LvItem.iSubItem = 0;
     ListView_GetItem( hList, &LvItem );
-    swprintf( cImageToString, 8, L"%d", LvItem.iImage );
+    tcprintf( cImageToString, 8, L"%d", LvItem.iImage );
     lstrcat( dbStringTmp, cImageToString );
     lstrcpy( cImageToString, L"" );
     lstrcat( dbStringTmp, L"" );
@@ -1159,7 +1193,23 @@ int cslist_set_status( HWND hwndDlg )
     helpStatus.status = &helpItem.ItemIcon;
     helpStatus.ptszName = helpItem.ItemTitle;
     helpStatus.ptszMessage = helpItem.ItemMessage;
-    CallService( PS_ICQ_SETCUSTOMSTATUSEX, 0, ( LPARAM )&helpStatus ); // f**king function, 4 hours of thinking xDD
+    { // setting xstatus on all ICQ accounts
+      char protoService[64];
+      PROTOCOLDESCRIPTOR** pdesc;
+      int protoCount = 0, i;
+      if ( gMirandaVersion > PLUGIN_MAKE_VERSION( 0, 8, 0, 7 ) )
+        CallService( "Proto/EnumAccounts", ( WPARAM )&protoCount, ( LPARAM )&pdesc );
+      else
+        CallService( "Proto/EnumProtocols", ( WPARAM )&protoCount, ( LPARAM )&pdesc );
+      for ( i = 0; i < protoCount; i++ ) {
+        if ( DBGetContactSettingDword( NULL, pdesc[i]->szName, "UIN", 0 ) == 0 )
+          continue;
+        lstrcpyA( protoService, pdesc[i]->szName );
+        lstrcatA( protoService, "/SetXStatusEx" );
+        CallService( protoService, 0, ( LPARAM )&helpStatus );
+      }
+    }
+    //CallService( PS_ICQ_SETCUSTOMSTATUSEX, 0, ( LPARAM )&helpStatus ); // f**king function, 4 hours of thinking xDD
     // ..and clean helper + selection
     cslist_clear_selection();
   }
@@ -1211,4 +1261,4 @@ HICON LoadIconExEx( const char* IcoLibName, int NonIcoLibIcon )
 
                                   by jarvis
 
-// ############################################################ 2008/01/28 ## */
+// ########################################################################## */
