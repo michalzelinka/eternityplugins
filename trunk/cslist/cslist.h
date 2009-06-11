@@ -1,9 +1,17 @@
 // ############################ INCLUDES & DEFINITIONS #########################
 
+#if defined( UNICODE ) && !defined( _UNICODE )
+	#define _UNICODE
+#elif !defined( UNICODE )
+  #undef _UNICODE
+#endif
+
 #include <windows.h>
 #include <win2k.h>
 #include <windef.h>
 #include <commctrl.h>
+#include <string.h>
+#include <tchar.h>
 #include <newpluginapi.h>
 #include <m_clist.h>
 #include <m_skin.h>
@@ -17,13 +25,15 @@
 #include <m_options.h>
 #include <m_toolbar.h>
 #include <m_hotkeys.h>
+#include <m_protocols.h>
 //#include <stdio.h>
 
 #include "resource.h"
 
 #define MIID_STATUSLIST               { 0x8b86253, 0xec6e, 0x4d09, { 0xb7, 0xa9, 0x64, 0xac, 0xdf, 0x6, 0x27, 0xb8 } }
 
-#define CSLIST_RELNOTES               18 // actual eternity relnotes
+#define CSLIST_RELNOTES               19 // actual eternity relnotes
+#define CSLIST_TESTING                "1"
 #define CSLIST_XTITLE_LIMIT           64 // limit of chars for x-status title
 #define CSLIST_XMESSAGE_LIMIT         2048 // limit of chars for x-status message
 
@@ -32,7 +42,7 @@
 
 // updater strings
 
-#define CSLIST_UPD_VERURL           "http://dev.mirandaim.ru/jarvis/"
+#define CSLIST_UPD_VERURL           "http://dev.mirandaim.ru/~jarvis/"
 #define CSLIST_UPD_UPDURL           "http://mirandapack.ic.cz/eternity_plugins/cslist.zip"
 #define CSLIST_UPD_FLVERURL         "http://addons.miranda-im.org/details.php?action=viewfile&id=3483"
 #define CSLIST_UPD_FLUPDURL         "http://addons.miranda-im.org/feed.php?dlfile=3483"
@@ -63,8 +73,8 @@
 
 typedef struct {
   int  ItemIcon;
-  char ItemTitle[CSLIST_XTITLE_LIMIT];
-  char ItemMessage[CSLIST_XMESSAGE_LIMIT];
+  TCHAR ItemTitle[CSLIST_XTITLE_LIMIT];
+  TCHAR ItemMessage[CSLIST_XMESSAGE_LIMIT];
   BOOL ItemFavourite;
 } CSLISTSTATUSITEM;
 
@@ -90,47 +100,28 @@ typedef struct {
 } ICQ_CUSTOM_STATUS;
 
 
-// -------------- ICONIZED BUTTONS FILLING STRUCTURE ---------------------------
+// ------------------------------ ICONS + BUTTONS ------------------------------
 
-static struct
-{
-    char*  szDescr;
-    char*  szName;
-    int    defIconID;
-    HANDLE hIconLibItem;
-} iconList[] =
-{
-  { LPGEN( "Main Icon" ), "csl_icon", IDI_CSLIST },
-  { LPGEN( "Add" ), "csl_add", IDI_ADD },
-  { LPGEN( "Modify" ), "csl_modify", IDI_MODIFY },
-  { LPGEN( "Remove" ), "csl_remove", IDI_REMOVE },
-  { LPGEN( "Import" ), "csl_import", IDI_IMPORT },
-  { LPGEN( "Watch" ), "csl_watch", IDI_WATCH },
-  { LPGEN( "Favorite" ), "csl_fav", IDI_FAV },
-  { LPGEN( "Options" ), "csl_opts", IDI_OPTIONS },
-  { LPGEN( "No change" ), "csl_nochng", IDI_NOCHNG },
-  { LPGEN( "Set" ), "csl_apply", IDI_APPLY },
-  { LPGEN( "Clear" ), "csl_clear", IDI_CLEAR },
-};
-
-static struct
-{
+static struct {
   int idc;
-	TCHAR *title;
-	char *icon;
+  TCHAR *title;
+  TCHAR *szDescr;
+  char *iconIcoLib;
   int iconNoIcoLib;
-} buttons[] =
+  HANDLE hIcoLibItem;
+} cslforms[] =
 {
-  { IDC_ADD, _T( "Add new item" ), "csl_add", IDI_ADD },
-	{ IDC_MODIFY, _T( "Modify selected item" ), "csl_modify", IDI_MODIFY },
-	{ IDC_REMOVE, _T( "Delete selected item" ), "csl_remove", IDI_REMOVE },
-  { IDC_IMPORT, _T( "Import statuses from database" ), "csl_import", IDI_IMPORT },
-  { IDC_WATCH, _T( "Whether or not watch custom status changes and add them into list" ), "csl_watch", IDI_WATCH },
-  { IDC_FAV, _T( "Set/unset current item as favorite" ), "csl_fav", IDI_FAV },
-  { IDC_OPTS, _T( "Options..." ), "csl_opts", IDI_OPTIONS },
-  { IDC_NOCHNG, _T( "Close without changing custom status" ), "csl_nochng", IDI_NOCHNG },
-  { IDC_APPLY, _T( "Set custom status to selected one and close" ), "csl_apply", IDI_APPLY },
-  { IDC_EXIT, _T( "Clear custom status (reset to None) and close" ), "csl_clear", IDI_CLEAR },
+  { -1, L"Main Menu" , ( TCHAR * )"Main Icon", "csl_icon", IDI_CSLIST, NULL },
+  { IDC_ADD, L"Add new item", ( TCHAR * )"Add", "csl_add", IDI_ADD, NULL },
+	{ IDC_MODIFY, L"Modify selected item", ( TCHAR * )"Modify", "csl_modify", IDI_MODIFY, NULL },
+	{ IDC_REMOVE, L"Delete selected item", ( TCHAR * )"Remove", "csl_remove", IDI_REMOVE, NULL },
+  { IDC_IMPORT, L"Import statuses from database", ( TCHAR * )"Import", "csl_import", IDI_IMPORT, NULL },
+  { IDC_WATCH, L"Whether or not watch custom status changes and add them into list", ( TCHAR * )"Watch", "csl_watch", IDI_WATCH, NULL },
+  { IDC_FAV, L"Set/unset current item as favorite", ( TCHAR * )"Favorite", "csl_fav", IDI_FAV, NULL },
+  { IDC_OPTS, L"Options...", ( TCHAR * )"Options", "csl_opts", IDI_OPTIONS, NULL },
+  { IDC_NOCHNG, L"Close without changing custom status", ( TCHAR * )"No change", "csl_nochng", IDI_NOCHNG, NULL },
+  { IDC_APPLY, L"Set custom status to selected one and close", ( TCHAR * )"Set", "csl_apply", IDI_APPLY, NULL },
+  { IDC_EXIT, L"Clear custom status (reset to None) and close", ( TCHAR * )"Clear", "csl_clear", IDI_CLEAR, NULL },
 };
 
 
@@ -195,44 +186,54 @@ static struct
 
 // ################################## GLOBALS ##################################
 
-HINSTANCE hInst;
-PLUGINLINK *pluginLink;
+HINSTANCE hInst = NULL;
+PLUGINLINK *pluginLink = NULL;
 
-DWORD gMirandaVersion;
+DWORD gMirandaVersion = 0x00000000;
+BYTE gbUnicodeCore;
 
-char *rnthanks = "induction - for his cool iconset :)\r\nfaith_healer - moral support :]\r\nCriS - project hosting @ http://dev.mirandaim.ru/ \r\nRobyer, kaye_styles, dEMoniZaToR, Drugwash, FREAK_THEMIGHTY - useful hints ;)\r\nplugin users, of course :) for their tolerance x) ;)\r\nMiranda IM Project Team - for their work on the best Instant Messenger I ever known :)";
-char *rnchanges = "";
+TCHAR *rnthanks = L"induction - for his cool iconset :)\r\nfaith_healer - moral support :]\r\nCriS - project hosting @ http://dev.mirandaim.ru/ \r\nRobyer, kaye_styles, dEMoniZaToR, Drugwash, FREAK_THEMIGHTY - useful hints ;)\r\nplugin users, of course :) for their tolerance x) ;)\r\nMiranda IM Project Team - for their work on the best Instant Messenger I ever known :)";
+TCHAR *rnchanges = L"";
 
 int action = 0;
 int AMResult = 0;
 int ModifiedPos = -1;
 int opened = 0;
 
-static HWND hDlg = NULL;  // List View identifier
-static HWND hList = NULL;  // List View identifier
-HIMAGELIST hIml;
+static HWND hDlg = NULL;  // Main Dialog handler
+static HWND hList = NULL;  // List View handler
+HIMAGELIST hIml = NULL;
 HWND hXCombo = NULL;
-int hMainIcon = 0;
-LVCOLUMN LvCol; // Make Coluom struct for ListView
-LVITEM LvItem;  // ListView Item struct
-COMBOBOXEXITEM CbItem;
+int hMainIcon = 0; // modern toolbar // TODO: is it needed?
+LVCOLUMN LvCol = { 0 }; // Make Coluom struct for ListView
+LVITEM LvItem = { 0 };  // ListView Item struct
+COMBOBOXEXITEM CbItem = { 0 };
 int iSelect = 0;
 int flag = 0;
 BOOL bChanged = 0;
-CSLISTSTATUSITEM helpItem;
+CSLISTSTATUSITEM helpItem = { 0 };
+
+// hooks
 HANDLE hHookMenuBuild = NULL;
+HANDLE hHookOnPluginsLoaded = NULL;
+HANDLE hHookOnOptionsInit = NULL;
+HANDLE hHookOnKatynkaIsLoggedIn = NULL;
+
+// services
+HANDLE hSvcShowList = NULL;
+
 BOOL bStatusMenu = FALSE;
 
 PLUGININFOEX pluginInfoEx = {
   sizeof( PLUGININFOEX ),
   CSLIST_MODULE_LONG_NAME,
-  PLUGIN_MAKE_VERSION( 0, 0, 0, 18 ),
-  "Offers list of your Custom Statuses.",
+  PLUGIN_MAKE_VERSION( 0, 0, 0, 19 ),
+  "Offers list of your Custom Statuses. [test build #"CSLIST_TESTING" "__DATE__" "__TIME__"]",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
-  "Â© 2007-2008 eternity crew .., Â© 2006-2007 HANAX Software",
-  "http://dev.mirandaim.ru/jarvis/",
-  0,  //not transient
+  "© 2007-2008 eternity crew .., © 2006-2007 HANAX Software",
+  "http://dev.mirandaim.ru/~jarvis/",
+  UNICODE_AWARE,  //not transient
   0,  //doesn't replace anything built-in
   // Generate your own unique id for your plugin.
   // Do not use this UUID!
@@ -243,13 +244,13 @@ PLUGININFOEX pluginInfoEx = {
 PLUGININFO pluginInfo = {
   sizeof( PLUGININFO ),
   CSLIST_MODULE_LONG_NAME,
-  PLUGIN_MAKE_VERSION( 0, 0, 0, 18 ),
-  "Offers list of your Custom Statuses.",
+  PLUGIN_MAKE_VERSION( 0, 0, 0, 19 ),
+  "Offers list of your Custom Statuses. [test build #"CSLIST_TESTING" "__DATE__" "__TIME__"]",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
-  "Â© 2007-2008 eternity crew .., Â© 2006-2007 HANAX Software",
-  "http://dev.mirandaim.ru/jarvis/",
-  0,  //not transient
+  "© 2007-2008 eternity crew .., © 2006-2007 HANAX Software",
+  "http://dev.mirandaim.ru/~jarvis/",
+  UNICODE_AWARE,  //not transient
   0
 };
 
@@ -280,8 +281,7 @@ INT_PTR CALLBACK RelNotesProc( HWND hwndDlg, UINT uMsg, WPARAM wParam, LPARAM lP
 // ############################# HELP FUNCTIONS ################################
 
 int null_snprintf( char*, size_t, const char*, ... );
-static int CListMW_BuildStatusItems( WPARAM wParam, LPARAM lParam );
-void InitMenuItem( BOOL bAllowStatus, int menuItemPlacement );
+static int cslist_init_menu_item( WPARAM wParam, LPARAM lParam );
 
 // ################## COMMANDS OF CSLIST #######################################
 
@@ -296,12 +296,12 @@ void cslist_clear_selection();
 void cslist_clear_help_item();
 void cslist_sort_list();
 void cslist_import_statuses_from_icq();
-void cslist_KatysEasterEgg( WPARAM, LPARAM );
+int cslist_KatysEasterEgg( WPARAM, LPARAM );
 
 // ################## DB - LOAD AND SAVE #######################################
 
 int cslist_initialize_list_content( HWND hwndDlg );
-int cslist_parse_row( char *row );
+int cslist_parse_row( TCHAR *row );
 int cslist_save_list_content( HWND hwndDlg );
 
 // ######################### CREATING DIALOG ###################################
