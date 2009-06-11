@@ -1,17 +1,22 @@
 // ############################ INCLUDES & DEFINITIONS #########################
 
+#ifndef __CSLIST_H
+#define __CSLIST_H 1
+
 #if defined( UNICODE ) && !defined( _UNICODE )
 	#define _UNICODE
-#elif !defined( UNICODE )
-  #undef _UNICODE
 #endif
 
 #include <windows.h>
-#include <win2k.h>
-#include <windef.h>
+//#include <windef.h> // already in windows.h
+#include <stddef.h>
 #include <commctrl.h>
-#include <string.h>
-#include <tchar.h>
+#if defined( _UNICODE )
+  #include <string.h>
+  #include <tchar.h>
+  #include <win2k.h>
+#endif
+
 #include <newpluginapi.h>
 #include <m_clist.h>
 #include <m_skin.h>
@@ -42,11 +47,11 @@
 
 // updater strings
 
-#define CSLIST_UPD_VERURL           "http://dev.mirandaim.ru/~jarvis/"
-#define CSLIST_UPD_UPDURL           "http://mirandapack.ic.cz/eternity_plugins/cslist.zip"
-#define CSLIST_UPD_FLVERURL         "http://addons.miranda-im.org/details.php?action=viewfile&id=3483"
-#define CSLIST_UPD_FLUPDURL         "http://addons.miranda-im.org/feed.php?dlfile=3483"
-#define CSLIST_UPD_SZPREFIX         "Custom Status List</a> "
+#define CSLIST_UPD_VERURL             "http://dev.mirandaim.ru/~jarvis/"
+#define CSLIST_UPD_UPDURL             "http://mirandapack.ic.cz/eternity_plugins/cslist.zip"
+#define CSLIST_UPD_FLVERURL           "http://addons.miranda-im.org/details.php?action=viewfile&id=3483"
+#define CSLIST_UPD_FLUPDURL           "http://addons.miranda-im.org/feed.php?dlfile=3483"
+#define CSLIST_UPD_SZPREFIX           "Custom Status List</a> "
 
 // services
 
@@ -64,7 +69,25 @@
 #define CSSF_DEFAULT_NAME     0x0080  // only with CSSF_MASK_NAME and get API to get default custom status name (wParam = status)
 #define CSSF_STATUSES_COUNT   0x0100  // returns number of custom statuses in wParam, only get API
 #define CSSF_STR_SIZES        0x0200  // returns sizes of custom status name & message (wParam & lParam members) in chars
-#define CSSF_UNICODE          0x1000  // strings are in Unicode
+#if defined( _UNICODE )
+  #define CSSF_UNICODE          0x1000  // strings are in Unicode
+#else
+  #define CSSF_UNICODE          0x0000
+#endif
+
+#if defined( _UNICODE )
+  #define tcstok( x, y ) wcstok( x, y )
+  #define tcprintf( a, b, c, d ) swprintf( a, b, c, d )
+#else
+  #define tcstok( x, y ) strtok( x, y )
+  #define tcprintf( a, b, c, d ) sprintf( a, c, d )
+#endif
+
+// win2k.h
+#ifndef WIN2K_H__
+#define SIZEOF( x )         ( sizeof( x ) / sizeof( x[0] ) )
+#define IsWinVerXPPlus( )   ( LOBYTE( LOWORD( GetVersion( ) ) ) >= 5 && LOWORD( GetVersion( ) ) != 5 )
+#endif
 
 
 // ################################## STRUCTURES ###############################
@@ -190,9 +213,9 @@ HINSTANCE hInst = NULL;
 PLUGINLINK *pluginLink = NULL;
 
 DWORD gMirandaVersion = 0x00000000;
-BYTE gbUnicodeCore;
+BYTE gbUnicodeCore = 0;
 
-TCHAR *rnthanks = L"induction - for his cool iconset :)\r\nfaith_healer - moral support :]\r\nCriS - project hosting @ http://dev.mirandaim.ru/ \r\nRobyer, kaye_styles, dEMoniZaToR, Drugwash, FREAK_THEMIGHTY - useful hints ;)\r\nplugin users, of course :) for their tolerance x) ;)\r\nMiranda IM Project Team - for their work on the best Instant Messenger I ever known :)";
+TCHAR *rnthanks = L"inducti0n - for his cool iconset :)\r\nfaith_healer - moral support :]\r\nCriS - project hosting @ http://dev.mirandaim.ru/ \r\nRobyer, kaye_styles, dEMoniZaToR, Drugwash, FREAK_THEMIGHTY - useful hints ;)\r\nplugin users, of course :) for their tolerance x) ;)\r\nMiranda IM Project Team - for their work on the best Instant Messenger I ever known :)";
 TCHAR *rnchanges = L"";
 
 int action = 0;
@@ -231,7 +254,7 @@ PLUGININFOEX pluginInfoEx = {
   "Offers list of your Custom Statuses. [test build #"CSLIST_TESTING" "__DATE__" "__TIME__"]",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
-  "© 2007-2008 eternity crew .., © 2006-2007 HANAX Software",
+  " 2007-2008 eternity crew ..,  2006-2007 HANAX Software",
   "http://dev.mirandaim.ru/~jarvis/",
   UNICODE_AWARE,  //not transient
   0,  //doesn't replace anything built-in
@@ -248,7 +271,7 @@ PLUGININFO pluginInfo = {
   "Offers list of your Custom Statuses. [test build #"CSLIST_TESTING" "__DATE__" "__TIME__"]",
   "jarvis [eThEreAL] .., HANAX",
   "mike.taussick@seznam.cz",
-  "© 2007-2008 eternity crew .., © 2006-2007 HANAX Software",
+  " 2007-2008 eternity crew ..,  2006-2007 HANAX Software",
   "http://dev.mirandaim.ru/~jarvis/",
   UNICODE_AWARE,  //not transient
   0
@@ -321,3 +344,5 @@ HICON LoadIconExEx( const char* IcoLibName, int NonIcoLibIcon );
 //extern int ImageList_AddIcon_IconLibLoaded( HIMAGELIST hIml, int iconId );
 
 #pragma comment( lib, "comctl32.lib" )
+
+#endif /* __CSLIST_H */
