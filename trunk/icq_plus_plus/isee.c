@@ -2,11 +2,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin ÷berg, Sam Kothari, Robert Rainwater, Bi0
-// Copyright © 2004,2005,2006,2007 Joe Kucera, Bi0
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Thief, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater, Bi0
+// Copyright  2004,2005,2006,2007 Joe Kucera, Bi0
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Thief, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -30,7 +30,7 @@
 // Last change by : $Author: redeemerXx $
 
 
-// œ≈–≈œ»—¿“‹ ›“” ‘»√Õﬁ Õ¿ƒŒ!
+//    !
 // ITS SHIT MUST BE REWRITTEN! (c) persei
 
 #include "icqoscar.h"
@@ -337,7 +337,7 @@ void icq_SetUserStatus(DWORD dwUin, DWORD dwCookie, signed nStatus, HANDLE hCont
 
 // ToDo: Check for events & options
 
-  
+  int i;
 
 #ifdef _DEBUG
     Netlib_Logf(ghServerNetlibUser, "Set status cmd: %d, Cookie: 0x%X, Uin: %d", nStatus, dwCookie, dwUin);
@@ -346,8 +346,6 @@ void icq_SetUserStatus(DWORD dwUin, DWORD dwCookie, signed nStatus, HANDLE hCont
 
 	if (!dwUin && gbASD)
 	{
-
-        int i;
         dwUin = 0;
 
         EnterCriticalSection(&slistmutex);
@@ -425,23 +423,25 @@ void icq_SetUserStatus(DWORD dwUin, DWORD dwCookie, signed nStatus, HANDLE hCont
 					ICQWriteContactSettingDword(hContact, "OldLogonTS", (DWORD)TimeStamp);
                 	ClearAllContactCapabilities(hContact);
 				}
-
-                SetContactCapabilities(hContact, WAS_FOUND);
 				{
-					CHECKCONTACT chk;
+					CHECKCONTACT chk = {0};
 					chk.dbeventflag=DBEF_READ;
 					chk.dwUin=dwUin;
 					chk.hContact=hContact;
 					chk.historyevent=chk.logtofile=TRUE;
 					chk.icqeventtype=ICQEVENTTYPE_WAS_FOUND;
-					if(nStatus < 20 && nStatus > 0)
+					chk.popuptype=POPTYPE_FOUND;
+					if(nStatus <= 5)
 						chk.msg="detected via ASD";
-					else if(nStatus > 20)
+					else if((nStatus>=21) && (nStatus<=29))
 						chk.msg="detected via PSD";
+					else
+					  chk.msg="invisible contact detected";
 					chk.PSD=-1;
 					CheckContact(chk);
 				}
 
+				SetContactCapabilities(hContact, WAS_FOUND);
 				ClearContactCapabilities(hContact, CAPF_SRV_RELAY); // for compability
 
 				// dim icon
@@ -556,7 +556,7 @@ static DWORD __stdcall icq_StatusCheckThread(void* arg)
             	Netlib_Logf(ghServerNetlibUser, "Users statuses %u", nCount);
 #endif
 				hContact = HContactFromUIN(StatusList[nPointer].dwUin, 0);
-				if (nCount > 0 && !(gnCurrentStatus == ID_STATUS_INVISIBLE && bNoASDInInvisible))
+				if (nCount > 0 && !(gnCurrentStatus == ID_STATUS_INVISIBLE && bNoASDInInvisible) && !ICQGetContactSettingByte(hContact, "NoASD", 0))
                 {
                 	//icq_packet p;
 					//int iRes = FALSE;
@@ -575,7 +575,7 @@ static DWORD __stdcall icq_StatusCheckThread(void* arg)
 	                      makeUserOffline(hContact); // ensure that contact was made offline, before beeing checked
 
                 
-					if(!bASDForOffline || bASDForOffline && (ICQGetContactStatus(hContact) == ID_STATUS_INVISIBLE || ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE)) // maybe better use CheckContactCapabilities(hContact, WAS_FOUND) here ?
+					if(!bASDForOffline || bASDForOffline && (ICQGetContactStatus(hContact) == ID_STATUS_INVISIBLE || ICQGetContactStatus(hContact) == ID_STATUS_OFFLINE))
 					{
 						// getting invisibility via status message
 						if(bASDViaAwayMsg)
@@ -1105,6 +1105,13 @@ static void PopUpMsg(HANDLE hContact, BYTE bType)
 			ShowPopUpMsg(hContact, uin, ICQTranslateUtf ("Entire List Check"), ICQTranslateUtf ("Users Status Scan Started"), POPTYPE_SCAN);
 		}
 		break;
+	case 7: // User not found
+		if (bScanPopUp)
+		{
+			gbScan = TRUE;
+			ShowPopUpMsg(hContact, uin, NickFromHandleUtf(hContact), ICQTranslateUtf ("...was NOT found!"), POPTYPE_SCAN);
+		}
+		break;
 	default:
 		return;
 	}
@@ -1125,19 +1132,20 @@ void icq_ISeeCleanup()
 
 int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 {
-	BOOL bStausMenu = FALSE; //ServiceExists(MS_CLIST_ADDSTATUSMENUITEM);
 	HANDLE hPrivacyRoot;
-	char pszName[MAX_PATH+30], pszServiceName[MAX_PATH+30];
-   	CLISTMENUITEM mi={0};
+	char pszServiceName[MAX_PATH+30], pszAFName[MAX_PATH+30];
+  CLISTMENUITEM mi={0};
  	mi.cbSize = sizeof(mi);
 	mi.pszContactOwner = gpszICQProtoName;
 
 	gbVisibility = DBGetContactSettingByte(NULL, gpszICQProtoName, "Privacy", DEFAULT_VISIBILITY);
 	if (gbVisibility > 6) gbVisibility = DEFAULT_VISIBILITY;
 
-	mir_snprintf(pszName, sizeof(pszName), "%s", Translate("Advanced Features"));
+	mir_snprintf(pszAFName, sizeof(pszAFName), "%s", Translate("Advanced Features"));
+  if ( !bPrivacyMenuPlacement ) // if placed in Main menu, add proto identifier
+    mir_snprintf( pszAFName, sizeof( pszAFName ), "%s (%s)", pszAFName, gpszICQProtoName );
 
-	mi.pszPopupName = pszName;
+	mi.pszPopupName = pszAFName;
 	mi.flags = 0;
 	mi.popupPosition=500084000;//400059000;
 	// icon for menu	
@@ -1150,7 +1158,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.pszName = Translate("Default, corresponding to status");
 	mi.pszService = pszServiceName;
 	
-	hPrivacy[0] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[0] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 	
 	{
 		CLISTMENUITEM miTmp = {0};
@@ -1170,7 +1178,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2000010000;
 	mi.pszName = Translate("Allow all users to see you");
 	mi.pszService = pszServiceName;
-	hPrivacy[1] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[1] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR2");
 	CreateServiceFunction(pszServiceName, icq_Privacy2);
@@ -1178,7 +1186,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2000020000;
 	mi.pszName = Translate("Block all users from seeing you");
 	mi.pszService = pszServiceName;
-	hPrivacy[2] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[2] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR3");
 	CreateServiceFunction(pszServiceName, icq_Privacy3);
@@ -1186,7 +1194,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2000030000;
 	mi.pszName = Translate("Allow only users in the Visible list to see you");
 	mi.pszService = pszServiceName;
-	hPrivacy[3] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[3] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR4");
 	CreateServiceFunction(pszServiceName, icq_Privacy4);
@@ -1194,7 +1202,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2000040000;
 	mi.pszName = Translate("Block only users in the Invisible list from seeing you");
 	mi.pszService = pszServiceName;
-	hPrivacy[4] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[4] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR5");
 	CreateServiceFunction(pszServiceName, icq_Privacy5);
@@ -1202,7 +1210,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2000050000;
 	mi.pszName = Translate("Allow only users in the Contact list to see you");
 	mi.pszService = pszServiceName;
-	hPrivacy[5] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[5] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_PR6");
 	CreateServiceFunction(pszServiceName, icq_Privacy6);
@@ -1210,7 +1218,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2000060000;
 	mi.pszName = Translate("Allow only users in the Contact list to see you, except Invisible list users");
 	mi.pszService = pszServiceName;
-	hPrivacy[6] = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hPrivacy[6] = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	IconLibReleaseIcon("dot");
 
@@ -1235,7 +1243,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
   mi.position = 2090000000; 
  	mi.pszName = Translate("Send global authorization request to all users, who haven't authorized you yet"); 
  	mi.pszService = pszServiceName; 
- 	hSendAuthRequestToAllUnauthorized = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi); 
+ 	hSendAuthRequestToAllUnauthorized = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi); 
 
 	//ASD
 	mi.hIcon = IconLibGetIcon(gbASD?"check":"dot");
@@ -1246,7 +1254,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2100000000;
 	mi.pszName = Translate("ASD");
 	mi.pszService = pszServiceName;
-	hASD = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hASD = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 
 	// webaware
@@ -1258,7 +1266,7 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2100000000;
 	mi.pszName = Translate("WebAware");
 	mi.pszService = pszServiceName;
-	hWebAware = (HANDLE) CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	hWebAware = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 
 	// Remove option
 /*	mi.hIcon = IconLibGetIcon(gbTools?"check":"dot");
@@ -1270,8 +1278,8 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.pszName = Translate("Show privacy tools in user's menu"); //("Enable 'Remove from user's list' option");
 	mi.pszService = pszServiceName;
 	hTools = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);*/
+		bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
+		bPrivacyMenuPlacement?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi);*/
 
 	//Vis Tools
 //	mi.hIcon = IconLibGetIcon(gbVTools?"check":"dot");
@@ -1283,8 +1291,8 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.pszName = Translate("Show visibility tools in user's menu"); //("Enable 'Remove from user's list' option");
 	mi.pszService = pszServiceName;
 	hVisTools = (HANDLE) CallService(
-		bStausMenu?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
-		bStausMenu?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi); */
+		bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM,
+		bPrivacyMenuPlacement?0:(WPARAM)&hPrivacyRoot, (LPARAM) & mi); */
 
 	// Manage server list
 	mi.hIcon = IconLibGetIcon("servlist");
@@ -1295,19 +1303,64 @@ int icq_PrivacyMenu(WPARAM wParam, LPARAM lParam)
 	mi.position = 2107000000;
 	mi.pszName = Translate("Manage server's list...");
 	mi.pszService = pszServiceName;
-	CallService(MS_CLIST_ADDSTATUSMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
+	CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, (WPARAM)&hPrivacyRoot, (LPARAM) & mi);
 	IconLibReleaseIcon("servlist");
+
+  // MOVING USERS STATUS SCAN
+  if ( gbASD ) {
+    char pszName[290];
+    BOOL bUsrScanPos = 0;
+    bUsrScanPos = ICQGetContactSettingByte( NULL, "UsrScanPos", 0 );
+    mir_snprintf(pszName, sizeof(pszName), "%s", Translate("&Users Status Scan"));
+    mi.pszName = pszName;
+    strcpy(pszServiceName, gpszICQProtoName);
+    strcat(pszServiceName, "PS_ISEE_CAUS");
+    CreateServiceFunction(pszServiceName, icq_CheckAllUsersStatus);
+    mi.pszService = pszServiceName;
+    if ( MIRANDA_VERSION < PLUGIN_MAKE_VERSION( 0, 8, 0, 0 ) ) // supress status menu placement for older cores
+      bPrivacyMenuPlacement = FALSE;
+    if ( bPrivacyMenuPlacement ) { // in status menu
+      int protoCount;
+      PROTOCOLDESCRIPTOR** pdesc;
+      CallService( MS_PROTO_ENUMPROTOCOLS, ( WPARAM )&protoCount, ( LPARAM )&pdesc );
+      if ( protoCount > 1 ) {
+        if ( bUsrScanPos )
+          mi.pszPopupName = pszAFName;
+        else
+        {
+          mi.pszPopupName = gpszICQProtoName;
+          mi.pszContactOwner = 0;
+        }
+      }
+      else mi.pszPopupName = NULL;
+      mi.position = 00000001;
+    }
+    else { // in main menu
+      mi.position = 400060000;
+      if ( bUsrScanPos ) mi.pszPopupName = pszAFName;
+      else mi.pszPopupName = NULL;
+    }
+    hStatusMenu = ( HANDLE )CallService(
+      bPrivacyMenuPlacement ? MS_CLIST_ADDSTATUSMENUITEM : MS_CLIST_ADDMAINMENUITEM,
+      bUsrScanPos ? ( WPARAM )&hPrivacyRoot : 0,
+      ( LPARAM )&mi
+    );
+    RebuildMenu();
+  }
+  
+  // MOVING USERS STATUS SCAN - END
 	return 0;
 }
 
 static HANDLE hhkPrebuildStatusMenu = NULL;
 void icq_BuildPrivacyMenu()
-{
-	hhkPrebuildStatusMenu = HookEvent( ME_CLIST_PREBUILDSTATUSMENU, icq_PrivacyMenu );
+{ // if placed in main menu, build only once, elsewhere update in order of core needs
+	if ( bPrivacyMenuPlacement ) hhkPrebuildStatusMenu = HookEvent( ME_CLIST_PREBUILDSTATUSMENU, icq_PrivacyMenu );
+  else icq_PrivacyMenu( 0, 0 );
 }
 void icq_DestroyPrivacyMenu()
 {
-	UnhookEvent(hhkPrebuildStatusMenu);
+	if ( bPrivacyMenuPlacement ) UnhookEvent(hhkPrebuildStatusMenu);
 }
 
 
@@ -1316,7 +1369,7 @@ void icq_InitISee()
 	static DWORD icq_StatusCheckThreadId;
 
     int i;
-	char pszName[MAX_PATH+30], pszServiceName[MAX_PATH+30];
+	char pszServiceName[MAX_PATH+30];
 
    	CLISTMENUITEM mi={0};
  	mi.cbSize = sizeof(mi);
@@ -1398,15 +1451,26 @@ void icq_InitISee()
 				hUserMenuStatus = (HANDLE) CallService(MS_CLIST_ADDCONTACTMENUITEM, 0, (LPARAM) & mi);
 				IconLibReleaseIcon("scan");
 
-				mir_snprintf(pszName, sizeof(pszName), "%s (%s)", Translate("&Users Status Scan"), Translate(gpszICQProtoName));
-				strcpy(pszServiceName, gpszICQProtoName); strcat(pszServiceName, "PS_ISEE_CAUS");
+/* MOVING USERS STATUS SCAN
+        mir_snprintf(pszName, sizeof(pszName), "%s", Translate("&Users Status Scan"));
+        mi.pszName = pszName;
+        strcpy(pszServiceName, gpszICQProtoName);
+        strcat(pszServiceName, "PS_ISEE_CAUS");
 				CreateServiceFunction(pszServiceName, icq_CheckAllUsersStatus);
-
-				mi.position = 400060000;
-				mi.pszName = pszName;
 				mi.pszService = pszServiceName;
-				hStatusMenu = (HANDLE) CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
+        if ( bPrivacyMenuPlacement ) { // in status menu
+          mi.pszPopupName = gpszICQProtoName;
+          mi.position = 00000001;
+        }
+        else { // in main menu
+          char pszItemName[290];
+          mir_snprintf( pszItemName, sizeof( pszItemName ), "%s (%s)", Translate("Advanced Features"), gpszICQProtoName );
+          mi.pszPopupName = pszItemName;
+				  mi.position = 400060000;
+        }
+        hStatusMenu = (HANDLE) CallService(bPrivacyMenuPlacement?MS_CLIST_ADDSTATUSMENUITEM:MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM) & mi);
 				RebuildMenu();
+*/
 			}
 			break;
 	case 0:

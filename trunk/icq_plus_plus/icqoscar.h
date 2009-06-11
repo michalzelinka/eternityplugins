@@ -45,6 +45,7 @@
 #define MIRANDA_VER 0x700
 #define ICQ_MODNAME "Plus Mod"
 #define ICQ_THISMODNAME "eternity/PlusPlus++ Mod"
+#define _WIN32_IE 0x0500
 
 #include "m_stdhdr.h"
 
@@ -65,7 +66,7 @@
 #include <io.h>
 #include <direct.h>
 #include <fcntl.h>
-#ifndef _DEBUG
+#ifdef _DEBUG
 	#include <crtdbg.h>
 #endif
 #include <process.h>

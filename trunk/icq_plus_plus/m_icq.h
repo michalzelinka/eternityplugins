@@ -102,6 +102,10 @@ typedef struct {
 // wParam=(WPARAM)hContact;
 #define MS_XSTATUS_SHOWDETAILS "/ShowXStatusDetails"
 
+#define MS_TZER_DIALOG "/TzerDialog"
+//Send tzer
+//wParam=(WPARAM)hContact;
+//lParam=(int)tZer
 #define MS_SEND_TZER "/SendtZer"
 
 //Send an SMS via the ICQ network
@@ -152,6 +156,12 @@ typedef struct {
 //ASCIIZ    from name
 //ASCIIZ    from e-mail
 #define ICQEVENTTYPE_WEBPAGER   2003    //database event type
+
+//missed message notification 
+//db event added to contact's history 
+//blob format is: 
+//WORD      error code 
+#define ICQEVENTTYPE_MISSEDMESSAGE 2004 //database event type
 
 //for server-side lists, used internally only
 //hProcess=dwSequence

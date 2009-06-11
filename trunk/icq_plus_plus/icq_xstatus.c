@@ -2,11 +2,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -93,9 +93,7 @@ BYTE __stdcall ICQGetContactXStatus(HANDLE hContact)
 DWORD sendXStatusDetailsRequest(HANDLE hContact, int bForced)
 {
 	if (invis_for(0,hContact))
-	{
 		return 0;
-	}
 	{
 		  DWORD dwCookie = 0;
 		  if (ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, -1) != -1)
@@ -150,7 +148,7 @@ void UpdateXStatuses()
 	hContact = ICQFindFirstContact();
 	if(hContact){
 		do{
-			if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE && (CheckContactCapabilities(hContact, CAPF_XTRAZ) && !invis_for(ICQGetContactSettingDword(hContact, "UIN",0),hContact) && ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0) != 0))
+			if (ICQGetContactStatus(hContact) != ID_STATUS_OFFLINE && (CheckContactCapabilities(hContact, CAPF_XTRAZ) && !invis_for(ICQGetContactSettingUIN(hContact), hContact) && ICQGetContactSettingByte(hContact, DBSETTING_XSTATUSID, 0) != 0))
 				requestXStatusDetails(hContact, 1);
 		}while(hContact = ICQFindNextContact(hContact));
 	}
@@ -993,15 +991,21 @@ void ChangedIconsXStatus()
 
 
 int IcqShowXStatusDetails(WPARAM wParam, LPARAM lParam)
-{
-  InitXStatusData init;
+{ // eternity: nasty hack, should be done better x)
+	DBVARIANT dbv = { DBVT_TCHAR };
+	DBGetContactSettingTString( ( HANDLE )wParam, gpszICQProtoName, "MirVer", &dbv );
+	if ( lstrcmp( dbv.ptszVal, _T( "ICQ 6" ) ) == 0 )
+		CallService(MS_AWAYMSG_SHOWAWAYMSG, wParam, 0);
+	else // other clients
+	{
+  	InitXStatusData init;
+    
+    sendXStatusDetailsRequest((HANDLE)wParam, 1);
   
-  sendXStatusDetailsRequest((HANDLE)wParam, 1);
-
-  init.bAction = 1; // retrieve
-  init.hContact = (HANDLE)wParam;
-  DialogBoxUtf(FALSE, hInst, MAKEINTRESOURCEA(IDD_SETXSTATUS), NULL, SetXStatusDlgProc, (LPARAM)&init);
-
+    init.bAction = 1; // retrieve
+    init.hContact = (HANDLE)wParam;
+    DialogBoxUtf(FALSE, hInst, MAKEINTRESOURCEA(IDD_SETXSTATUS), NULL, SetXStatusDlgProc, (LPARAM)&init);
+  }
   return 0;
 }
 

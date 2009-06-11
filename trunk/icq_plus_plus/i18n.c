@@ -377,7 +377,9 @@ int utf8_decode_codepage(const char *from, char **to, WORD wCp)
 {
   int nResult = 0;
 
+#ifdef _DEBUG
   _ASSERTE(!(*to)); // You passed a non-zero pointer, make sure it doesnt point to unfreed memory
+#endif
 
   // Validate the string
   if (!UTF8_IsValid(from))
@@ -460,7 +462,9 @@ int utf8_decode_static(const char *from, char *to, int to_size)
 {
   int nResult = 0;
 
+#ifdef _DEBUG
   _ASSERTE(to); // You passed a zero pointer
+#endif
 
   // Validate the string
   if (!UTF8_IsValid(from))

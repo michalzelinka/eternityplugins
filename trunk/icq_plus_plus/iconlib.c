@@ -55,7 +55,7 @@ void InitIconLib()
     IconLibDefine(ICQTranslateUtfStatic("Send tZer", str, MAX_PATH), proto, "send_tzer", NULL, lib, -IDI_SEND_TZER);
 	IconLibDefine(ICQTranslateUtfStatic("Always visible", str, MAX_PATH), proto, "set_vis", NULL, lib, -IDI_SET_VIS);
 	IconLibDefine(ICQTranslateUtfStatic("Never visible", str, MAX_PATH), proto, "set_invis", NULL, lib, -IDI_SET_INVIS);
-	IconLibDefine(ICQTranslateUtfStatic("Incognito Request", str, MAX_PATH), proto, "incognito", NULL, lib, -IDI_INCOGNITO_R);
+	IconLibDefine(ICQTranslateUtfStatic("Incognito Request", str, MAX_PATH), proto, "incognito_request", NULL, lib, -IDI_INCOGNITO_R);
 	IconLibDefine(ICQTranslateUtfStatic("Scan", str, MAX_PATH), proto, "scan", NULL, lib, -IDI_SCAN);
 	IconLibDefine(ICQTranslateUtfStatic("Scan start", str, MAX_PATH), proto, "start", NULL, lib, -IDI_START);
 	IconLibDefine(ICQTranslateUtfStatic("Scan stop", str, MAX_PATH), proto, "stop", NULL, lib, -IDI_STOP);

@@ -1102,7 +1102,9 @@ DWORD SearchByNames(char* pszNick, char* pszFirstName, char* pszLastName)
   wFirstLen = strlennull(pszFirstName);
   wLastLen = strlennull(pszLastName);
 
+#ifdef _DEBUG
   _ASSERTE(wFirstLen || wLastLen || wNickLen);
+#endif
 
 
   // Calculate data size
@@ -1151,7 +1153,9 @@ DWORD SearchByEmail(char* pszEmail)
 
   wEmailLen = strlennull(pszEmail);
 
+#ifdef _DEBUG
   _ASSERTE(wEmailLen);
+#endif
 
   if (wEmailLen > 0)
   {
@@ -1180,8 +1184,10 @@ DWORD sendTLVSearchPacket(BYTE bType, char* pSearchDataBuf, WORD wSearchType, WO
   DWORD dwCookie;
   search_cookie* pCookie;
 
+#ifdef _DEBUG
   _ASSERTE(pSearchDataBuf);
   _ASSERTE(wInfoLen >= 4);
+#endif
 
   pCookie = (search_cookie*)SAFE_MALLOC(sizeof(search_cookie));
   if (pCookie)

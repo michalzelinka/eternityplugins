@@ -44,7 +44,7 @@ static void handleNotifyRejected(BYTE* buf, WORD wPackLen);
 
 extern const capstr capAimIcon;
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
 void handleBuddyFam(unsigned char* pBuffer, WORD wBufferLength, snac_header* pSnacHeader, serverthread_info *info)
@@ -120,16 +120,18 @@ void extractMoodData(oscar_tlv_chain* pChain, char** pMood, int* cbMood)
 }
 
 
-// TLV(1) Unknown (x50)
-// TLV(2) Member since (not sent)
-// TLV(3) Online since
-// TLV(4) Idle time (not sent)
+// TLV(1) User class
+// TLV(3) Signon time
+// TLV(4) Idle time (in minutes)
+// TLV(5) Member since
 // TLV(6) New status
 // TLV(A) External IP
 // TLV(C) DC Info
 // TLV(D) Capabilities
 // TLV(F) Session timer (in seconds)
-// TLV(1D) Avatar Hash (20 bytes)
+// TLV(14) Instance number (AIM only)
+// TLV(19) Short capabilities
+// TLV(1D) Avatar Info / Expressions
 static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 {
   HANDLE hContact;
@@ -144,6 +146,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   LPSTR szClient = {0};
   BYTE bClientId = 0;
   WORD wVersion = 0;
+  WORD wClass;
   WORD wTLVCount;
   WORD wWarningLevel;
   WORD wStatusFlags;
@@ -249,6 +252,8 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
     {
       if (wClass & CLASS_AWAY)
         wStatus = ID_STATUS_AWAY;
+      else if (wClass & CLASS_WIRELESS)
+        wStatus = ID_STATUS_ONTHEPHONE;
       else
         wStatus = ID_STATUS_ONLINE;
 
@@ -387,6 +392,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 		  ICQWriteContactSettingDword(hContact,  "dwFT2",   dwFT2);
 		  ICQWriteContactSettingDword(hContact,  "dwFT3",   dwFT3);
 
+		  if (capBuf)
 		  { // store client capabilities
 			  DBCONTACTWRITESETTING dbcws;
 			  dbcws.value.type = DBVT_BLOB;
@@ -396,8 +402,10 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			  dbcws.szSetting = "CapBuf";
 			  CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&dbcws);     
 		  }
+		  else // wokaround bug in detecting clients without caps
+			  ICQDeleteContactSetting(hContact, "CapBuf");
 
-		  szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
+		  szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
 		}
 #ifdef _DEBUG
         if (CheckContactCapabilities(hContact, CAPF_SRV_RELAY))
@@ -410,22 +418,6 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
         {
           ClearContactCapabilities(hContact, CAPF_SRV_RELAY);
           NetLog_Server("Forcing simple messages due to compability issues");
-        }
-      }
-//      else
-      {
-  //      szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
-
-        // Get Capability Info TLV
-//        pTLV = getTLV(pChain, 0x0D, 1);
-
-        if (pTLV && (pTLV->wLen >= 16))
-        { // handle Xtraz status
-          char* moodData = NULL;
-          int moodSize = 0;
-
-          extractMoodData(pChain, &moodData, &moodSize);
-          handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
         }
       }
     }
@@ -497,6 +489,7 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 
     }
     ICQWriteContactSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(wStatus));
+		ICQWriteContactSettingWord(hContact, "ICQStatus", wStatus);
 	if (!wIdleTimer)
 	{
 		DWORD dw = ICQGetContactSettingDword(hContact, "IdleTS", 0);
@@ -526,7 +519,20 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
   
 	
   if (( int )szClient != -1 )
-	  if (strcmp(szClient, "Unknown") == 0)
+  {
+	  if (szClient == cliSpamBot||szClient == "Virus")
+	  {
+		  if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+		  { // kill spammer
+			  icq_DequeueUser(dwUIN);
+			  AddToSpammerList(dwUIN);
+			  if (bSpamPopUp)
+				  ShowPopUpMsg(hContact, dwUIN, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
+			  CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+			  NetLog_Server("Contact %u deleted", dwUIN);
+		  }
+	  }
+      else if (!strcmp(szClient, "Unknown"))
 	  {
 		  if (ICQGetContactSettingByte(NULL, "KillUnknown", 0) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
 		  {
@@ -534,25 +540,11 @@ static void handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 			  AddToSpammerList(dwUIN);
 			  if (bUnknownPopUp)
 				  ShowPopUpMsg(hContact, dwUIN, "Unknown Detected", "Contact deleted & further events blocked.", POPTYPE_UNKNOWN);
-//			  icq_sendRemoveContact(dwUIN, NULL);
 			  CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
 
 			  NetLog_Server("Contact %u deleted", dwUIN);
 		  }
 	  }
-
-  if (szClient == cliSpamBot||szClient == "Virus")
-  {
-    if (ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-    { // kill spammer
-      icq_DequeueUser(dwUIN);
-      AddToSpammerList(dwUIN);
-      if (bSpamPopUp)
-        ShowPopUpMsg(hContact, dwUIN, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
-      CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-
-      NetLog_Server("Contact %u deleted", dwUIN);
-    }
   }
   //inv4inv(hContact, 2);//delete from invisible list
 }

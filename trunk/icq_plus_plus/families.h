@@ -111,6 +111,7 @@ void makeContactTemporaryVisible(HANDLE hContact);
 void clearTemporaryVisibleList();
 //void inv4inv(HANDLE hContact, int mode);
 //void inv4invCleanUp();
+int EnumCustomCapsProc(const char *szSetting,LPARAM lParam);
 void CheckSelfRemove();
 void CheckSelfRemoveShutdown();
 

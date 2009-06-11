@@ -3,12 +3,12 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
-// Copyright © 2007,2008 jarvis
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -541,7 +541,7 @@ static BOOL CALLBACK DlgProcIcqPrivacyOpts(HWND hwndDlg, UINT msg, WPARAM wParam
 }
 
 
-static const UINT icqPopupsControls[] = {IDC_POPUPS_LOG_ENABLED,IDC_PREVIEW,IDC_USEWINCOLORS,IDC_USESYSICONS,IDC_POPUP_LOG0_TIMEOUT,IDC_POPUP_LOG1_TIMEOUT,IDC_POPUP_LOG2_TIMEOUT,IDC_POPUP_LOG3_TIMEOUT,IDC_POPUP_LOG4_TIMEOUT,IDC_POPUP_LOG5_TIMEOUT,IDC_POPUP_SPAM_TIMEOUT,IDC_POPUP_UNKNOWN_TIMEOUT,IDC_POPUP_LOG6_TIMEOUT,IDC_POPUP_FOR_NOTONLIST,IDC_UINPOPUP};
+static const UINT icqPopupsControls[] = {IDC_POPUPS_LOG_ENABLED,IDC_PREVIEW,IDC_USEWINCOLORS,IDC_USESYSICONS,IDC_POPUP_LOG0_TIMEOUT,IDC_POPUP_LOG1_TIMEOUT,IDC_POPUP_LOG2_TIMEOUT,IDC_POPUP_LOG3_TIMEOUT,IDC_POPUP_LOG4_TIMEOUT,IDC_POPUP_LOG5_TIMEOUT,IDC_POPUP_SPAM_TIMEOUT,IDC_POPUP_UNKNOWN_TIMEOUT,IDC_POPUP_LOG6_TIMEOUT,IDC_POPUP_FOR_NOTONLIST,IDC_POPUP_FOR_IGNORED,IDC_POPUP_FOR_HIDDEN,IDC_UINPOPUP};
 static const UINT icqPopupColorControls[] = {
 	IDC_POPUP_LOG0_TEXTCOLOR,IDC_POPUP_LOG1_TEXTCOLOR,IDC_POPUP_LOG2_TEXTCOLOR,IDC_POPUP_LOG3_TEXTCOLOR,IDC_POPUP_LOG4_TEXTCOLOR,IDC_POPUP_LOG5_TEXTCOLOR,IDC_POPUP_SPAM_TEXTCOLOR,IDC_POPUP_UNKNOWN_TEXTCOLOR,IDC_POPUP_LOG6_TEXTCOLOR,IDC_POPUP_CLIENT_CHANGE_TEXTCOLOR,IDC_POPUP_REMOVE_HIMSELF_TEXTCOLOR,IDC_POPUP_INFO_REQUEST_TEXTCOLOR,IDC_POPUP_IGNORECHECK_TEXTCOLOR,IDC_POPUP_AUTH_TEXTCOLOR,
 	IDC_POPUP_LOG0_BACKCOLOR,IDC_POPUP_LOG1_BACKCOLOR,IDC_POPUP_LOG2_BACKCOLOR,IDC_POPUP_LOG3_BACKCOLOR,IDC_POPUP_LOG4_BACKCOLOR,IDC_POPUP_LOG5_BACKCOLOR,IDC_POPUP_SPAM_BACKCOLOR,IDC_POPUP_UNKNOWN_BACKCOLOR,IDC_POPUP_LOG6_BACKCOLOR,IDC_POPUP_CLIENT_CHANGE_BACKCOLOR,IDC_POPUP_REMOVE_HIMSELF_BACKCOLOR,IDC_POPUP_INFO_REQUEST_BACKCOLOR,IDC_POPUP_IGNORECHECK_BACKCOLOR,IDC_POPUP_AUTH_BACKCOLOR
@@ -555,6 +555,8 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
   case WM_INITDIALOG:
     ICQTranslateDialog(hwndDlg);
 	LoadDBCheckState(hwndDlg, IDC_POPUP_FOR_NOTONLIST, "PopUpForNotOnList", 0);
+	LoadDBCheckState(hwndDlg, IDC_POPUP_FOR_IGNORED, "PopUpForIgnored", 0);
+	LoadDBCheckState(hwndDlg, IDC_POPUP_FOR_HIDDEN, "PopUpForHidden", 0);
 	LoadDBCheckState(hwndDlg, IDC_UINPOPUP, "UinPopup", 0);
     CheckDlgButton(hwndDlg, IDC_POPUPS_LOG_ENABLED, ICQGetContactSettingByte(NULL,"PopupsLogEnabled",1));
     bEnabled = ICQGetContactSettingByte(NULL,"PopupsWinColors",0);
@@ -631,6 +633,10 @@ static BOOL CALLBACK DlgProcIcqPopupOpts(HWND hwndDlg, UINT msg, WPARAM wParam, 
       ICQWriteContactSettingByte(NULL,"PopupsSysIcons",(BYTE)IsDlgButtonChecked(hwndDlg,IDC_USESYSICONS));
 	  StoreDBCheckState(hwndDlg, IDC_POPUP_FOR_NOTONLIST , "PopUpForNotOnList");
 	  bPopUpForNotOnList = ICQGetContactSettingByte(NULL, "PopUpForNotOnList", 0);
+	  StoreDBCheckState(hwndDlg, IDC_POPUP_FOR_IGNORED, "PopUpForIgnored");
+	  bPopupsForIgnored = ICQGetContactSettingByte(NULL, "PopUpForIgnored", 0);
+	  StoreDBCheckState(hwndDlg, IDC_POPUP_FOR_HIDDEN, "PopUpForHidden");
+	  bPopupsForHidden = ICQGetContactSettingByte(NULL, "PopUpForHidden", 0);
 	  StoreDBCheckState(hwndDlg, IDC_UINPOPUP , "UinPopup");
 	  bUinPopup = ICQGetContactSettingByte(NULL, "UinPopup", 0);
       return TRUE;
@@ -798,9 +804,9 @@ static BOOL CALLBACK DlgProcIcqPopupOpts2(HWND hwndDlg, UINT msg, WPARAM wParam,
 	return FALSE;
 }
 
+void ShowASDOpts(void);
 static BOOL CALLBACK DlgProcIcqASDOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
-	void ShowASDOpts(void);
 	switch(msg)
 	{
 	case WM_INITDIALOG:
@@ -1089,6 +1095,18 @@ static BOOL CALLBACK DlgProcIcqFeatures2Opts(HWND hwndDlg, UINT msg, WPARAM wPar
 //            icq_EnableMultipleControls(hwndDlg, icqIncognitoControls, sizeof(icqIncognitoControls)/sizeof(icqIncognitoControls[0]), bStealthRequest?TRUE:FALSE);
 	        CheckDlgButton(hwndDlg, IDC_INCUSER, (bIncognitoGlobal == 0));
 	        CheckDlgButton(hwndDlg, IDC_INCGLOBAL, (bIncognitoGlobal == 1));
+          if ( MIRANDA_VERSION > PLUGIN_MAKE_VERSION( 0, 8, 0, 0 ) )
+          {
+            CheckDlgButton(hwndDlg, IDC_INMAINMENU, (bPrivacyMenuPlacement == 0));
+            CheckDlgButton(hwndDlg, IDC_INSTATUSMENU, (bPrivacyMenuPlacement == 1));
+          }
+          else {
+            CheckDlgButton(hwndDlg, IDC_INMAINMENU, 1);
+            EnableWindow( GetDlgItem( hwndDlg, IDC_INMAINMENU ), 0 );
+            EnableWindow( GetDlgItem( hwndDlg, IDC_INSTATUSMENU ), 0 );
+            ICQWriteContactSettingByte(NULL, "UsrScanPos", 0); // this may resolve problem when user roll back form 0.8 core to 0.7
+          }
+          LoadDBCheckState( hwndDlg, IDC_USRCHKPOS, "UsrScanPos", 0 );
 			return TRUE;
 		}
 	case WM_COMMAND:
@@ -1137,7 +1155,10 @@ static BOOL CALLBACK DlgProcIcqFeatures2Opts(HWND hwndDlg, UINT msg, WPARAM wPar
 			bNoPSDForHidden = ICQGetContactSettingByte(NULL, "NoPSDForHidden", 1);
 //			StoreDBCheckState(hwndDlg, IDC_INV4INV , "Inv4Inv");
 			StoreDBCheckState(hwndDlg, IDC_INCGLOBAL , "IncognitoGlobal");
+			StoreDBCheckState(hwndDlg, IDC_INSTATUSMENU , "PrivacyPlacement");
 			bIncognitoGlobal = ICQGetContactSettingByte(NULL, "IncognitoGlobal", 0);
+			StoreDBCheckState( hwndDlg, IDC_USRCHKPOS , "UsrScanPos" );
+			bPrivacyMenuPlacement = ICQGetContactSettingByte(NULL, "PrivacyPlacement", 0);
 			StoreDBCheckState(hwndDlg, IDC_TZER, "tZer");
 			gbTzerEnabled = ICQGetContactSettingByte(NULL,"tZer",0);
 			return TRUE;
@@ -1444,7 +1465,7 @@ static BOOL CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 
 static const UINT icqContactsControls[] = {IDC_ADDSERVER,IDC_LOADFROMSERVER,IDC_SAVETOSERVER,IDC_UPLOADNOW,IDC_FORCEREFRESH};
 static const UINT icqAvatarControls[] = {IDC_AUTOLOADAVATARS,IDC_BIGGERAVATARS,IDC_STRICTAVATARCHECK};
-static const UINT icqAddTempControls[] = {IDC_ADDTEMP,IDC_TMP_CONTACTS_GROUP};
+static const UINT icqAddTempControls[] = {IDC_ADDTEMP,IDC_TMP_CONTACTS_GROUP,IDC_TMPREQAUTH,IDC_TMPSNDADDED};
 static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)
 {
   switch (msg)
@@ -1462,14 +1483,17 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
     LoadDBCheckState(hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck", DEFAULT_AVATARS_CHECK);
 
     icq_EnableMultipleControls(hwndDlg, icqContactsControls, sizeof(icqContactsControls)/sizeof(icqContactsControls[0]), 
-      ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
+    ICQGetContactSettingByte(NULL, "UseServerCList", DEFAULT_SS_ENABLED)?TRUE:FALSE);
     icq_EnableMultipleControls(hwndDlg, icqAvatarControls, sizeof(icqAvatarControls)/sizeof(icqAvatarControls[0]), 
 		ICQGetContactSettingByte(NULL, "AvatarsEnabled", DEFAULT_AVATARS_ENABLED)?TRUE:FALSE);
-	CheckDlgButton(hwndDlg, IDC_DELETE_TMP_CONTACTS, (bTmpContacts == 0));
-	CheckDlgButton(hwndDlg, IDC_ADD_TMP_CONTACTS, (bTmpContacts == 1));
-	SetDlgItemText(hwndDlg, IDC_TMP_CONTACTS_GROUP, UniGetContactSettingUtf(NULL,gpszICQProtoName,"TmpContactsGroup", 0));
+	  CheckDlgButton(hwndDlg, IDC_DELETE_TMP_CONTACTS, (bTmpContacts == 0));
+	  CheckDlgButton(hwndDlg, IDC_ADD_TMP_CONTACTS, (bTmpContacts == 1));
+	  SetDlgItemText(hwndDlg, IDC_TMP_CONTACTS_GROUP, UniGetContactSettingUtf(NULL,gpszICQProtoName,"TmpContactsGroup", ""));
     LoadDBCheckState(hwndDlg, IDC_ADDTEMP, "AddTemp", 0);
-	icq_EnableMultipleControls(hwndDlg, icqAddTempControls, sizeof(icqAddTempControls)/sizeof(icqAddTempControls[0]), bTmpContacts?TRUE:FALSE);
+    LoadDBCheckState(hwndDlg, IDC_TMPREQAUTH, "TmpReqAuth", 1);
+    LoadDBCheckState(hwndDlg, IDC_TMPSNDADDED, "TmpSndAdded", 1);
+		LoadDBCheckState(hwndDlg, IDC_REMOVE_TEMP, "RemoveTmpContacts", 0);
+	  icq_EnableMultipleControls(hwndDlg, icqAddTempControls, sizeof(icqAddTempControls)/sizeof(icqAddTempControls[0]), bTmpContacts?TRUE:FALSE);
 
     if (icqOnline)
     {
@@ -1530,6 +1554,7 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
       StoreDBCheckState(hwndDlg, IDC_AUTOLOADAVATARS, "AvatarsAutoLoad");
       StoreDBCheckState(hwndDlg, IDC_BIGGERAVATARS, "AvatarsAllowBigger");
       StoreDBCheckState(hwndDlg, IDC_STRICTAVATARCHECK, "StrictAvatarCheck");
+			StoreDBCheckState(hwndDlg, IDC_REMOVE_TEMP, "RemoveTmpContacts");
 	  if (IsDlgButtonChecked(hwndDlg, IDC_DELETE_TMP_CONTACTS))
 	  {
 		  ICQWriteContactSettingByte(NULL, "TempContacts", 0);
@@ -1574,7 +1599,11 @@ static BOOL CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wPara
 		  }
 	  }
       StoreDBCheckState(hwndDlg, IDC_ADDTEMP, "AddTemp");
-	  bAddTemp = ICQGetContactSettingByte(NULL, "AddTemp", 0);
+	    bAddTemp = ICQGetContactSettingByte(NULL, "AddTemp", 0);
+	    StoreDBCheckState(hwndDlg, IDC_TMPREQAUTH, "TmpReqAuth");
+	    bTmpAuthRequet = ICQGetContactSettingByte(NULL, "TmpReqAuth", 1);
+	    StoreDBCheckState(hwndDlg, IDC_TMPSNDADDED, "TmpSndAdded");
+	    bTmpSendAdded = ICQGetContactSettingByte(NULL, "TmpSndAdded", 1);
       return TRUE;
     }
     break;

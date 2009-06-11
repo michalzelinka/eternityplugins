@@ -2,11 +2,11 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -41,7 +41,7 @@
 static void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie);
 
 extern const char* cliSpamBot;
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
 
 
 void handleLocationFam(unsigned char *pBuffer, WORD wBufferLength, snac_header* pSnacHeader)
@@ -242,6 +242,7 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
         oscar_tlv_chain* pChain;
         oscar_tlv* pTLV;
         BYTE *tmp;
+        WORD wClass;
         WORD wVersion = 0;
         DWORD dwFT1 = 0, dwFT2 = 0, dwFT3 = 0;
         DWORD dwOnlineSince;
@@ -270,9 +271,13 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
         if (!(pChain = readIntoTLVChain(&buf, wLen, wTLVCount)))
           return;
 
+        // Get Class word
+        wClass = getWordFromChain(pChain, 0x01, 1);
+
         if (dwUIN)
         { // Get DC info TLV
           pTLV = getTLV(pChain, 0x0C, 1);
+          SetContactCapabilities(hContact, WAS_FOUND); //mark contact for asd
           if (pTLV && (pTLV->wLen >= 15))
           {
             BYTE* pBuffer;
@@ -312,24 +317,37 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
             capLen = pTLV->wLen;
           }
         }
+        szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
 
-        szClient = detectUserClient(hContact, dwUIN, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, szStrBuf);
-
-        if (szClient == cliSpamBot)
-        {
-          if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
-          { // kill spammer
-            icq_DequeueUser(dwUIN);
-            AddToSpammerList(dwUIN);
-            if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", 1))
-              ShowPopUpMsg(hContact, dwUIN, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
-            CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
-
-            NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
-          }
-		  disposeChain(&pChain);
-		  break;
-        }
+        if (szClient && ( int )szClient != -1 )
+		{
+			if (szClient == cliSpamBot||szClient == "Virus")
+			{
+				if (DBGetContactSettingByte(hContact, "CList", "NotOnList", 0)&& ICQGetContactSettingByte(NULL, "KillSpambots", DEFAULT_KILLSPAM_ENABLED))
+				{ // kill spammer
+					icq_DequeueUser(dwUIN);
+					AddToSpammerList(dwUIN);
+					if (ICQGetContactSettingByte(NULL, "PopupsSpamEnabled", 1))
+						ShowPopUpMsg(hContact, dwUIN, "Spambot Detected", "Contact deleted & further events blocked.", POPTYPE_SPAM);
+					CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+					NetLog_Server("Contact %s deleted", strUID(dwUIN, szUID));
+				}
+				disposeChain(&pChain);
+				break;
+			}
+			else if (!strcmp(szClient, "Unknown"))
+			{
+				if (ICQGetContactSettingByte(NULL, "KillUnknown", 0) && DBGetContactSettingByte(hContact, "CList", "NotOnList", 0))
+				{
+					icq_DequeueUser(dwUIN);
+					AddToSpammerList(dwUIN);
+					if (bUnknownPopUp)
+						ShowPopUpMsg(hContact, dwUIN, "Unknown Detected", "Contact deleted & further events blocked.", POPTYPE_UNKNOWN);
+					CallService(MS_DB_CONTACT_DELETE, (WPARAM)hContact, 0);
+					NetLog_Server("Contact %u deleted", dwUIN);
+				}
+			}
+		}
 
 		// Get IP TLV
 		dwIP = getDWordFromChain(pChain, 0x0a, 1);
@@ -378,6 +396,9 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 			dbcws.szSetting = "CapBuf";
 			CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&dbcws);     
 		}
+		else // workaround bug in detecting clients without caps 
+			ICQDeleteContactSetting(hContact, "CapBuf");
+
         if (pTLV && (pTLV->wLen >= 16))
         { // handle Xtraz status
           char* moodData = NULL;
@@ -399,16 +420,29 @@ void handleLocationUserInfoReply(BYTE* buf, WORD wLen, DWORD dwCookie)
 		}
 		if (szClient != (char*)-1)
 		{
-			ICQWriteContactSettingUtf(hContact,   "MirVer",  szClient);
+			if(szClient != "Pocket Web 1&1")
+			  ICQWriteContactSettingUtf(hContact,   "MirVer",  szClient); 
 			ICQWriteContactSettingByte(hContact,  "ClientID",     bClientId);
 			ICQWriteContactSettingDword(hContact, "IP",           dwIP);
 			ICQWriteContactSettingDword(hContact, "RealIP",       dwRealIP);
 		}
-		if(status && ICQGetContactSettingWord(hContact, "Status", 0) == ID_STATUS_OFFLINE)
+		if((status && szClient) && ICQGetContactSettingWord(hContact, "Status", 0) == ID_STATUS_OFFLINE)
 		{
-			ICQWriteContactSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(status));
-			NetLog_Server("%s changed status to %s (v%d).", strUID(dwUIN, szUID),
-				MirandaStatusToString(IcqStatusToMiranda(status)), wVersion);
+		  ICQWriteContactSettingWord(hContact,  "Status", (WORD)IcqStatusToMiranda(status));
+		  NetLog_Server("%s changed status to %s (v%d).", strUID(dwUIN, szUID),
+		    MirandaStatusToString(IcqStatusToMiranda(status)), wVersion);
+		  ICQWriteContactSettingWord(hContact, "ICQStatus", status);
+		  {
+			  CHECKCONTACT chk = {0};
+			  chk.dbeventflag=DBEF_READ;
+			  chk.dwUin=dwUIN;
+			  chk.hContact=hContact;
+			  chk.historyevent=chk.logtofile=TRUE;
+			  chk.icqeventtype=ICQEVENTTYPE_WAS_FOUND;
+			  chk.msg="detected via ASD";
+			  chk.PSD=-1;
+			  CheckContact(chk);
+		  }
 		}
 		if (!wIdleTimer)
 		{

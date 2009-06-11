@@ -48,7 +48,9 @@ extern CRITICAL_SECTION modeMsgsMutex;
 extern const capstr capXStatus[];
 extern const int moodXStatus[];
 
-extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+extern char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf);
+
+extern void RemoveTempUsers();
 
 void setUserInfo();
 
@@ -837,6 +839,25 @@ void setUserInfo()
       MIRANDA_VERSION |= 0x80000000;
   }
 // eternity : fix for setting alpha build flag - END
+
+// eternity :: force reupdate of custom capabilities
+  {
+    //Custom caps
+    mir_getLI(&listInterface);
+    lstCustomCaps = listInterface.List_Create(0,1);
+    lstCustomCaps->sortFunc = NULL;
+  
+    {
+  		char tmp[MAXMODULELABELLENGTH];
+      DBCONTACTENUMSETTINGS dbces;
+  		mir_snprintf(tmp, MAXMODULELABELLENGTH, "%sCaps", gpszICQProtoName);
+  		dbces.pfnEnumProc = EnumCustomCapsProc;
+  		dbces.lParam = (LPARAM)tmp;
+  		dbces.szModule = tmp;
+  		CallService(MS_DB_CONTACT_ENUMSETTINGS, 0, (LPARAM)&dbces);
+    }
+  }
+// eternity :: force reupdate of custom capabilities - END
  
   if(!cID||cID==11||cID==54) 
   { // if miranda, as 'miranda' or as 'mirandamobile'
@@ -1253,7 +1274,7 @@ void handleServUINSettings(int nPort, serverthread_info *info)
 			WORD bufsize = dbv.cpbVal;
 			BYTE *buf = dbv.pbVal;
 			SetTimeStamps(&dwFT1, &dwFT2, &dwFT3);
-			szClient = detectUserClient(NULL, 0, GetProtoVersion(), dwFT1, dwFT2, dwFT3, 0, 0, 0, 0, buf, bufsize, &bClient, szStrBuf);
+			szClient = detectUserClient(NULL, 0, wClass, GetProtoVersion(), dwFT1, dwFT2, dwFT3, 0, 0, 0, 0, buf, bufsize, &bClient, szStrBuf);
 			if (!szClient||szClient<0)
 				szClient = "Unknown";
 			ICQWriteContactSettingUtf(NULL,   "MirVer",       szClient);
@@ -1354,4 +1375,6 @@ void handleServUINSettings(int nPort, serverthread_info *info)
     LeaveCriticalSection(&modeMsgsMutex);
   }
   CheckSelfRemove();
+	if(ICQGetContactSettingByte(NULL, "RemoveTmpContacts", 0))
+		RemoveTempUsers();
 }

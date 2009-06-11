@@ -47,10 +47,10 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	int newtop = 0;
 	int curSel;
 	int len;
-	char * txt;
-	char * txt2;
-	char * tzid;
-	char * tzurl;
+	char * txt = {0};
+	char * txt2 = {0};
+	char * tzid = {0};
+	char * tzurl = {0};
 	RECT rect;
 
 	static HANDLE hContact;
@@ -100,47 +100,10 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 		case WM_COMMAND:
 			if (HIWORD(wParam) == CBN_SELCHANGE && LOWORD(wParam) == IDC_TZER_COMBO) {
 				curSel = SendDlgItemMessage(hWnd, IDC_TZER_COMBO, CB_GETCURSEL, 0, 0);
-				switch(curSel) {
-          // eternity TODO: czech & slovak equivalents
-          // slovak: common > distId/18113
-          // czech:  not available? x))
-					case 0:
-						txt = "Gangsta";
-						break;
-					case 1:
-						txt = "Can't Hear U";
-						break;
-					case 2:
-						txt = "Scratch";
-						break;
-					case 3:
-						txt = "Booooo";
-						break;
-					case 4:
-						txt = "Kisses";
-						break;
-					case 5:
-						txt = "Chill Out!";
-						break;
-					case 6:
-						txt = "Akitaka";
-						break;
-					case 7:
-						txt = "I'm Sorry";
-						break;
-					case 8:
-						txt = "Hilaaarious";
-						break;
-					case 9:
-						txt = "Like Duh!";
-						break;
-					case 10:
-						txt = "L8R";
-						break;
-					case 11:
-						txt = "Like U!";
-						break;
-				}
+        // eternity TODO: czech & slovak equivalents
+        // slovak: common > distId/18113
+        // czech:  not available? x))
+        txt = tZers[curSel].szTxt;
 				SendDlgItemMessage(hWnd, IDC_TZER_NAME, WM_SETTEXT, 0, (LPARAM)txt);
 			}
 
@@ -150,56 +113,8 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 				txt = malloc(len + 1);
 				if (txt) {
 					SendDlgItemMessage(hWnd, IDC_TZER_NAME, WM_GETTEXT, (WPARAM)(len + 1), (LPARAM)txt);
-					switch(curSel) {
-						case 0:
-							tzid = "gangSh";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/gangsterSheep.swf";
-							break;
-						case 1:
-							tzid = "cantH";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/cant_hear.swf";
-							break;
-						case 2:
-							tzid = "scratch";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/scratch.swf";
-							break;
-						case 3:
-							tzid = "boo";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/boo.swf";
-							break;
-						case 4:
-							tzid = "kisses";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/kisses.swf";
-							break;
-						case 5:
-							tzid = "rasta";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/rastamab.swf";
-							break;
-						case 6:
-							tzid = "arakiri";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/sappuko.swf";
-							break;
-						case 7:
-							tzid = "sorry";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/sorry.swf";
-							break;
-						case 8:
-							tzid = "laugh";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/laugh.swf";
-							break;
-						case 9:
-							tzid = "da";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/dahh.swf";
-							break;
-						case 10:
-							tzid = "beback";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/beBack.swf";
-							break;
-						case 11:
-							tzid = "ilikeu";
-							tzurl = "http://c.icq.com/xtraz/products/teaser/anims/common/iLikeU.swf";
-							break;
-					}
+					tzid = tZers[curSel].szId;
+					tzurl = tZers[curSel].szUrl;
 					txt2 = MangleXml(txt, len);
 					free(txt);
 					SendtZer(hContact, dwUin, "ID", txt2, tzurl);
@@ -214,3 +129,18 @@ CALLBACK tZersWndProc(HWND hWnd, UINT uMsg, WPARAM wParam, LPARAM lParam) {
 	}
 	return FALSE;
 }
+
+TZerInfo tZers[TZER_COUNT] = {
+ 	{ "Gangsta", "gangSh", "http://c.icq.com/xtraz/products/teaser/anims/common/gangsterSheep.swf" },
+ 	{ "Can't Hear U", "cantH", "http://c.icq.com/xtraz/products/teaser/anims/common/cant_hear.swf" },
+ 	{ "Scratch", "scratch", "http://c.icq.com/xtraz/products/teaser/anims/common/scratch.swf" },
+ 	{ "Booooo", "boo", "http://c.icq.com/xtraz/products/teaser/anims/common/boo.swf" },
+ 	{ "Kisses", "kisses", "http://c.icq.com/xtraz/products/teaser/anims/common/kisses.swf" },
+ 	{ "Chill Out!", "rasta", "http://c.icq.com/xtraz/products/teaser/anims/common/rastamab.swf" },
+ 	{ "Akitaka", "arakiri", "http://c.icq.com/xtraz/products/teaser/anims/common/sappuko.swf" },
+ 	{ "I'm Sorry", "sorry", "http://c.icq.com/xtraz/products/teaser/anims/common/sorry.swf" },
+ 	{ "Hilaaarious", "laugh", "http://c.icq.com/xtraz/products/teaser/anims/common/laugh.swf" },
+ 	{ "Like Duh!", "da", "http://c.icq.com/xtraz/products/teaser/anims/common/dahh.swf" },
+ 	{ "L8R", "beback", "http://c.icq.com/xtraz/products/teaser/anims/common/beBack.swf" },
+ 	{ "Like U!", "ilikeu", "http://c.icq.com/xtraz/products/teaser/anims/common/iLikeU.swf" }
+};

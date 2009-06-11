@@ -62,6 +62,7 @@ static BYTE SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char *szModule, 
 #define SVS_ICQVERSION    8
 #define SVS_TIMESTAMP     9
 #define SVS_STATUSID      10
+#define SVS_ICQ_STATUSID  11
 
 #define SVS_FLAGS         0xFF
 #define SVSF_GRAYED       0x100
@@ -206,11 +207,12 @@ static BOOL CALLBACK IcqDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lP
              	}
               else
               {
-					WORD wStatus = ICQGetContactSettingWord(hContact, "Status", 0);
+//					WORD wStatus = ICQGetContactSettingWord(hContact, "Status", 0);
 					char str[256] = {0};
 //					int i;
 
 					SetValue(hwndDlg, IDC_STATUS, hContact, gpszICQProtoName, "Status", SVS_STATUSID);
+					SetValue(hwndDlg, IDC_ICQ_STATUS, hContact, gpszICQProtoName, "ICQStatus", SVS_ICQ_STATUSID);
 
 					ShowWindow(GetDlgItem(hwndDlg,IDC_GETSTATUS),(gbASD)?SW_SHOW:SW_HIDE);
 					//ShowWindow(GetDlgItem(hwndDlg,IDC_GETCAPS),(wStatus != ID_STATUS_OFFLINE)?SW_SHOW:SW_HIDE);
@@ -510,7 +512,7 @@ static BOOL CALLBACK IcqDlgProcClient(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
 			} else
 			if (!lstrcmpA(str, "04."))
 			{
-				lstrcpyA(str, Translate("Unknow Flags (decoded)"));
+				lstrcpyA(str, Translate("Unknown Flags (decoded)"));
 			} else
 			if (!lstrcmpA(str, "05."))
 			{
@@ -755,25 +757,6 @@ static BOOL CALLBACK IcqDlgProcClient(HWND hwndDlg, UINT msg, WPARAM wParam, LPA
   return FALSE;  
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 static BYTE SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, char* szSetting, WORD type)
 {
   DBVARIANT dbv = {0};
@@ -875,11 +858,34 @@ static BYTE SetValue(HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, 
         pstr = str;
         unspecified = 0;
       }
+			else if (special == SVS_ICQ_STATUSID)
+			{
+				switch (dbv.wVal)
+				{
+				case ICQ_STATUS_DEPRESS:
+					pstr = Translate("Depress");
+					break;
+				case ICQ_STATUS_EVIL:
+					pstr = Translate("Evil");
+					break;
+				case ICQ_STATUS_LUNCH:
+					pstr = Translate("Lunch");
+					break;
+				case ICQ_STATUS_WORK:
+					pstr = Translate("Work");
+					break;
+				case ICQ_STATUS_HOME:
+					pstr = Translate("Home");
+					break;
+				default:
+					pstr = Translate("None");
+				}
+			}
       else
       {
         unspecified = (special == SVS_ZEROISUNSPEC && dbv.wVal == 0);
         pstr = itoa(special == SVS_SIGNED ? dbv.sVal:dbv.wVal, str, 10);
-      }
+			}
       break;
       
     case DBVT_DWORD:

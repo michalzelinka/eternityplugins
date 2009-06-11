@@ -3,12 +3,12 @@
 //                ICQ plugin for Miranda Instant Messenger
 //                ________________________________________
 // 
-// Copyright © 2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
-// Copyright © 2001,2002 Jon Keating, Richard Hughes
-// Copyright © 2002,2003,2004 Martin Öberg, Sam Kothari, Robert Rainwater
-// Copyright © 2004,2005,2006,2007 Joe Kucera
-// Copyright © 2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
-// Copyright © 2007,2008 jarvis
+// Copyright  2000,2001 Richard Hughes, Roland Rabien, Tristan Van de Vreede
+// Copyright  2001,2002 Jon Keating, Richard Hughes
+// Copyright  2002,2003,2004 Martin berg, Sam Kothari, Robert Rainwater
+// Copyright  2004,2005,2006,2007 Joe Kucera
+// Copyright  2006,2007,2008 [sss], chaos.persei, [sin], Faith Healer, Theif, nullbie
+// Copyright  2007,2008 jarvis
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -82,7 +82,7 @@ char* cliIM2       = "IM2";
 char* cliSpamBot   = "Spam Bot";
 
 
-char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
+char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wUserClass, WORD wVersion, DWORD dwFT1, DWORD dwFT2, DWORD dwFT3, DWORD dwOnlineSince, BYTE bDirectFlag, DWORD dwDirectCookie, DWORD dwWebPort, BYTE* caps, WORD wLen, BYTE* bClientId, char* szClientBuf)
 {
 	capstr* capId;
 	LPSTR szClient = {0};
@@ -200,15 +200,20 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
     null_snprintf(szClientBuf, 64, "R&Q %u", (unsigned)dwFT2);
     szClient = szClientBuf;   
   }
-  else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666) 
+	else if (capId = MatchCap(caps, wLen, &capDiChat, 8))
+	{
+		strcpy(szClientBuf, "D[i]Chat");
+		strncat(szClientBuf, (*capId) + 8, 8);
+		szClient = szClientBuf;
+  }
+  else if (dwFT1 == 0x66666666 && dwFT3 == 0x66666666)
  	{ // http://darkjimm.ucoz.ru/
     strcpy(szClientBuf, "D[i]Chat"); 
  	  if (dwFT2 == 0x10000) 
  	    strcat(szClientBuf, " v.0.1a"); 
  	  else if (dwFT2 == 0x22) 
- 	    strcat(szClientBuf, " v.0.2b"); 
-    szClient = szClientBuf; 
-  }
+ 	    strcat(szClientBuf, " v.0.2b");
+	}
   else if (dwFT1 == dwFT2 && dwFT2 == dwFT3 && wVersion == 8)
   {
     if ((dwFT1 < dwOnlineSince + 3600) && (dwFT1 > (dwOnlineSince - 3600)))
@@ -324,7 +329,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 				szClient = "Kopete";
 			else
 			{
-				null_snprintf(szClientBuf, 64, "SIM %u.%u", (unsigned)hiVer, loVer);
+				makeClientVersion(szClientBuf, "SIM ", (unsigned)hiVer, loVer, 0, 0);
 				szClient = szClientBuf;
 			}
 		}
@@ -531,18 +536,24 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 		  strncat(szClientBuf, (*capId) + 5, 11);
 		  szClient = szClientBuf;
 	  }
-      else if (capId = MatchCap(caps, wLen, &capSmapeR, 0x07))
-      { // http://www.smape.com/smaper
-        strcpy(szClientBuf, "SmapeR");
-        strncat(szClientBuf, (*capId) + 6, 10);
-        szClient = szClientBuf;
-      }
-      else if (capId = MatchCap(caps, wLen, &capMipClient, 0x04))
-      { //http://mip.rufon.net - new signature
-        strcpy(szClientBuf, "MIP ");
-        strncat(szClientBuf, (*capId) + 4, 12);
-        szClient = szClientBuf;
-      }
+    else if (capId = MatchCap(caps, wLen, &capSmapeR, 0x07))
+    { // http://www.smape.com/smaper
+      strcpy(szClientBuf, "SmapeR");
+      strncat(szClientBuf, (*capId) + 6, 10);
+      szClient = szClientBuf;
+    }
+    else if (capId = MatchCap(caps, wLen, &capMipClient, 4))
+    { //http://mip.rufon.net - new signature
+      strcpy(szClientBuf, "MIP ");
+      strncat(szClientBuf, (*capId) + 4, 12);
+      szClient = szClientBuf;
+    }
+		else if (capId = MatchCap(caps, wLen, &capBayan, 8))
+		{
+			strcpy(szClientBuf, "BayanICQ v");
+			strncat(szClientBuf, (*capId) + 8, 5);
+			szClient = szClientBuf;
+		}
 	  else if(capId = MatchCap(caps,wLen,&capYapp, 4))
 	  {
 		  strcpy(szClientBuf, "Yapp! v");
@@ -551,6 +562,69 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
 	  }
 	  else if(!wVersion && CheckContactCapabilities(hContact, CAPF_DIRECT|CAPF_RTF|CAPF_TYPING|CAPF_UTF))
 		  szClient = "GlICQ";
+		else if (MatchCap(caps, wLen, &capDigsbyBeta, 0x10))
+		{ // http://www.digsby.com - probably by mistake (feature detection as well)
+			szClient = "Digsby";
+		}
+		else if (MatchCap(caps, wLen, &capJapp, 0x10))
+		{ // http://www.japp.org.ua
+			szClient = "japp";
+		}
+		else if (MatchCap(caps, wLen, &capPigeon, 0x07))
+		{ // http://pigeon.vpro.ru
+			szClient = "PIGEON!";
+		}
+		else if (capId = MatchCap(caps, wLen, &capQutIm, 0x05))
+		{ // http://www.qutim.org
+			if ((*capId)[0x6] == 0x2E)
+			{ // old qutim id
+				unsigned ver1 = (*capId)[0x5] - 0x30;
+				unsigned ver2 = (*capId)[0x7] - 0x30;
+
+				makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, 0, 0);
+			}
+			else
+			{ // new qutim id
+				unsigned ver1 = (*capId)[0x6];
+				unsigned ver2 = (*capId)[0x7];
+				unsigned ver3 = (*capId)[0x8];
+				unsigned ver4 = ((*capId)[0x9] << 8) || (*capId)[0xA];
+
+				makeClientVersion(szClientBuf, "qutIM ", ver1, ver2, ver3, ver4);
+
+				switch ((*capId)[0x5])
+				{
+					case 'l':
+						strcat(szClientBuf, "/Linux");
+						break;
+					case 'w':
+						strcat(szClientBuf, "/Win32");
+						break;
+					case 'm':
+						strcat(szClientBuf, "/MacOS X");
+						break;
+				}
+			}
+			szClient = szClientBuf;
+		}
+		else if (capId = MatchCap(caps, wLen, &capJabberJIT, 0x04))
+		{
+			szClient = "Jabber ICQ Transport";
+		}
+		else if (capId = MatchCap(caps, wLen, &capIcqKid2, 0x07))
+		{ // http://sourceforge.net/projects/icqkid2
+		  unsigned ver1 = (*capId)[0x7];
+		  unsigned ver2 = (*capId)[0x8];
+		  unsigned ver3 = (*capId)[0x9];
+		  unsigned ver4 = (*capId)[0xA];
+		  
+		  makeClientVersion(szClientBuf, "IcqKid2 v", ver1, ver2, ver3, ver4);
+		  szClient = szClientBuf;
+    }
+    else if (capId = MatchCap(caps, wLen, &capWebIcqPro, 0x0A))
+    { // http://intrigue.ru/workshop/webicqpro/webicqpro.html
+      szClient = "WebIcqPro";
+    }
       else if (szClient == cliLibicq2k)
       { // try to determine which client is behind libicq2000
         if (CheckContactCapabilities(hContact, CAPF_RTF))
@@ -619,11 +693,14 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             {
               if (MatchCap(caps, wLen, &captZers, 0x10))
               { // capable of tZers ?
-                if (MatchCap(caps, wLen, &capHtmlMsgs, 0x10))
-                {
-                  strcpy(szClientBuf, "ICQ 6");
-                  *bClientId = CLID_ICQ6;
-                }
+								if (MatchCap(caps, wLen, &capHtmlMsgs, 0x10))
+								{
+									if(MatchCap(caps, wLen, &capLiveVideo, 0x10))
+									{
+										strcpy(szClientBuf, "ICQ 6");
+										*bClientId = CLID_ICQ6;
+									}
+								}
                 else
                 {
                   strcpy(szClientBuf, "ICQ 5.1");
@@ -655,6 +732,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
                 NetLog_Server("Forcing simple messages (QNext client).");
                 szClient = "QNext";
               }
+							else if (MatchCap(caps, wLen, &capHtmlMsgs, 0x10))
+								szClient = "Fring";
               else
                 szClient = "pyICQ";
             else
@@ -684,7 +763,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
           {
             if (CheckContactCapabilities(hContact, CAPF_TYPING))
               szClient = "ICQ2Go! (Java)";
-            else if (wClass & CLASS_WIRELESS)
+            else if (wUserClass & CLASS_WIRELESS)
               szClient = "Pocket Web 1&1";
             else
               szClient = "ICQ2Go! (Flash)"; // fixing overlay in Fingerprint
@@ -710,7 +789,7 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
             szClient = "NanoICQ";
           }
         }
-        else if (wVersion == 0)
+        else if (!wVersion)
         { // capability footprint based detection - not really reliable
           if (!dwFT1 && !dwFT2 && !dwFT3 && !dwWebPort && !dwDirectCookie)
           { // DC info is empty
@@ -740,6 +819,8 @@ char* detectUserClient(HANDLE hContact, DWORD dwUin, WORD wVersion, DWORD dwFT1,
               szClient = "Agile Messenger"; // Smartphone 2002
             else if (CheckContactCapabilities(hContact, CAPF_UTF | CAPF_SRV_RELAY | CAPF_DIRECT | CAPF_AIM_FILE) && MatchCap(caps, wLen, &capAimFileShare, 0x10))
               szClient = "Slick"; // http://lonelycatgames.com/?app=slick
+			else if(!caps)
+			  szClient = "Icq2Go!"; // does anyone know better way of detecting this client ? 
           }
         }
       }
