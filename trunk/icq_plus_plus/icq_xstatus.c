@@ -46,6 +46,7 @@ extern HANDLE hxstatusiconchanged;
 extern HANDLE hxstatuschanged;
 
 int bHideXStatusUI = 0;
+int bHideXStatusMenu = 0;
 static int bStatusMenu = 0;
 static HANDLE hHookExtraIconsRebuild = NULL;
 static HANDLE hHookStatusBuild = NULL;
@@ -900,6 +901,8 @@ void InitXStatusItems(BOOL bAllowStatus)
 
   if (bStatusMenu && !bAllowStatus) return;
 
+  if (bHideXStatusUI || bHideXStatusMenu) return;
+
   null_snprintf(szItem, sizeof(szItem), ICQTranslate("%s Custom Status"), gpszICQProtoName);
   mi.cbSize = sizeof(mi);
   mi.pszPopupName = szItem;
@@ -1098,12 +1101,12 @@ int IcqSetXStatusEx(WPARAM wParam, LPARAM lParam)
 
   if (pData->flags & CSSF_DISABLE_UI)
   { // hide menu items
-    BYTE n;
-
     bHideXStatusUI = (*pData->wParam) ? 0 : 1;
+  }
 
-    for (n = 0; n<=XstatusIcons; n++)
-      CListShowMenuItem(hXStatusItems[n], (BYTE)!bHideXStatusUI);
+  if (pData->flags & CSSF_DISABLE_MENU)
+  { // hide menu items
+    bHideXStatusMenu = (*pData->wParam) ? 0 : 1;
   }
 
   return 0; // Success
@@ -1195,6 +1198,11 @@ int IcqGetXStatusEx(WPARAM wParam, LPARAM lParam)
   if (pData->flags & CSSF_DISABLE_UI)
   {
     if (pData->wParam) *pData->wParam = !bHideXStatusUI;
+  }
+
+  if (pData->flags & CSSF_DISABLE_MENU)
+  {
+	  if (pData->wParam) *pData->wParam = !bHideXStatusMenu;
   }
 
   if (pData->flags & CSSF_STATUSES_COUNT)

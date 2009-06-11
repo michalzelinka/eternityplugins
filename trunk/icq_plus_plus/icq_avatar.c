@@ -38,6 +38,7 @@
 #include "icqoscar.h"
 #include "m_folders.h"
 
+extern generate_flap_sequence();
 BOOL AvatarsReady = FALSE; // states if avatar connection established and ready for requests
 
 
@@ -421,7 +422,7 @@ void StartAvatarThread(HANDLE hConn, char* cookie, WORD cookieLen) // called fro
   atsi = (avatarthreadstartinfo*)SAFE_MALLOC(sizeof(avatarthreadstartinfo));
   atsi->pendingLogin = 1;
   // Randomize sequence
-  atsi->wLocalSequence = (WORD)RandRange(0, 0x7fff);
+  atsi->wLocalSequence = generate_flap_sequence();
   atsi->hConnection = hConn;
   atsi->pCookie = cookie;
   atsi->wCookieLen = cookieLen;
@@ -1186,7 +1187,7 @@ void handleAvatarLogin(unsigned char *buf, WORD datalen, avatarthreadstartinfo *
 
   if (*(DWORD*)buf == 0x1000000)
   {  // here check if we received SRV_HELLO
-    atsi->wLocalSequence = (WORD)RandRange(0, 0xffff); 
+    atsi->wLocalSequence = generate_flap_sequence();
 
     serverCookieInit(&packet, atsi->pCookie, atsi->wCookieLen);
     sendAvatarPacket(&packet, atsi);

@@ -43,6 +43,7 @@ extern CRITICAL_SECTION connectionHandleMutex;
 extern WORD wLocalSequence;
 extern CRITICAL_SECTION localSeqMutex;
 extern int icqGoingOnlineStatus;
+extern generate_flap_sequence();
 HANDLE hServerConn;
 WORD wListenPort;
 WORD wLocalSequence;
@@ -521,7 +522,7 @@ void icq_login(const char* szPassword)
   stsi->szPass[stsi->wPassLen] = '\0';
 
   // Randomize sequence
-  wLocalSequence = (WORD)RandRange(0, 0x7fff);
+  wLocalSequence = generate_flap_sequence();
 
   dwLocalUIN = dwUin;
 

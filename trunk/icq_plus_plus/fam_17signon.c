@@ -109,7 +109,7 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
 
   wUinLen = strlennull(strUID(dwLocalUIN, szUin));
 
-  packet.wLen = 65 + sizeof(CLIENT_ID_STRING) + wUinLen + wKeyLen;
+  packet.wLen = 65 + sizeof(CLIENT_ID_STRING) + wUinLen + wKeyLen + 0x0005;
 
   if (bSecure)
   {
@@ -138,14 +138,17 @@ void sendClientAuth(const char* szKey, WORD wKeyLen, BOOL bSecure)
 
   // Pack client identification details.
   packTLV(&packet, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING);
-  packTLVWord(&packet, 0x0016, CLIENT_ID_CODE);
   packTLVWord(&packet, 0x0017, CLIENT_VERSION_MAJOR);
   packTLVWord(&packet, 0x0018, CLIENT_VERSION_MINOR);
   packTLVWord(&packet, 0x0019, CLIENT_VERSION_LESSER);
   packTLVWord(&packet, 0x001a, CLIENT_VERSION_BUILD);
+  packTLVWord(&packet, 0x0016, CLIENT_ID_CODE);
   packTLVDWord(&packet, 0x0014, CLIENT_DISTRIBUTION);
   packTLV(&packet, 0x000f, 0x0002, CLIENT_LANGUAGE);
   packTLV(&packet, 0x000e, 0x0002, CLIENT_LANGUAGE);
+  // unknown 2009.01.22
+  packDWord(&packet, 0x00940001);
+  packByte(&packet, 0x00);
 
   sendServPacket(&packet);
 }

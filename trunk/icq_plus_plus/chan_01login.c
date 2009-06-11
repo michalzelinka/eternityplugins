@@ -40,6 +40,7 @@
 
 
 extern WORD wLocalSequence;
+extern generate_flap_sequence();
 
 
 void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *info)
@@ -101,7 +102,7 @@ void handleLoginChannel(unsigned char *buf, WORD datalen, serverthread_info *inf
   {
     if (info->cookieDataLen)
     {
-      wLocalSequence = (WORD)RandRange(0, 0xffff);
+      wLocalSequence = generate_flap_sequence();
       
       serverCookieInit(&packet, info->cookieData, (WORD)info->cookieDataLen);
       sendServPacket(&packet);

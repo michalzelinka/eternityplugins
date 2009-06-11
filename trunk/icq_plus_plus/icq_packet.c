@@ -39,6 +39,16 @@
 
 
 
+WORD generate_flap_sequence()
+{
+  DWORD i, n = rand(), s = 0;
+
+  for (i = n; i >>= 3; s += i);
+
+  return (((0 - s) ^ (BYTE)n) & 7 ^ n) + 2;
+}
+
+
 void __fastcall init_generic_packet(icq_packet* pPacket, WORD wHeaderLen)
 {
   pPacket->wPlace = 0;
@@ -96,7 +106,7 @@ void __fastcall directPacketInit(icq_packet* pPacket, DWORD dwSize)
 
 void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCookieSize)
 {
-  pPacket->wLen = (WORD)(wCookieSize + 8 + sizeof(CLIENT_ID_STRING) + 61);
+  pPacket->wLen = (WORD)(wCookieSize + 8 + sizeof(CLIENT_ID_STRING) + 61 + 5);
 
   write_flap(pPacket, ICQ_LOGIN_CHAN);
   packDWord(pPacket, 0x00000001);
@@ -104,14 +114,17 @@ void __fastcall serverCookieInit(icq_packet* pPacket, BYTE* pCookie, WORD wCooki
 
   // Pack client identification details.
   packTLV(pPacket, 0x0003, (WORD)sizeof(CLIENT_ID_STRING)-1, CLIENT_ID_STRING);
-  packTLVWord(pPacket, 0x0016, CLIENT_ID_CODE);
   packTLVWord(pPacket, 0x0017, CLIENT_VERSION_MAJOR);
   packTLVWord(pPacket, 0x0018, CLIENT_VERSION_MINOR);
   packTLVWord(pPacket, 0x0019, CLIENT_VERSION_LESSER);
   packTLVWord(pPacket, 0x001a, CLIENT_VERSION_BUILD);
+  packTLVWord(pPacket, 0x0016, CLIENT_ID_CODE);
   packTLVDWord(pPacket, 0x0014, CLIENT_DISTRIBUTION);
   packTLV(pPacket, 0x000f, 0x0002, CLIENT_LANGUAGE);
-  packTLV(pPacket, 0x000e, 0x0002, CLIENT_LANGUAGE);
+  packTLV(pPacket, 0x000e, 0x0002, CLIENT_COUNTRY);
+  // unknown 2009.01.22
+  packDWord(pPacket, 0x00940001);
+  packByte(pPacket, 0x00);
 
   packTLVDWord(pPacket, 0x8003, 0x00100000); // Unknown
 }

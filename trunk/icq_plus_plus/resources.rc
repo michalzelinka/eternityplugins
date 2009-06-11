@@ -652,26 +652,28 @@ BEGIN
     EDITTEXT        IDC_POPUP_XUPDATER_TIMEOUT,185,218,34,12,ES_AUTOHSCROLL | ES_NUMBER
 END
 
-IDD_RELNOTES DIALOGEX 100, 100, 192, 149
+IDD_RELNOTES DIALOGEX 100, 100, 192, 163
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "ICQ eternity/PlusPlus++ Mod About/Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    DEFPUSHBUTTON   "Close",IDOK,135,129,50,14
-    GROUPBOX        "Latest Changes",IDC_STATIC,4,79,184,47
+    DEFPUSHBUTTON   "Close",IDOK,134,143,50,14
+    GROUPBOX        "Latest Changes",IDC_STATIC,4,79,184,58
     RTEXT           "Plugin name:",IDC_STATIC,7,4,53,8
     RTEXT           "Version:",IDC_STATIC,7,14,53,8
     LTEXT           "ICQ eternity/PlusPlus++ Mod",IDC_STATIC,66,4,98,8
-    LTEXT           "0.3.88.44",IDC_STATIC,66,14,98,8
+    LTEXT           "0.3.88.45",IDC_STATIC,66,14,98,8
     LTEXT           "ICQ Plus SVN merge",IDC_STATIC,20,92,150,8
     RTEXT           "Author:",IDC_STATIC,7,24,53,8
     LTEXT           "jarvis (based on ICQ Plus Mod)",IDC_STATIC,66,24,115,8
     RTEXT           "Copyright:",IDC_STATIC,7,34,53,8
     LTEXT           "© 2000-2009 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",IDC_STATIC,66,34,115,42
-    ICON            IDI_ICQ,IDC_STATIC,163,3,20,20
-    LTEXT           "fixed leaking menu items due to latest genmenu patches",IDC_STATIC,20,101,150,17
+    ICON            IDI_ICQ,IDC_STATIC,163,3,21,20
+    LTEXT           "Fixed login sequences (required for successful login in Russia)",IDC_STATIC,20,101,150,17
     CONTROL         "Check1",IDC_CHECK1,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,92,9,10
     CHECKBOX        "Check1",IDC_CHECK4,7,101,9,10,WS_DISABLED
+    LTEXT           "Enanced support for Custom Status List 0.1.x.x",IDC_STATIC,20,118,150,8
+    CONTROL         "Check1",IDC_CHECK5,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,7,118,9,10
 END
 
 IDD_TZER DIALOGEX 0, 0, 151, 86
@@ -745,7 +747,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,3,88,44
+ FILEVERSION 0,3,88,45
  PRODUCTVERSION 0,7,0,44
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -763,7 +765,7 @@ BEGIN
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
             VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced eternity/PlusPlus++ modification"
-            VALUE "FileVersion", "0, 3, 88, 44"
+            VALUE "FileVersion", "0, 3, 88, 45"
             VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
             VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Oberg, Richard Hughes, Jon Keating, Se7en, [sss], jarvis, chaos.persei, [sin], nullbie, Big Muscle"
             VALUE "OriginalFilename", "ICQ.dll"
@@ -888,6 +890,11 @@ BEGIN
         VERTGUIDE, 235
         TOPMARGIN, 7
         BOTTOMMARGIN, 304
+    END
+
+    IDD_RELNOTES, DIALOG
+    BEGIN
+        VERTGUIDE, 7
     END
 
     IDD_OPT_ASD, DIALOG

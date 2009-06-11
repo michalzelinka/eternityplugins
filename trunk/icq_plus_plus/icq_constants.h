@@ -565,8 +565,8 @@
 
 
 // Internal Constants
-#define ICQ_THISPLUG_VERSION        0x8003582C // actual icq eternity/PlusPlus++
-#define ICQ_RELNOTES                44 // actual eternity relnotes
+#define ICQ_THISPLUG_VERSION        0x8003582D // actual icq eternity/PlusPlus++
+#define ICQ_RELNOTES                45 // actual eternity relnotes
 // eternity version constant
 #define ICQ_PLUG_VERSION            0x80035869 // actual icq plus (+0.0.8x.0 to know if it's + or ++ :))
 #define ICQ_JOEWHALE_VERSION        0x80050004 // actual Joe@Whale
@@ -603,15 +603,25 @@
 //define CLIENT_LANGUAGE             "en"
 //define CLIENT_COUNTRY              "us"
 
-#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
-#define CLIENT_ID_CODE              0x010a
+//#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
+//#define CLIENT_ID_CODE              0x010a
+//#define CLIENT_VERSION_MAJOR        0x0006
+//#define CLIENT_VERSION_MINOR        0x0000
+//#define CLIENT_VERSION_LESSER       0x0000
+//#define CLIENT_VERSION_BUILD        0x1b67
+//#define CLIENT_DISTRIBUTION         0x00007535
+//#define CLIENT_LANGUAGE             "en"
+//#define CLIENT_COUNTRY              "us"
+
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
 #define CLIENT_VERSION_MAJOR        0x0006
-#define CLIENT_VERSION_MINOR        0x0000
-#define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x1b67
-#define CLIENT_DISTRIBUTION         0x00007535
-#define CLIENT_LANGUAGE             "en"
-#define CLIENT_COUNTRY              "us"
+#define CLIENT_VERSION_MINOR        0x0005
+#define CLIENT_VERSION_LESSER       0x0003
+#define CLIENT_VERSION_BUILD        0x0068
+#define CLIENT_ID_CODE              0x010a
+#define CLIENT_DISTRIBUTION         0x00007537
+#define CLIENT_LANGUAGE             "ru"
+#define CLIENT_COUNTRY              "ru"
 
 //auth
 //db event added to NULL or hcontact
