@@ -261,7 +261,7 @@
 				ProgramDataBaseFileName=".\Release/"
 				WarningLevel="3"
 				SuppressStartupBanner="true"
-				DebugInformationFormat="0"
+				DebugInformationFormat="3"
 			/>
 			<Tool
 				Name="VCManagedResourceCompilerTool"
@@ -279,8 +279,10 @@
 				OutputFile="$(OutDir)/cslist.dll"
 				LinkIncremental="1"
 				SuppressStartupBanner="true"
-				GenerateDebugInformation="false"
-				ProgramDatabaseFile=".\Release/cslist.pdb"
+				GenerateDebugInformation="true"
+				ProgramDatabaseFile=".\$(ConfigurationName)/plugins/cslist.pdb"
+				GenerateMapFile="true"
+				MapExports="true"
 				OptimizeForWindows98="1"
 				ImportLibrary=".\Release/cslist.lib"
 				TargetMachine="1"
@@ -361,6 +363,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\m_cslist.h"
+				>
+			</File>
+			<File
 				RelativePath=".\resource.h"
 				>
 			</File>
@@ -390,6 +396,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\global.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\import.ico"
 				>
 			</File>
@@ -410,7 +420,15 @@
 				>
 			</File>
 			<File
+				RelativePath=".\res\refresh.ico"
+				>
+			</File>
+			<File
 				RelativePath=".\res\remove.ico"
+				>
+			</File>
+			<File
+				RelativePath=".\res\undo.ico"
 				>
 			</File>
 			<File

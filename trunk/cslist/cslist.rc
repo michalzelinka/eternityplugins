@@ -26,92 +26,80 @@ LANGUAGE LANG_ENGLISH, SUBLANG_ENGLISH_US
 // Dialog
 //
 
-IDD_CSLIST DIALOGEX 0, 0, 210, 226
-STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION
+IDD_CSLIST DIALOGEX 0, 0, 213, 227
+STYLE DS_SETFONT | DS_MODALFRAME | DS_SETFOREGROUND | DS_3DLOOK | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom Status List"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    CONTROL         "",IDC_CSLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,1,3,207,204
-    CONTROL         "A",IDC_ADD,"MButtonClass",WS_TABSTOP,2,210,16,14
-    CONTROL         "M",IDC_MODIFY,"MButtonClass",WS_TABSTOP,22,210,16,14
-    CONTROL         "D",IDC_REMOVE,"MButtonClass",WS_TABSTOP,42,210,16,14
-    CONTROL         "I",IDC_IMPORT,"MButtonClass",WS_TABSTOP,65,210,16,14
-    CONTROL         "W",IDC_WATCH,"MButtonClass",WS_DISABLED | WS_TABSTOP,85,210,16,14
-    CONTROL         "F",IDC_FAV,"MButtonClass",WS_DISABLED | WS_TABSTOP,105,210,16,14
-    CONTROL         "N",IDC_NOCHNG,"MButtonClass",WS_TABSTOP,152,210,16,14
-    CONTROL         "E",IDC_EXIT,"MButtonClass",WS_TABSTOP,172,210,16,14
-    CONTROL         "P",IDC_APPLY,"MButtonClass",WS_TABSTOP,192,210,16,14
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,146,211,1,13
-    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,61,211,1,13
-    CONTROL         "O",IDC_OPTS,"MButtonClass",WS_TABSTOP,125,210,16,14
+    CONTROL         "",IDC_CSLIST,"SysListView32",LVS_REPORT | LVS_SINGLESEL | LVS_SHOWSELALWAYS | WS_BORDER | WS_TABSTOP,3,3,207,204
+    CONTROL         "A",IDC_ADD,"MButtonClass",WS_TABSTOP,3,210,16,14
+    CONTROL         "M",IDC_MODIFY,"MButtonClass",WS_TABSTOP,23,210,16,14
+    CONTROL         "D",IDC_REMOVE,"MButtonClass",WS_TABSTOP,43,210,16,14
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,63,210,1,13
+    CONTROL         "F",IDC_FAV,"MButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,67,210,16,14
+    CONTROL         "I",IDC_IMPORT,"MButtonClass",WS_TABSTOP,87,210,16,14
+    CONTROL         "U",IDC_UNDO,"MButtonClass",WS_DISABLED | WS_TABSTOP,107,210,16,14
+    CONTROL         "G",IDC_GLOBAL,"MButtonClass",NOT WS_VISIBLE | WS_DISABLED | WS_TABSTOP,127,210,16,14
+    CONTROL         "",IDC_STATIC,"Static",SS_BLACKFRAME | SS_SUNKEN,147,210,1,13
+    CONTROL         "N",IDC_NOCHNG,"MButtonClass",WS_TABSTOP,153,210,16,14
+    CONTROL         "E",IDC_EXIT,"MButtonClass",WS_TABSTOP,173,210,16,14
+    CONTROL         "P",IDC_APPLY,"MButtonClass",WS_TABSTOP,193,210,16,14
 END
 
-IDD_ADDMODIFY DIALOGEX 100, 100, 199, 121
+IDD_ADDMODIFY DIALOGEX 100, 100, 187, 115
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_VISIBLE | WS_CAPTION | WS_SYSMENU
 CAPTION "Add/Modify Custom Status"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    LTEXT           "Icon:",IDC_ST_XICON,4,2,44,8
-    CONTROL         "",IDC_CB_ICON,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,2,11,84,95
-    LTEXT           "Title:",IDC_ST_XTITLE,89,2,43,8
-    EDITTEXT        IDC_XTITLE,89,11,108,14,ES_AUTOHSCROLL
-    LTEXT           "Message:",IDC_ST_XMESSAGE,4,27,85,8
-    EDITTEXT        IDC_XMESSAGE,2,36,195,66,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
-    DEFPUSHBUTTON   "Add/Modify",IDC_AM_OK,49,105,50,14
-    PUSHBUTTON      "Cancel",IDC_AM_CN,102,105,50,14
+    CONTROL         "",IDC_CB_ICON,"ComboBoxEx32",CBS_DROPDOWNLIST | CBS_SORT | WS_VSCROLL | WS_TABSTOP,6,5,175,107
+    EDITTEXT        IDC_XTITLE,6,23,175,14,ES_AUTOHSCROLL
+    EDITTEXT        IDC_XMESSAGE,6,42,175,50,ES_MULTILINE | ES_WANTRETURN | WS_VSCROLL
+    DEFPUSHBUTTON   "Add/Modify",IDC_AM_OK,6,96,104,14
+    PUSHBUTTON      "Cancel",IDC_AM_CN,116,96,65,14
 END
 
-IDD_RELNOTES DIALOGEX 0, 0, 192, 269
+IDD_RELNOTES DIALOGEX 0, 0, 192, 180
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Custom Status List Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Latest Changes",IDC_RNCHNGS,4,104,184,83
-    GROUPBOX        "Notice",IDC_RNNOTICE,4,55,184,49
-    GROUPBOX        "Special Thanks",IDC_THX,4,189,184,58
-    RTEXT           "Plugin name:",IDC_RNPLGNM,7,4,53,8
-    RTEXT           "Version:",IDC_RNVER,7,14,53,8
-    LTEXT           "Custom Status List",IDC_RLNPLGNM2,66,4,98,8
-    LTEXT           "0.0.0.18 (Unicode)",IDC_RNVER2,66,14,95,8
-    LTEXT           "Plugin development is currently in Beta stage. It's not recommended to generally use, but stable enough for testing purposes. Stable release will be available as soon as possible ;)",IDC_STATIC,20,65,150,34
-    RTEXT           "Author:",IDC_RNAUTH,7,24,53,8
-    LTEXT           "jarvis (original idea by HANAX)",IDC_RNAUTH2,66,24,115,8
-    RTEXT           "Copyright:",IDC_RNCPR,7,34,53,8
-    LTEXT           "© 2007-8 eternity crew ..\n© 2006-7 HANAX Software",IDC_RNCPR2,66,34,115,18
-    ICON            IDI_ADD,IDC_RNCSICON,163,3,20,20
-    EDITTEXT        IDC_TXHTEXT,7,199,176,43,ES_MULTILINE | ES_READONLY | WS_VSCROLL
-    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,5,253,118,10
-    DEFPUSHBUTTON   "Close",IDOK,137,251,50,14
-    CONTROL         "Unicode build, finally :)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,119,155,10
-    CONTROL         "fixed memory leak and possible crash when modifying status and then importing 0 DB entries",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,17,158,155,26
-    CONTROL         "merged Add/Modify processes together :)",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,17,129,155,10
-    CONTROL         "icon selector shows only icons, that are supported by installed ICQ plugin",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,17,139,155,18
+    LTEXT           "",IDC_WHITERECT,0,0,191,32
+    CONTROL         "",IDC_STATIC,"Static",SS_ETCHEDHORZ,0,32,191,1
+    ICON            IDI_CSLIST,IDC_RN_PLUGIN_ICON,5,7,20,20
+    LTEXT           "Custom Status List",IDC_RN_PLUGIN_NAME,33,8,155,8
+    LTEXT           "Calm before the storm",IDC_RN_DESCRIPTION,33,16,155,8
+    RTEXT           "Version:",IDC_STATIC,4,40,54,8
+    LTEXT           "0.0.0.0",IDC_RN_VERSION,64,40,124,8
+    RTEXT           "Author:",IDC_STATIC,4,50,54,8
+    LTEXT           "jarvis (original idea by HANAX)",IDC_STATIC,64,50,124,8
+    RTEXT           "Copyright:",IDC_STATIC,4,60,54,8
+    LTEXT           "© 2007-8 eternity crew ..\n© 2006-8 HANAX Software",IDC_STATIC,64,60,124,18
+    GROUPBOX        "Changelog",IDC_STATIC,4,81,184,77
+    CONTROL         "Simplified loading of items :)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,14,98,155,10
+    CONTROL         "Some corrections around messy ANSI/Unicode politics with TCHAR politics :))",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,14,108,155,18
+    CONTROL         """Options"" button replaced by ""Undo"" button",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,14,126,155,10
+    CONTROL         "Probably ast ""mk1"" build",IDC_STATIC,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,14,138,155,10
+    CONTROL         "Don't show this dialog again",IDC_SHOWIT,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,6,164,118,10
+    DEFPUSHBUTTON   "Close",IDOK,128,162,60,14
 END
 
-IDD_OPTIONS DIALOGEX 0, 0, 172, 222
-STYLE DS_SETFONT | DS_FIXEDSYS | WS_POPUP | WS_CAPTION | WS_SYSMENU
-CAPTION "Options"
+IDD_OPTIONS DIALOGEX 0, 0, 300, 211
+STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD | WS_CLIPSIBLINGS
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
 BEGIN
-    GROUPBOX        "Menu Item placement",IDC_PLACEMENT_OPTIONS,3,102,165,81
-    CONTROL         "Global Status Menu",IDC_PLACE_GLOBAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP,11,115,119,10
-    CONTROL         "ICQ Status Menu",IDC_PLACE_ICQ_STATUS,"Button",BS_AUTORADIOBUTTON,11,147,125,10
-    CONTROL         "Main Menu",IDC_PLACE_MAIN,"Button",BS_AUTORADIOBUTTON,11,158,134,10
-    CONTROL         "Tray Menu",IDC_PLACE_TRAY,"Button",BS_AUTOCHECKBOX | WS_DISABLED,11,168,122,10
-    CONTROL         "At the top",IDC_PLACE_GLOBAL_TOP,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP,17,126,108,10
-    CONTROL         "At the bottom",IDC_PLACE_GLOBAL_BOTTOM,"Button",BS_AUTORADIOBUTTON | WS_DISABLED,17,136,119,10
-    CONTROL         "Hide ""Custom status"" menu\n(ICQ eternity/PlusPlus++ Mod only, restart needed)",IDC_HIDE_CSMENU,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,11,65,149,26
-    GROUPBOX        "List settings",IDC_LIST_SETTINGS,3,0,165,47
-    DEFPUSHBUTTON   "Save Options",IDOK,43,205,82,14
-    CTEXT           "Note: Some options will be applied after restart of Miranda IM",IDC_STATIC,11,185,144,15,WS_DISABLED
-    CONTROL         "Confirm deletion of items",IDC_DEL_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,11,13,148,10
+    GROUPBOX        "List settings",IDC_LIST_SETTINGS,67,28,165,47
+    CONTROL         "Confirm deletion of items",IDC_DEL_CONFIRM,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,75,41,148,10
     CONTROL         "Delete entries in ICQ Custom status menu after Import",IDC_DEL_AFTER_IMPORT,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,11,24,153,16
-    GROUPBOX        "ICQ integration",IDC_ICQ_INTG,3,50,165,50
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,75,52,148,16
+    GROUPBOX        "Menu item placement",IDC_PLACEMENT_OPTIONS,67,76,165,90
+    CONTROL         "Global Status Menu",IDC_PLACE_GLOBAL,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,75,88,148,10
+    CONTROL         "ICQ Status Menu",IDC_PLACE_ICQ_STATUS,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,75,120,148,10
+    CONTROL         "Main Menu",IDC_PLACE_MAIN,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,75,148,148,10
+    CONTROL         "At the top",IDC_PLACE_GLOBAL_TOP,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_GROUP | WS_TABSTOP,81,99,142,10
+    CONTROL         "At the bottom",IDC_PLACE_GLOBAL_BOTTOM,"Button",BS_AUTORADIOBUTTON | WS_DISABLED | WS_TABSTOP,81,109,142,10
+    CONTROL         "Hide ""Custom status"" menu",IDC_HIDE_CSMENU,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED | WS_TABSTOP,81,131,142,9
+    LTEXT           "(ICQ Plus/eternity mods only)",IDC_STATIC,93,140,130,8
 END
 
 
@@ -125,23 +113,51 @@ GUIDELINES DESIGNINFO
 BEGIN
     IDD_CSLIST, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 202
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 219
+        LEFTMARGIN, 3
+        RIGHTMARGIN, 210
+        VERTGUIDE, 23
+        VERTGUIDE, 43
+        VERTGUIDE, 67
+        VERTGUIDE, 87
+        VERTGUIDE, 107
+        VERTGUIDE, 127
+        VERTGUIDE, 153
+        VERTGUIDE, 173
+        VERTGUIDE, 193
+        TOPMARGIN, 3
+        BOTTOMMARGIN, 224
+        HORZGUIDE, 207
+        HORZGUIDE, 210
+    END
+
+    IDD_ADDMODIFY, DIALOG
+    BEGIN
+        LEFTMARGIN, 6
+        RIGHTMARGIN, 181
+        TOPMARGIN, 5
+        BOTTOMMARGIN, 110
     END
 
     IDD_RELNOTES, DIALOG
     BEGIN
-        LEFTMARGIN, 7
-        RIGHTMARGIN, 185
-        TOPMARGIN, 7
-        BOTTOMMARGIN, 262
+        VERTGUIDE, 4
+        VERTGUIDE, 14
+        VERTGUIDE, 33
+        VERTGUIDE, 58
+        VERTGUIDE, 64
+        VERTGUIDE, 188
+        HORZGUIDE, 40
+        HORZGUIDE, 50
+        HORZGUIDE, 60
+        HORZGUIDE, 176
     END
 
     IDD_OPTIONS, DIALOG
     BEGIN
-        VERTGUIDE, 11
+        VERTGUIDE, 75
+        VERTGUIDE, 81
+        VERTGUIDE, 223
+        BOTTOMMARGIN, 210
     END
 END
 #endif    // APSTUDIO_INVOKED
@@ -153,8 +169,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,0,0,18
- PRODUCTVERSION 0,0,0,18
+ FILEVERSION 0,0,0,20
+ PRODUCTVERSION 0,4,0,3
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -171,12 +187,12 @@ BEGIN
         BEGIN
             VALUE "Comments", "Offers List of your Custom Statuses. All acclaims go to HANAX, original publisher and inventor of this idea."
             VALUE "FileDescription", "Custom Status List"
-            VALUE "FileVersion", "0, 0, 0, 18"
+            VALUE "FileVersion", "0, 0, 0, 20"
             VALUE "InternalName", "cslist"
-            VALUE "LegalCopyright", "© 2007-2008 eternity crew .., © 2006-2007 HANAX"
+            VALUE "LegalCopyright", "© 2007-2008 eternity crew .., © 2006-2008 HANAX"
             VALUE "OriginalFilename", "cslist.dll"
             VALUE "ProductName", "Custom Status List"
-            VALUE "ProductVersion", "0, 0, 0, 18"
+            VALUE "ProductVersion", "0, 4, 0, 3"
         END
     END
     BLOCK "VarFileInfo"
@@ -217,17 +233,17 @@ END
 
 // Icon with lowest ID value placed first to ensure application icon
 // remains consistent on all systems.
-IDI_CSLIST              ICON                    "res\\main.ico"
-IDI_ADD                 ICON                    "res\\add.ico"
-IDI_MODIFY              ICON                    "res\\modify.ico"
-IDI_REMOVE              ICON                    "res\\remove.ico"
-IDI_IMPORT              ICON                    "res\\import.ico"
-IDI_WATCH               ICON                    "res\\watch.ico"
-IDI_FAV                 ICON                    "res\\fav.ico"
-IDI_NOCHNG              ICON                    "res\\nochng.ico"
-IDI_CLEAR               ICON                    "res\\clear.ico"
-IDI_APPLY               ICON                    "res\\apply.ico"
-IDI_OPTIONS             ICON                    "res\\options.ico"
+IDI_ADD                 ICON                    "res/add.ico"
+IDI_CSLIST              ICON                    "res/main.ico"
+IDI_MODIFY              ICON                    "res/modify.ico"
+IDI_REMOVE              ICON                    "res/remove.ico"
+IDI_IMPORT              ICON                    "res/import.ico"
+IDI_GLOBAL              ICON                    "res/global.ico"
+IDI_FAV                 ICON                    "res/fav.ico"
+IDI_NOCHNG              ICON                    "res/nochng.ico"
+IDI_CLEAR               ICON                    "res/clear.ico"
+IDI_APPLY               ICON                    "res/apply.ico"
+IDI_UNDO                ICON                    "res/undo.ico"
 #endif    // English (U.S.) resources
 /////////////////////////////////////////////////////////////////////////////
 
