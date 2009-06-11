@@ -147,11 +147,11 @@ extern int bHideXStatusUI;
 PLUGININFOEX pluginInfo = {
   sizeof(PLUGININFOEX),
   "IcqOscarJ " ICQ_THISMODNAME " Protocol",
-  PLUGIN_MAKE_VERSION(0,3,88,44),
+  PLUGIN_MAKE_VERSION(0,3,88,46),
   "Support for ICQ network, enhanced. [based on IcqOscarJ + ICQJ Plus Mod | built "__DATE__" at "__TIME__"]",
   "J.Kucera, Bio, M.berg, R.Hughes, Jon Keating, BM, S7, [sss], chaos.persei, Faith, jarvis, ghazan, baloo, nullbie etc",
   "mike.taussick@seznam.cz, sss123next@list.ru, chaos.persei@gmail.com, sin@miranda-me.org, jokusoftware@miranda-im.org",
-  "(C) 2000-2008 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",
+  "(C) 2000-2009 M. berg, R.Hughes, J.Keating, Bio, J.Kucera, Angeli-Ka, Faith Healer, chaos.persei, Se7ven, BM, [sss], [sin], jarvis, nullbie and others",
   "http://dev.mirandaim.ru/~jarvis/",
   0,
   0,   //doesn't replace anything built-in :: eternity mod uuid
@@ -159,6 +159,9 @@ PLUGININFOEX pluginInfo = {
 };
 
 /* version info
+0.3.88.45 - fixed login sequences
+          - enhanced support for Custom Status List
+          - ICQJ & ICQP merge
 0.3.88.44 - fixed leaking menu items due to latest genmenu patches
 0.3.88.43 - fixes
           - modified some stupidities around contact menu auth items
