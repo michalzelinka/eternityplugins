@@ -66,6 +66,7 @@ char* MirandaVersionToString(char* szStr, int bUnicode, int v, int m);
 
 /////////////////////////////////////////////////////////////////////////////////////////
 
+// TODO: Check TCHAR issues (especially this whole method (its string outputs) should be fixed in ICQOscarJ)
 static BYTE SetValue(CIcqProto* ppro, HWND hwndDlg, int idCtrl, HANDLE hContact, char* szModule, char* szSetting, WORD type)
 {
 	DBVARIANT dbv = {0};
@@ -524,15 +525,15 @@ static INT_PTR CALLBACK IcqClientDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 				}
 				else if (!lstrcmpA(str, "03."))
 				{
-					lstrcpyA(str, Translate("Miranda Features (unknown)"));
+					lstrcpyA(str, Translate("Miranda Features (Unknown)"));
 				}
 				else if (!lstrcmpA(str, "04."))
 				{
-					lstrcpyA(str, Translate("Unknown Flags (decoded)"));
+					lstrcpyA(str, Translate("Unknown Flags (Decoded)"));
 				}
 				else if (!lstrcmpA(str, "05."))
 				{
-					lstrcpyA(str, Translate("Unknown Flags (other)"));
+					lstrcpyA(str, Translate("Unknown Flags (Other)"));
 				}
 				else
 				{

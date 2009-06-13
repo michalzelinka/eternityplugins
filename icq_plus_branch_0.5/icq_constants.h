@@ -63,6 +63,7 @@
 #define ISI_ADVANCED_FEATURES       15
 #define ISI_DISABLED_ITEM           16
 #define ISI_ENABLED_ITEM            17
+#define ISI_DIRECT_CONNECT          18
 
 /* Contact menu item indexes */
 #define ICMI_AUTH_REQUEST           0
@@ -116,6 +117,8 @@
 #define XSTATUS_COUNT_BASIC 32
 #define XSTATUS_COUNT XSTATUS_COUNT_EXTRA
 
+#define QIPSTATUS_COUNT     5
+
 #ifdef _UNICODE
 #define DEFAULT_FP1                 0x7fffffff        // Unicode flag
 #else
@@ -140,6 +143,7 @@
 #define DEFAULT_RTF                           0
 #define DEFAULT_DC_ICON_SHOW                  1
 #define DEFAULT_XSTATUS_ICON_SHOW             1
+#define DEFAULT_DC_ICON_SHOW                  1
 
 #define DEFAULT_ASD_ENABLED                   0
 #define DEFAULT_PSD_ENABLED                   0
@@ -294,13 +298,6 @@
 #define ICQ_STATUSF_FFC             0x0020
 #define ICQ_STATUSF_INVISIBLE       0x0100
 
-// QIP Extended Status flags
-#define ICQ_STATUSF_EVIL            0x3000
-#define ICQ_STATUSF_DEPRESS         0x4000
-#define ICQ_STATUSF_HOME            0x5000 
-#define ICQ_STATUSF_WORK            0x6000
-#define ICQ_STATUSF_LUNCH           0x2001
-
 // Status values (used to set own status)
 #define ICQ_STATUS_ONLINE           0x0000
 #define ICQ_STATUS_AWAY             0x0001
@@ -309,6 +306,13 @@
 #define ICQ_STATUS_DND              0x0013
 #define ICQ_STATUS_FFC              0x0020
 #define ICQ_STATUS_INVISIBLE        0x0100
+
+// QIP Extended Status flags
+#define ICQ_STATUSF_EVIL            0x3000
+#define ICQ_STATUSF_DEPRESS         0x4000
+#define ICQ_STATUSF_HOME            0x5000 
+#define ICQ_STATUSF_WORK            0x6000
+#define ICQ_STATUSF_LUNCH           0x2001
 
 #define STATUS_WEBAWARE             0x0001 // Status webaware flag
 #define STATUS_SHOWIP               0x0002 // Status show ip flag
@@ -388,6 +392,11 @@
 // Plugin Message GUIDs
 #define PMSG_QUERY_INFO_s           0xF002BF71, 0x4371D311, 0x8DD20010, 0x4B06462E
 #define PMSG_QUERY_STATUS_s         0x10180670, 0x5471D311, 0x8DD20010, 0x4B06462E
+
+
+// TODO: Remove most probably x)
+#define X_STATUS            0x40000000
+#define WAS_FOUND           0x80000000
 
 
 
@@ -738,6 +747,12 @@
 #define DC_NORMAL                   0x0004 // Normal direct connection (without proxy/firewall)
 #define DC_WEB                      0x0006 // Web client - no direct connection
 
+// DC icon command types
+#define DC_ICON_SHOW                0
+#define DC_ICON_HIDE                1
+#define DC_ICON_FORCE_DISABLED      0
+#define DC_ICON_FORCE_ENABLED       1
+
 // Message flags
 #define MFLAG_NORMAL                0x01 // Normal message
 #define MFLAG_AUTO                  0x03 // Auto-message flag
@@ -789,7 +804,7 @@
 
 // Internal Constants
 #define ICQ_PROTOCOL_NAME           LPGEN("ICQ")
-#define ICQ_PLUG_VERSION            0x80050007
+#define ICQ_PLUG_VERSION            0x80050101
 //
 #define ICQ_PLUG_NAME               "Plus Mod"
 #define ICQ_JOEWHALE_VERSION        0x80050007 // Actual Joe@Whale

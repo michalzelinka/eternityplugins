@@ -35,6 +35,12 @@
 // -----------------------------------------------------------------------------
 
 #include "icqoscar.h"
+#include "m_extraicons.h"
+
+// TODO: Multi-proto?
+HANDLE hDirectConnectIcon;
+static HANDLE hHookExtraIconsRebuild = NULL;
+static HANDLE hHookExtraIconsApply = NULL;
 
 struct directthreadstartinfo
 {
@@ -181,6 +187,33 @@ BOOL CIcqProto::IsDirectConnectionOpen(HANDLE hContact, int type, int bPassive)
 		OpenDirectConnection(hContact, DIRECTCONN_STANDARD, NULL);
 	}
 
+	return bIsOpen;
+}
+
+// Plus -- Simplified variant of the function above
+BOOL CIcqProto::IsDirectConnectionOpenEnhanced(HANDLE hContact)
+{
+	BOOL bIsOpen = FALSE;
+
+	EnterCriticalSection(&directConnListMutex);
+
+	for (int i = 0; i < directConns.getCount(); i++)
+	{
+		if (directConns[i])
+		{
+			if (directConns[i]->hContact == hContact)
+				if (directConns[i]->initialised)
+				{
+					// Connection is OK
+					bIsOpen = TRUE;
+				
+					break;
+				}
+		}
+	}
+  
+	LeaveCriticalSection(&directConnListMutex);
+  
 	return bIsOpen;
 }
 
@@ -392,6 +425,9 @@ void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 	{
 		int recvResult;
 
+		if (dc.hContact)
+			setContactDCIcon(dc.hContact, DC_ICON_FORCE_ENABLED, DC_ICON_SHOW);
+
 		packetRecv.dwTimeout = dc.wantIdleTime ? 0 : 600000;
 
 		recvResult = CallService(MS_NETLIB_GETMOREPACKETS, (WPARAM)hPacketRecver, (LPARAM)&packetRecv);
@@ -492,6 +528,7 @@ void __cdecl CIcqProto::icq_directThread( directthreadstartinfo *dtsi )
 			packetRecv.bytesUsed = i;
 		}
 	}
+	setContactDCIcon(dc.hContact, DC_ICON_FORCE_ENABLED, DC_ICON_HIDE);
 
 	// End of packet receiving loop
 
@@ -1183,4 +1220,94 @@ void CIcqProto::sendPeerFileInit(directconnect* dc)
 	NetLog_Direct("Sent PEER_FILE_INIT to %u on %s DC", dc->dwRemoteUin, dc->incoming?"incoming":"outgoing");
 #endif
 	ICQFreeVariant(&dbv);
+}
+
+
+//// PLUS ////////////////////////////////////////////////////////////////////
+
+HICON CIcqProto::GetDirectConnectIcon(UINT flags)
+{
+	HICON icon;
+	icon = hStaticIcons[ISI_DIRECT_CONNECT]->GetIcon();
+	if (flags & LR_SHARED)
+		return icon;
+	else
+		return CopyIcon(icon);
+}
+
+// TODO: Make simplier
+// bForce -- remove or set icon overriding current connection status
+//           (DC_ICON_FORCE_EANBLED, DC_ICON_FORCE_DISABLED)
+// bRemove -- DC_ICON_HIDE = remove icon, DC_ICON_SHOW = set icon
+void CIcqProto::setContactDCIcon(HANDLE hContact, BOOL bForce, BOOL bRemove)
+{
+	extern HANDLE hExtraDCIcon;
+	if (!hExtraDCIcon)
+	{
+		BYTE iconPos = getSettingByte(NULL, "DCIconPosition", 5); // TODO: Recheck DEFAULT_ values
+		
+		if (getSettingByte(NULL, "ShowDCIcon", DEFAULT_DC_ICON_SHOW) == 0) return;
+		if (iconPos <= 0 || iconPos > 9)
+		{
+			iconPos = 5;
+		}
+		{
+			IconExtraColumn iec = {0};
+			iec.cbSize = sizeof(iec);
+			iec.hImage = ((IsDirectConnectionOpenEnhanced(hContact) || bForce) && getSettingByte(NULL, "DCIconShow", DEFAULT_DC_ICON_SHOW) && !bRemove ? hDirectConnectIcon : (HANDLE)-1); 
+			if (getSettingByte(NULL, "DCIconShow", 1))
+			{
+				if (bForce)
+					iec.hImage = !bRemove ? hDirectConnectIcon : (HANDLE)-1;
+				else
+					iec.hImage = IsDirectConnectionOpenEnhanced(hContact) ? hDirectConnectIcon : (HANDLE)-1;
+			}
+			else
+			{
+				iec.hImage = (HANDLE)-1;
+			}
+			iec.ColumnType = iconPos;
+			CallService(MS_CLIST_EXTRA_SET_ICON, (WPARAM)hContact, (LPARAM)&iec);
+		}
+	}
+	else
+	{
+		EXTRAICON ico;
+		ico.cbSize = sizeof(ico);
+		ico.hContact = hContact;
+		ico.hExtraIcon = hExtraDCIcon;
+		if(getSettingByte(NULL, "DCIconShow", DEFAULT_DC_ICON_SHOW))
+		{
+			if(bForce)
+				ico.icoName = !bRemove ? "dcico" :  (char*)0;
+			else
+				ico.icoName = IsDirectConnectionOpenEnhanced(hContact) ? "dcico" :  (char*)0;
+		}
+		else
+		{
+			ico.icoName =  (char*)0;
+		}
+		CallService(MS_EXTRAICON_SET_ICON, (WPARAM)&ico, 0);
+	}
+}
+
+int CIcqProto::CListMW_ExtraIconsRebuild_DC(WPARAM wParam, LPARAM lParam)
+{
+	if (getSettingByte(NULL, "DCIconShow", DEFAULT_DC_ICON_SHOW) && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
+	{
+		hDirectConnectIcon = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)GetDirectConnectIcon(1), 0);
+	}
+	return 0;
+}
+
+int CIcqProto::CListMW_ExtraIconsApply_DC(WPARAM wParam, LPARAM lParam)
+{
+	if (ServiceExists(MS_CLIST_EXTRA_SET_ICON))
+	{
+		if (IsICQContact((HANDLE)wParam))
+		{
+			setContactDCIcon((HANDLE)wParam, DC_ICON_FORCE_DISABLED, DC_ICON_SHOW);
+		}
+	}
+	return 0;
 }

@@ -687,439 +687,129 @@ void CIcqProto::setUserInfo()
 	*/
 
 	
-	if (!cID || cID == 11) // || cID == 54)
-	{ // if Miranda, as 'Miranda' or as 'MirandaMobile'
-
-		if (m_bAimEnabled)
-			wAdditionalData += 16;	
-		if (m_bAvatarsEnabled)
-			wAdditionalData += 16;
-		if (m_bUtfEnabled)
-			wAdditionalData += 16;
-		if (m_bRTFEnabled)
-			wAdditionalData += 16;
-		if (m_bXStatusEnabled)
-			wAdditionalData += 16;
-		if (m_bTzersEnabled)
-			wAdditionalData += 16;
-		if (bXStatus)
-			wAdditionalData += 16;
-#ifdef DBG_CAPXTRAZ_MUC
+	if (m_bAimEnabled)
 		wAdditionalData += 16;
-#endif
 #ifdef DBG_CAPMTN
-		wAdditionalData += 16;
+	wAdditionalData += 16;
 #endif
-#ifdef DBG_NEWCAPS
+	if (m_bUtfEnabled)
 		wAdditionalData += 16;
+#ifdef DBG_NEWCAPS
+	wAdditionalData += 16;
 #endif
 #ifdef DBG_CAPXTRAZ
-		wAdditionalData += 16;
+	wAdditionalData += 16;
 #endif
 #ifdef DBG_OSCARFT
-		wAdditionalData += 16;
+	wAdditionalData += 16;
 #endif
-#ifdef DBG_CAPHTML
+	if (m_bAvatarsEnabled)
 		wAdditionalData += 16;
+	if (bXStatus)
+		wAdditionalData += 16;
+#ifdef DBG_CAPHTML
+	wAdditionalData += 16;
 #endif
 #ifdef DBG_AIMCONTACTSEND
-		wAdditionalData += 16;
+	wAdditionalData += 16;
 #endif
-	}
-	else if (m_bHideIdEnabled)
-		wAdditionalData += 16; // TODO: DESC
-
-	wAdditionalData += wID[cID]*16; // TODO: Recheck spaces
-/*
+	/*
 	if (m_bCustomCapEnabled)
 	{
 		wAdditionalData += 16 * lstCustomCaps->realCount;
 	}
-*/
-	if (cID == 2 || cID == 23 || cID == 24 || cID == 46) // QIP caps
-	{
-		if (m_bXStatusEnabled)
-			wAdditionalData += 16;
-		if (bXStatus)
-			wAdditionalData += 16;
-	}
-	if (cID >= 12 && cID <= 15 || cID == 26) // ICQLite 5 + ICQ 6 group caps
-	{
-		if (m_bXStatusEnabled)
-			wAdditionalData += 16;
-		if (bXStatus)
-			wAdditionalData += 16;
-	}
-	if (cID == 6 || cID == 51 || cID == 45 || cID == 49 || cID == 55 || cID == 56 || cID == 57 || cID == 58)
-	{
-		if (m_bXStatusEnabled)
-			wAdditionalData += 16;
-		if (bXStatus)
-			wAdditionalData += 16;
-	}
+	*/
 
 	serverPacketInit(&packet, (WORD)(62 + wAdditionalData));
 	packFNACHeader(&packet, ICQ_LOCATION_FAMILY, ICQ_LOCATION_SET_USER_INFO);
 
-
-	/* TLV(5): capability data */
-	//packWord(&packet, 0x0005);
-	//packWord(&packet, (WORD)(48 + wAdditionalData));
-
-	// VS //
-
-	/* TLV(5): capability data */
+	// TLV(5): capability data
 	packWord(&packet, 0x0005);
-	packWord(&packet, (WORD)(32 + wAdditionalData));
-	packBuffer(&packet, capNewCap, 0x10);
+	packWord(&packet, (WORD)(48 + wAdditionalData));
 
-	if (m_bHideIdEnabled && cID != 11)
+#ifdef DBG_CAPMTN
 	{
-		packBuffer(&packet, capIcqJp, 4);
-		packDWord(&packet, MIRANDA_VERSION);
-		packDWord(&packet, ICQ_PLUG_VERSION);
-		packDWord(&packet, m_bSecureIM ? 0x5AFEC0DE : 0x00000000);
+		packDWord(&packet, 0x563FC809); // CAP_TYPING
+		packDWord(&packet, 0x0B6F41BD);
+		packDWord(&packet, 0x9F794226);
+		packDWord(&packet, 0x09DFA2F3);
 	}
-	switch (cID) //client change caps
+#endif
 	{
-
-	case 11: // Miranda Evil
-		packBuffer(&packet, m_bHideIdEnabled ? capIcqJp : capMirandaIm, m_bHideIdEnabled ? 4 : 8); 
-		packBuffer(&packet, (BYTE*)"\x06\x06\x06\x00\x06\x06\x06\x00", 8);
-		m_bHideIdEnabled ? packDWord(&packet, m_bSecureIM ? 0x5AFEC0DE : 0x00000000) : 0;
-
-	case 0:								//miranda
-		if (!cID && !m_bHideIdEnabled)
-		{ // Miranda Signature + variable ICQ mods
-			switch (cICQModID)
-			{
-			case 0:
-				packBuffer(&packet, capMirandaIm, 8);
-				packDWord(&packet, MIRANDA_VERSION);
-				packDWord(&packet, ICQ_JOEWHALE_VERSION);
-				break;
-			case 1:
-				packBuffer(&packet, capMirandaIm, 8);
-				packDWord(&packet, MIRANDA_VERSION);
-				packDWord(&packet, ICQ_BM_VERSION);
-				break;
-			case 2:
-				packBuffer(&packet, capIcqJs7, 4);
-				packDWord(&packet, MIRANDA_VERSION);
-	            packDWord(&packet, ICQ_S7SSS_VERSION);
-				break;
-			case 3:
-				packBuffer(&packet, capIcqJSin, 4);
-				packDWord(&packet, MIRANDA_VERSION);
-				packDWord(&packet, ICQ_SIN_VERSION);
-				break;
-			default:
-			case 4:
-				packBuffer(&packet, capIcqJp, 4);
-				packDWord(&packet, MIRANDA_VERSION);
-				packDWord(&packet, ICQ_PLUG_VERSION);
-				break;
-			case 5:
-				packBuffer(&packet, capIcqJen, 4);
-				packDWord(&packet, MIRANDA_VERSION);
-				packDWord(&packet, ICQ_PLUSPLUS_VERSION);
-			break;
-			}
-			switch (cICQModID)
-			{ // send SecureIM or not for Mods
-			case 2: // s7sss,
-			case 3: // sin,
-			case 4: // plus and
-			case 5: // eternity mods may decode SecureIM flag
-				packDWord( &packet, m_bSecureIM ? 0x5AFEC0DE : 0x00000000 );
-			case 0: // icqj and bm mod
-			case 1: // packets are already full
-			default :
-				break;
-			}
-		}
-		AddCapabilitiesToBuffer((BYTE*)&packet,
-		    // CAPF_TYPING | // OBSOLETE, moved below
-			// CAPF_SRV_RELAY | // OBSOLETE, moved below
-			(m_bRTFEnabled ? CAPF_RTF : 0) //|
-			// (m_bXStatusEnabled ? CAPF_XTRAZ : 0) | // OBSOLETE, moved below
- 			// (m_bUtfEnabled?CAPF_UTF:0) | // OBSOLETE, moved below
-			// (m_bAvatarsEnabled?CAPF_ICQ_DEVIL:0) | // OBSOLETE, moved below
-			// CAPF_OSCAR_FILE|CAPF_ICQDIRECT // OBSOLETE, moved below
-			);
-
 		packNewCap(&packet, 0x1349);    // AIM_CAPS_ICQSERVERRELAY
-		// Broadcasts the capability to receive UTF8 encoded messages
-		if (m_bUtfEnabled)
-			packNewCap(&packet, 0x134E);    // CAP_UTF8MSGS
-		if (bXStatus)
-			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
-		if (m_bDCMsgEnabled) // TODO: Maybe something else?
-			packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQDIRECT
-		if (m_bAimEnabled)
-			//packBuffer(&packet, capAimIcq, 0x10); // OBSOLETE
-			packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM
-		if (m_bAvatarsEnabled)
-			packNewCap(&packet, 0x134C);    // CAP_DEVILS
-		if (bXStatus)
-			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
-		if (m_bTzersEnabled)
-			packBuffer(&packet, captZers, 0x10);
+	}
+	if (m_bUtfEnabled)
+	{
+		packNewCap(&packet, 0x134E);    // CAP_UTF8MSGS
+	} // Broadcasts the capability to receive UTF8 encoded messages
+#ifdef DBG_NEWCAPS
+	{
+		packNewCap(&packet, 0x0000);    // CAP_NEWCAPS
+	} // Tells server we understand to new format of caps
+#endif
+#ifdef DBG_CAPXTRAZ
+	{
+		packDWord(&packet, 0x1a093c6c); // CAP_XTRAZ
+		packDWord(&packet, 0xd7fd4ec5); // Broadcasts the capability to handle
+		packDWord(&packet, 0x9d51a647); // Xtraz
+		packDWord(&packet, 0x4e34f5a0);
+	}
+#endif
+	if (m_bAvatarsEnabled)
+	{
+		packNewCap(&packet, 0x134C);    // CAP_DEVILS
+	}
+#ifdef DBG_OSCARFT
+	{
+		packNewCap(&packet, 0x1343);    // CAP_AIM_FILE
+	} // Broadcasts the capability to receive Oscar File Transfers
+#endif
+	if (m_bAimEnabled)
+	{
+		packNewCap(&packet, 0x134D);    // Tells the server we can speak to AIM
+	}
+#ifdef DBG_AIMCONTACTSEND
+	{
+		packNewCap(&packet, 0x134B);    // CAP_AIM_SENDBUDDYLIST
+	}
+#endif
+	if (bXStatus)
+	{
+		packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
+	}
+
+	packNewCap(&packet, 0x1344);      // AIM_CAPS_ICQDIRECT
+
+/*  packDWord(&packet, 0xb99708b5); /// voice chat ???? unknown
+  packDWord(&packet, 0x3a924202);
+  packDWord(&packet, 0xb069f1e7);
+  packDWord(&packet, 0x57bb2e17);*/
+
+/*  packDWord(&packet, 0x67361515); /// icq lite audio chat Xtraz "ICQTalk" plugin
+  packDWord(&packet, 0x612d4c07);
+  packDWord(&packet, 0x8f3dbde6);
+  packDWord(&packet, 0x408ea041);*/
+
+/*	packDWord(&packet, 0x178c2d9b); // Unknown cap
+	packDWord(&packet, 0xdaa545bb); /// icq lite video chat Xtraz "VideoRcv" plugin
+	packDWord(&packet, 0x8ddbf3bd);
+	packDWord(&packet, 0xbd53a10a);*/
 
 #ifdef DBG_CAPHTML
 	{
-// DESCRIPTION {
-//		packDWord(&packet, 0x0138ca7b); // CAP_HTMLMSGS
-//		packDWord(&packet, 0x769a4915); // Broadcasts the capability to receive
-//		packDWord(&packet, 0x88f213fc); // HTML messages
-//		packDWord(&packet, 0x00979ea8);
-// }
-		packBuffer(&packet, capHtmlMsgs, 0x10);
+		packDWord(&packet, 0x0138ca7b); // CAP_HTMLMSGS
+		packDWord(&packet, 0x769a4915); // Broadcasts the capability to receive
+		packDWord(&packet, 0x88f213fc); // HTML messages
+		packDWord(&packet, 0x00979ea8);
 	}
-#endif
-#ifdef DBG_AIMCONTACTSEND
-		// packBuffer(&packet, capAimSendbuddylist, 0x10); // OBSOLETE
-		packNewCap(&packet, 0x134B);    // CAP_AIM_SENDBUDDYLIST
-#endif
-#ifdef DBG_CAPXTRAZ_MUC
-		packNewCap(&packet, 0x134C);    // CAP_XTRAZ_MUC
-#endif
-#ifdef DBG_CAPMTN
-// DESCRIPTION {
-//		packDWord(&packet, 0x563FC809); // CAP_TYPING
-//		packDWord(&packet, 0x0B6F41BD);
-//		packDWord(&packet, 0x9F794226);
-//		packDWord(&packet, 0x09DFA2F3);
-// }
-		packBuffer(&packet, capTyping, 0x10);
-#endif
-#ifdef DBG_NEWCAPS
-		// Tells server we understand to new format of caps
-		packNewCap(&packet, 0x0000);    // CAP_NEWCAPS
-#endif
-#ifdef DBG_CAPXTRAZ
-// DESCRIPTION {
-//		packDWord(&packet, 0x1a093c6c); // CAP_XTRAZ
-//		packDWord(&packet, 0xd7fd4ec5); // Broadcasts the capability to handle
-//		packDWord(&packet, 0x9d51a647); // Xtraz
-//		packDWord(&packet, 0x4e34f5a0);
-// }
-		packBuffer(&packet, capXtraz, 0x10);
-#endif
-#ifdef DBG_OSCARFT
-		// Broadcasts the capability to receive Oscar File Transfers
-		packNewCap(&packet, 0x1343);    // CAP_AIM_FILE
 #endif
 
-/*		packDWord(&packet, 0xb99708b5); /// voice chat ???? unknown
-		packDWord(&packet, 0x3a924202);
-		packDWord(&packet, 0xb069f1e7);
-		packDWord(&packet, 0x57bb2e17);*/
+	packDWord(&packet, 0x4D697261);   // Miranda Signature
+	packDWord(&packet, 0x6E64614D);
+	packDWord(&packet, MIRANDA_VERSION);
+	packDWord(&packet, ICQ_PLUG_VERSION);
 
-/*		packDWord(&packet, 0x67361515); /// icq lite audio chat Xtraz "ICQTalk" plugin
-		packDWord(&packet, 0x612d4c07);
-		packDWord(&packet, 0x8f3dbde6);
-		packDWord(&packet, 0x408ea041);*/
-
-/*		packDWord(&packet, 0x178c2d9b); // Unknown cap
-		packDWord(&packet, 0xdaa545bb); /// icq lite video chat Xtraz "VideoRcv" plugin
-		packDWord(&packet, 0x8ddbf3bd);
-		packDWord(&packet, 0xbd53a10a);*/
-
-		break;
-
-	case 2:								//QIP
-		packBuffer(&packet, capQip, 0x10);
-		packBuffer(&packet, capQip_1, 0x10);
-		break;
-	case 23:
-		packBuffer(&packet, capQipPDA, 0x10); 	  
-		break;
-	case 24:
-		packBuffer(&packet, capQipSymbian, 0x10); 	  
-		break;
-	case 46:  //QIP Infium
-		packBuffer(&packet, capQipInfium, 0x10);
-		packBuffer(&packet, capQipPlugins, 0x10);
-		break; 
-	case 4:								//icq 
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_OSCAR_FILE|CAPF_XTRAZ_CHAT|CAPF_PUSH2TALK|CAPF_VOICE_CHAT|CAPF_UTF);
-		break;
-	case 9:
-		packBuffer(&packet, capKopete, 0xC); 
-		packDWord(&packet, 0x000C0007);
-		break;
-	case 10:
-		packBuffer(&packet, capMacIcq, 0x10); 
-		break;	  
-	case 5:
-		packBuffer(&packet, capAndRQ, 9); 
-		packBuffer(&packet, (BYTE*)"\x04\x07\x09\x00\x00\x00\x00",7);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY);
-		break;
-	case 6:
-		packBuffer(&packet, capJimm, 5); 
-		packBuffer(&packet, (BYTE*)"\x30\x2E\x36\x2E\x33\x61\x00\x00\x00\x00\x00",11);
-		break;
-	case 7:
-		packBuffer(&packet, capTrillian, 0x10); 
-		break;
-	case 8:
-		packBuffer(&packet, capLicq, 0xC); 
-		packDWord(&packet, 0x01030200);
-		break;
-	case 12:
-		packBuffer(&packet, capRambler, 0x10);
-		packBuffer(&packet, captZers, 0x10); 
-		packBuffer(&packet, capIcqLite, 0x10); 
-		break;	  
-	case 13:
-		packBuffer(&packet, captZers, 0x10); 
-		break;	  
-	case 14:
-		packBuffer(&packet, capAbv, 0x10); 
-		break;
-	case 15:
-		packBuffer(&packet, capNetvigator, 0x10); 
-		break;
-	case 20:
-		packBuffer(&packet, capmChat, 0x10); 
-		break;
-	case 25:
-		packBuffer(&packet, capIs2002, 0x10);	  
-		break;
-	case 26:	
-		packBuffer(&packet, captZers, 0x10); 
-		packBuffer(&packet, capHtmlMsgs, 0x10); 
-		packBuffer(&packet, capLiveVideo, 0x10);
-		packBuffer(&packet, capAimContactSnd, 0x10);
-		packBuffer(&packet, capAimAudio, 0x10);
-		packBuffer(&packet, capAimChat, 0x10); 
-		packBuffer(&packet, capIcqLite, 0x10); 
-		break;
-	case 27:
-		packBuffer(&packet, capComm20012, 0x10);
-		packBuffer(&packet, capIs2001, 0x10);		 
-		break;
-	case 28:
-		packBuffer(&packet, capAnastasia, 0x10);	  
-		break;
-	case 16:
-		packBuffer(&packet, capSim, 0xC); 
-		packDWord(&packet, 0x00090540);
-		break;
-	case 17:
-		packBuffer(&packet, capSim, 0xC); 
-		packDWord(&packet, 0x00090580);
-		break;
-	case 18:
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY|CAPF_ICQDIRECT|CAPF_RTF);
-		break;
-	case 31:
-		packBuffer(&packet, capmIcq, 0xC);  //mIcq
-		packBuffer(&packet, (BYTE*)"\x08\x02\x00\x00",4);	  
-		break;
-	case 34:    	  //IM2
-		packBuffer(&packet, capIm2, 0x10);
-		break; 
-	case 35:           //GAIM
-		packBuffer(&packet, capAimIcon, 0x10);
-		packBuffer(&packet, capAimDirect, 0x10);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_OSCAR_FILE|CAPF_UTF);
-		break;
-	case 40:      //uIM
-		packBuffer(&packet, capUim, 0x10);
-		break;
-	case 41:     //TICQClient
-		packBuffer(&packet, capComm20012, 0x10);
-		packBuffer(&packet, capIs2001, 0x10);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY|CAPF_RTF); 
-		break;
-	case 42:     //IC@
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY|CAPF_RTF|CAPF_UTF);
-		break;
-	case 43:    //PreludeICQ
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY|CAPF_UTF|CAPF_TYPING);
-		break;
-	case 44:  //QNEXT
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_RTF);
-		break;
-	case 47:  //JICQ
-		packBuffer(&packet, capPalmJicq, 0xC);
-		packBuffer(&packet, (BYTE*)"\x00\x01\x00\x05",4);
-		break;
-	case 49:    //MIP
-		packBuffer(&packet, capMipClient, 0xC);
-		packBuffer(&packet, (BYTE*)"\x00\x06\x00\x00",4);
-		break;
-	case 50:  //Trillian Astra
-		packBuffer(&packet, capTrillian, 0x10);
-		packBuffer(&packet, capTrilCrypt, 0x10);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_RTF|CAPF_OSCAR_FILE);
-		break; 
-	case 51: //R&Q
-		packBuffer(&packet, capRAndQ, 9);
-		packBuffer(&packet, (BYTE*)"\x07\x00\x01\x01",4);
-		break;
-	case 52:   //NanoICQ
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_UTF);
-		break;
-	case 53: //IMadering
-		packBuffer(&packet, capIMadering, 0x10);
-		break;
-	case 54: // MirandaMobile
-		packBuffer(&packet, capMimMobile, 16);
-		break;
-	case 55: // D[i]Chat
-		packBuffer(&packet,(BYTE*) "D[i]Chat v.0.71",16);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING|CAPF_SRV_RELAY|CAPF_UTF|(m_bXStatusEnabled?CAPF_XTRAZ:0)|CAPF_XTRAZ_CHAT|CAPF_OSCAR_FILE);
-		break;
-	case 56: // LocID
-		packBuffer(&packet, (BYTE*)"LocID", 0x10);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING|CAPF_SRV_RELAY|CAPF_UTF|(m_bXStatusEnabled?CAPF_XTRAZ:0)|CAPF_XTRAZ_CHAT|CAPF_OSCAR_FILE);
-	    break;
-	case 57: // BayanICQ
-		packBuffer(&packet, (BYTE*)"bayanICQ0.1d", 16);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING|CAPF_SRV_RELAY|CAPF_UTF|(m_bXStatusEnabled?CAPF_XTRAZ:0)|CAPF_OSCAR_FILE|CAPF_ICQ_DEVIL);
-		break;
-	case 58: // Core Pager
-		packBuffer(&packet, capCorePager, 16);
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING|CAPF_SRV_RELAY|CAPF_UTF|(m_bXStatusEnabled?CAPF_XTRAZ:0)|CAPF_OSCAR_FILE|CAPF_ICQ_DEVIL|CAPF_ICQDIRECT);
-		break;
-	default:
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY);
-		break;
-	}
-
-	if (cID == 2 || cID == 23 || cID == 24 || cID == 46) // QIP caps
-	{
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_ICQ_DEVIL | CAPF_UTF | CAPF_RTF | (m_bXStatusEnabled ? CAPF_XTRAZ : 0) | CAPF_OSCAR_FILE);
-		if (bXStatus)
-			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
-	}
-	if (cID == 6 || cID == 51 || cID == 45 || cID == 49 || cID == 55 || cID == 56 || cID == 57 || cID == 58) //active xstatus
-	{
-		if (bXStatus)
-			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
-	}
-	if (cID >= 6 && cID <= 10 || cID == 16 || cID == 17 || cID == 20 || cID == 25 || cID >= 27 && cID <= 40 || cID == 44||cID == 45||cID == 47 || cID >= 49 && cID <= 52) //default caps
-	{
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_SRV_RELAY);
-	}
-	if (cID >= 12 && cID <= 15) // ICQLite 5 group caps
-	{
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING | CAPF_SRV_RELAY | CAPF_ICQDIRECT | CAPF_PUSH2TALK | CAPF_ICQ_DEVIL | CAPF_UTF | CAPF_RTF | (m_bXStatusEnabled ? CAPF_XTRAZ : 0) | CAPF_XTRAZ_CHAT | CAPF_OSCAR_FILE | CAPF_VOICE_CHAT);
-		if (bXStatus)
-			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
-	}
-	if (cID == 26) // ICQ 6 group caps
-	{
-		AddCapabilitiesToBuffer((BYTE*)&packet, CAPF_TYPING | CAPF_SRV_RELAY | CAPF_UTF | (m_bXStatusEnabled ? CAPF_XTRAZ : 0) | CAPF_XTRAZ_CHAT | CAPF_OSCAR_FILE);
-		if (bXStatus)
-			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
-	}
-  
-  	/*
+	/*
 	if (m_bCustomCapEnabled)
 	{
 		int i;

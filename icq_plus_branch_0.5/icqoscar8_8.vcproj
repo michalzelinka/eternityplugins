@@ -1906,6 +1906,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\icq_qipstatus.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\icq_reguin.cpp"
 				>
 			</File>

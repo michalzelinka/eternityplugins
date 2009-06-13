@@ -194,18 +194,18 @@ void CIcqProto::setContactExtraIcon(HANDLE hContact, int xstatus)
 int CIcqProto::CListMW_ExtraIconsRebuild(WPARAM wParam, LPARAM lParam) 
 {
 	if (m_bXStatusEnabled && ServiceExists(MS_CLIST_EXTRA_ADD_ICON))
-  {
+	{
 		for (int i = 0; i < XSTATUS_COUNT; i++) 
 			hXStatusExtraIcons[i] = (HANDLE)CallService(MS_CLIST_EXTRA_ADD_ICON, (WPARAM)getXStatusIcon(i + 1, LR_SHARED), 0);
 
-    if (!bXStatusExtraIconsReady)
-    { // try to hook the events again if they did not existed during init
-	    HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
-      HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
-    }
+		if (!bXStatusExtraIconsReady)
+		{ // try to hook the events again if they did not existed during init
+			HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild);
+			HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply);
+		}
 
-    bXStatusExtraIconsReady = 2;
-  }
+		bXStatusExtraIconsReady = 2;
+	}
 	return 0;
 }
 
