@@ -97,6 +97,10 @@
 #include <m_avatars.h>
 #include <win2k.h>
 
+// Plus
+#include <windowsx.h> // userinfotab
+#include <m_fingerprint.h> // userinfotab
+
 // Project resources
 #include "resource.h"
 

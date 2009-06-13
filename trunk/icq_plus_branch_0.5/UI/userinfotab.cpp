@@ -6,6 +6,7 @@
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004-2009 Joe Kucera
+// Copyright © 2006-2009 BM, SSS, jarvis, S!N, persei and others
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -376,6 +377,71 @@ static INT_PTR CALLBACK IcqClientDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 						SetValue(ppro, hwndDlg, IDC_VERSION, hContact, (char*)DBVT_WORD, (char*)ICQ_VERSION, SVS_ICQVERSION);
 						SetValue(ppro, hwndDlg, IDC_MIRVER, hContact, (char*)DBVT_ASCIIZ, MirandaVersionToString((char*)str, gbUnicodeCore, ICQ_PLUG_VERSION, MIRANDA_VERSION), SVS_ZEROISUNSPEC);
 					}
+
+					{ // Plus fields // TODO: Check TCHAR issues
+						DBVARIANT dbv = {0};
+						DBCONTACTGETSETTING dbcgs = {0};
+						dbcgs.szModule = ppro->m_szModuleName;
+						dbcgs.szSetting = "CapBuf";
+						dbcgs.pValue = &dbv;
+						CallService(MS_DB_CONTACT_GETSETTING, (WPARAM)hContact, (LPARAM)&dbcgs);
+
+						// Set flags
+						SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_RESETCONTENT, 0, 0);
+
+						if ((dbv.type == DBVT_BLOB) && (dbv.cpbVal))
+						{
+							int bufsize = dbv.cpbVal;
+							int capsize = 0x10;
+							BYTE *buf = dbv.pbVal;
+
+							SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_SETITEMDATA,
+							    SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_ADDSTRING, 0, (LPARAM)"01."), 0);
+							SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_SETITEMDATA,
+							    SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_ADDSTRING, 0, (LPARAM)"02."), 0);
+							SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_SETITEMDATA,
+							    SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_ADDSTRING, 0, (LPARAM)"03."), 0);
+							SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_SETITEMDATA,
+							    SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_ADDSTRING, 0, (LPARAM)"04."), 0);
+							SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_SETITEMDATA,
+							    SendDlgItemMessage(hwndDlg, IDC_CLIENTCAPS, LB_ADDSTRING, 0, (LPARAM)"05."), 0);
+
+							while (bufsize > 0) // search the buffer for a capability
+							{
+								ICQ_CAPINFO *info = (ICQ_CAPINFO *)malloc(sizeof(ICQ_CAPINFO));
+								char* capName = ppro->GetCapabilityName(buf, info);
+								SendDlgItemMessageA(hwndDlg, IDC_CLIENTCAPS, LB_SETITEMDATA,
+								    SendDlgItemMessageA(hwndDlg, IDC_CLIENTCAPS, LB_ADDSTRING, 0, (LPARAM)capName), (LPARAM)info);
+								buf += 0x10;
+								bufsize -= 0x10;
+							}
+							//ListView_SortItems(GetDlgItem(hwndDlg, IDC_CLIENTCAPS), CompareFunc, (LPARAM)GetDlgItem(hwndDlg, IDC_CLIENTCAPS));
+						}
+						CallService(MS_DB_CONTACT_FREEVARIANT, 0, (LPARAM)&dbv);
+
+						if (ServiceExists(MS_FP_GETCLIENTICON))
+						{
+							DBCONTACTGETSETTING dbcgs = {0};
+							dbcgs.szModule = ppro->m_szModuleName;
+							dbcgs.szSetting = "MirVer";
+							dbcgs.pValue = &dbv;
+							dbv.type = DBVT_TCHAR; // To get proper DBVT string type
+							CallService(MS_DB_CONTACT_GETSETTING_STR, (WPARAM)hContact, (LPARAM)&dbcgs);
+
+							// DBVT "MirVer" option string type should be exact to plugin character set
+							if (dbv.type == DBVT_TCHAR)
+							{
+								SendDlgItemMessage(hwndDlg, IDC_CLIENTICON, STM_SETICON,
+								    (WPARAM)CallService(MS_FP_GETCLIENTICON, (WPARAM)mir_t2a(dbv.ptszVal), 1), 0);
+							}
+							else
+							{
+								SendDlgItemMessage(hwndDlg, IDC_CLIENTICON, STM_SETICON,
+								    (WPARAM)CallService(MS_FP_GETCLIENTICON, (WPARAM)"[Undetected client]", 1), 0);
+							}
+							CallService(MS_DB_CONTACT_FREEVARIANT, 0, (LPARAM)&dbv);
+						}
+					}
 				}
 				break;
 			}
@@ -390,6 +456,162 @@ static INT_PTR CALLBACK IcqClientDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, 
 			break;
 		}
 		break;
+
+	case WM_MEASUREITEM:
+		{
+			LPMEASUREITEMSTRUCT lpmis = (LPMEASUREITEMSTRUCT) lParam;
+			if (lpmis->itemID == -1)
+				return FALSE;
+			lpmis->itemHeight = 18;
+		}
+		return TRUE;
+
+	case WM_DRAWITEM: // TODO: Check TCHAR issues
+		{
+			LPDRAWITEMSTRUCT lpdis = (LPDRAWITEMSTRUCT) lParam;
+
+			if (lpdis->itemID == -1)
+				return FALSE;
+
+			HWND hwndList = GetDlgItem(hwndDlg, lpdis->CtlID);
+			ICQ_CAPINFO* info = (ICQ_CAPINFO *)ListBox_GetItemData(hwndList, lpdis->itemID);
+
+			if (info)
+			{
+				if (lpdis->itemState & ODS_SELECTED)
+				{
+					HBRUSH hbr = CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT));
+					FillRect(lpdis->hDC, &lpdis->rcItem, hbr);
+					SetTextColor(lpdis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
+					DeleteObject(hbr);
+				}
+				else
+				{
+					HBRUSH hbr = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+					FillRect(lpdis->hDC, &lpdis->rcItem, hbr);
+					SetTextColor(lpdis->hDC, GetSysColor(COLOR_WINDOWTEXT));
+					DeleteObject(hbr);
+				}
+
+				SIZE sz = {0};
+				SetBkMode(lpdis->hDC, TRANSPARENT);
+				GetTextExtentPoint32A(lpdis->hDC, info->name, lstrlenA(info->name), &sz);
+
+				char str[256];
+				ListBox_GetText(hwndList, lpdis->itemID, str);
+
+				TextOutA(lpdis->hDC, lpdis->rcItem.left+3+16+1,
+				    (lpdis->rcItem.top+lpdis->rcItem.bottom-sz.cy)/2,
+				    info->name, lstrlenA(info->name));
+			}
+			else
+			{
+				char str[256];
+				HBRUSH hbr = CreateSolidBrush(RGB(0x60, 0x60, 0x60));
+				FillRect(lpdis->hDC, &lpdis->rcItem, hbr);
+				SetTextColor(lpdis->hDC, RGB(0xff, 0xff, 0xff));
+				DeleteObject(hbr);
+
+				ListBox_GetText(hwndList, lpdis->itemID, str);
+
+				if (!lstrcmpA(str, "01."))
+				{
+					lstrcpyA(str, Translate("Universal Protocol Features"));
+				}
+				else if (!lstrcmpA(str, "02."))
+				{
+					lstrcpyA(str, Translate("Miranda Features"));
+				}
+				else if (!lstrcmpA(str, "03."))
+				{
+					lstrcpyA(str, Translate("Miranda Features (unknown)"));
+				}
+				else if (!lstrcmpA(str, "04."))
+				{
+					lstrcpyA(str, Translate("Unknown Flags (decoded)"));
+				}
+				else if (!lstrcmpA(str, "05."))
+				{
+					lstrcpyA(str, Translate("Unknown Flags (other)"));
+				}
+				else
+				{
+					if (lpdis->itemState & ODS_SELECTED)
+					{
+						HBRUSH hbr = CreateSolidBrush(GetSysColor(COLOR_HIGHLIGHT));
+						FillRect(lpdis->hDC, &lpdis->rcItem, hbr);
+						SetTextColor(lpdis->hDC, GetSysColor(COLOR_HIGHLIGHTTEXT));
+						DeleteObject(hbr);
+					}
+					else
+					{
+						HBRUSH hbr = CreateSolidBrush(GetSysColor(COLOR_WINDOW));
+						FillRect(lpdis->hDC, &lpdis->rcItem, hbr);
+						SetTextColor(lpdis->hDC, GetSysColor(COLOR_WINDOWTEXT));
+						DeleteObject(hbr);
+					}
+				}
+
+				{
+					SIZE sz;
+					SetBkMode(lpdis->hDC, TRANSPARENT);
+					GetTextExtentPoint32A(lpdis->hDC, str, lstrlenA(str), &sz);
+					TextOutA(lpdis->hDC, lpdis->rcItem.left+3,
+					    (lpdis->rcItem.top+lpdis->rcItem.bottom-sz.cy)/2,
+					    str, lstrlenA(str));
+				}
+			}
+		}
+		return TRUE;
+
+	case WM_DELETEITEM:
+		{
+			DELETEITEMSTRUCT* lpdis = (DELETEITEMSTRUCT *)lParam;
+			ICQ_CAPINFO* info = (ICQ_CAPINFO *)ListBox_GetItemData(lpdis->hwndItem, lpdis->itemID);
+			if (info) free(info);
+		}
+		return TRUE;
+
+	case WM_VKEYTOITEM: // TODO: Check TCHAR issues
+		{
+			char ch = (char)LOWORD(wParam);
+			if (((ch == 'C') || (ch == VK_INSERT)) && (GetKeyState(VK_CONTROL) & 0x80))
+			{
+				int count = ListBox_GetCount((HWND)lParam);
+				int bufsize = 1; // for the \0
+				char *buf, *bufptr;
+
+				for (int i = 0; i < count; ++i)
+				{
+					if (!ListBox_GetSel((HWND)lParam, i)) continue;
+					ICQ_CAPINFO* info = (ICQ_CAPINFO *)ListBox_GetItemData((HWND)lParam, i);
+					if (!info) continue;
+					bufsize += lstrlenA(info->caps) + 5 + lstrlenA(info->name) + 2;
+				}
+				HGLOBAL hMem = GlobalAlloc(GMEM_MOVEABLE, bufsize);
+				bufptr = buf = (char *)GlobalLock(hMem);
+				for (int i = 0; i < count; ++i)
+				{
+					if (!ListBox_GetSel((HWND)lParam, i)) continue;
+					ICQ_CAPINFO* info = (ICQ_CAPINFO *)ListBox_GetItemData((HWND)lParam, i);
+					if (!info) continue;
+					bufptr += mir_snprintf(bufptr, bufsize-(bufptr-buf), "%s, // %s\r\n", info->caps, info->name);
+				}
+				GlobalUnlock(hMem);
+				OpenClipboard(hwndDlg);
+				EmptyClipboard();
+				SetClipboardData(CF_TEXT, hMem);
+				CloseClipboard();
+				return (INT_PTR)(-2);
+			}
+			else if ((ch == 'A') && (GetKeyState(VK_CONTROL) & 0x80))
+			{
+				SendMessage((HWND)lParam, LB_SELITEMRANGE, TRUE, MAKELPARAM(0, ListBox_GetCount((HWND)lParam)));
+				return (INT_PTR)(-2);
+			}
+			return (INT_PTR)(-1);
+		}
+
 	}
 
 	return FALSE;  
@@ -408,7 +630,7 @@ int CIcqProto::OnUserInfoInit(WPARAM wParam, LPARAM lParam)
 	odp.hInstance = hInst;
 	odp.dwInitParam = LPARAM(this);
 	odp.pfnDlgProc = IcqDlgProc;
-//	odp.position = -1900000000; // TODO: needed?
+//	odp.position = -1900000000; // Obsolete, UInfo shows this dialog tabbed, UInfoEx has own implementation
 	odp.ptszTitle = m_tszUserName;
 
 	if (!lParam)
