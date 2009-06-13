@@ -51,19 +51,20 @@ BYTE gbUnicodeCore;
 DWORD MIRANDA_VERSION;
 
 HANDLE hStaticServices[1];
-IcqIconHandle hStaticIcons[18];
+IcqIconHandle hStaticIcons[19];
 HANDLE hStaticHooks[1];
 HANDLE hExtraXStatus = NULL;
+HANDLE hExtraDCIcon = NULL;
 
 PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"IcqOscarJ "ICQ_PLUG_NAME" Protocol",
-	PLUGIN_MAKE_VERSION(0,5,0,7),
-	"Support for ICQ network, enhanced, modded. [Based on ICQOscarJ 0.5.0.7 SVN 10005]",
-	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, etc",
-	"",
-	"(C) 2000-2009 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, G.Hazan, J.Kucera",
-	"http://sss.chaoslab.ru:81/tracker/icqjplus/",
+	PLUGIN_MAKE_VERSION(0,5,1,1),
+	"Extended support for ICQ network. [Based on ICQOscarJ 0.5.1.1 SVN 10050]",
+	"Joe Kucera, Bio, Martin Öberg, Richard Hughes, Jon Keating, sss, persei, jarvis, nullbie and others",
+	"icq@miranda.im",
+	"(C) 2000-2009 M.Öberg, R.Hughes, J.Keating, Bio, Angeli-Ka, G.Hazan, J.Kucera, sss, persei, jarvis, nullbie",
+	"http://icq.miranda.im/",
 	UNICODE_AWARE,
 	0,   //doesn't replace anything built-in
 	// ICQJ Plus Mod UUID
@@ -117,6 +118,7 @@ static int icqProtoUninit( PROTO_INTERFACE* ppro )
 static int OnModulesLoaded( WPARAM, LPARAM )
 {
 	hExtraXStatus = ExtraIcon_Register("xstatus", "ICQ XStatus");
+	hExtraDCIcon = ExtraIcon_Register("dconnection", "ICQ Direct Connection");
 	return 0;
 }
 
@@ -193,6 +195,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 		hStaticIcons[ISI_ADVANCED_FEATURES] = IconLibDefine(LPGEN("Advanced Features"), szSectionName, NULL, "advanced_features", lib, -IDI_ADVANCED_FEATURES);
 		hStaticIcons[ISI_DISABLED_ITEM] = IconLibDefine(LPGEN("Unchecked item"), szSectionName, NULL, "unchecked", lib, -IDI_UNCHECKED);
 		hStaticIcons[ISI_ENABLED_ITEM] = IconLibDefine(LPGEN("Checked item"), szSectionName, NULL, "checked", lib, -IDI_CHECKED);
+		hStaticIcons[ISI_DIRECT_CONNECT] = IconLibDefine(LPGEN("Direct Connection"), szSectionName, NULL, "dcico", lib, -IDI_DC);
 		//
 	}
 

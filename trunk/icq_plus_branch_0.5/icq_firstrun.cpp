@@ -67,9 +67,9 @@ INT_PTR CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 			SendMessage(hwndDlg, WM_SETICON, ICON_BIG, (LPARAM)ppro->GetIcon( PLI_PROTOCOL | PLIF_LARGE | PLIF_ICOLIB ));
 
-			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 10, 0);
+			SendDlgItemMessage(hwndDlg, IDC_PW, EM_LIMITTEXT, 8, 0);
 
-      accountLoadDetails(ppro, hwndDlg);
+			accountLoadDetails(ppro, hwndDlg);
 		}
 		return TRUE;
 
@@ -107,20 +107,21 @@ INT_PTR CALLBACK icq_FirstRunDlgProc(HWND hwndDlg, UINT msg, WPARAM wParam, LPAR
 		{
 		case PSN_APPLY:
 			{
-        char str[128];
-        GetDlgItemTextA(hwndDlg, IDC_UIN, str, sizeof(str));
-        ppro->setSettingDword(NULL, UNIQUEIDSETTING, atoi(str));
-        GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(ppro->m_szPassword));
-        strcpy(ppro->m_szPassword, str);
-        CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM) str);
-        ppro->setSettingString(NULL, "Password", str);
-      }
-      break;
+				char str[128];
+				GetDlgItemTextA(hwndDlg, IDC_UIN, str, sizeof(str));
+				ppro->setSettingDword(NULL, UNIQUEIDSETTING, atoi(str));
+				GetDlgItemTextA(hwndDlg, IDC_PW, str, sizeof(ppro->m_szPassword));
+				strcpy(ppro->m_szPassword, str);
+				CallService(MS_DB_CRYPT_ENCODESTRING, sizeof(ppro->m_szPassword), (LPARAM) str);
+				ppro->setSettingString(NULL, "Password", str);
+			}
+			break;
 
-    case PSN_RESET:
-      accountLoadDetails(ppro, hwndDlg);
-      break;
-    }
+		case PSN_RESET:
+			accountLoadDetails(ppro, hwndDlg);
+			break;
+		}
+
 		break;
 	}
 

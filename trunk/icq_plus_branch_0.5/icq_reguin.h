@@ -6,7 +6,7 @@
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004-2008 Joe Kucera
-// Copyright © 2008 SSS, jarvis
+// Copyright © 2006-2009 BM, SSS, jarvis, S!N, persei and others
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -37,6 +37,6 @@ typedef struct
 {
 	char* pszText;
 	char* pszURL;
-} REGUINDATA;
+} REGUINDATA; // TODO: Refactor to "struct RegUinData"
 
 #endif /* __ICQ_REGUIN_H */

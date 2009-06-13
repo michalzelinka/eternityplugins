@@ -91,6 +91,7 @@ void CIcqProto::ToggleAdvancedFeaturesItems( BOOL bEnable )
 	clmi.flags = CMIM_FLAGS | (( bEnable ) ? 0 : CMIF_HIDDEN);
 
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hCustomStatusRoot,    ( LPARAM )&clmi );
+//	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hQIPStatusRoot,       ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuAdvFeaturesRoot, ( LPARAM )&clmi );
 	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuUsersStatusScan, ( LPARAM )&clmi );
 }
@@ -98,7 +99,6 @@ void CIcqProto::ToggleAdvancedFeaturesItems( BOOL bEnable )
 
 void CIcqProto::InitAdvancedFeaturesItems()
 {
-
 	CLISTMENUITEM mi = { 0 };
 	int i = 0, len = strlennull(m_szModuleName);
 	//char tszName[MAX_PATH + 64];
@@ -370,7 +370,7 @@ void CIcqProto::setAdvFeaturesIcons(int o)
 	{
 		switch(m_FLCStatus)
 		{
-		case 0 : tmi.icolibItem = hStaticIcons[ISI_SCAN_STOP]->Handle(); break;   // stopped
+		case 0 : tmi.icolibItem = hStaticIcons[ISI_SCAN_STOP]->Handle();  break;  // stopped
 		case 1 : tmi.icolibItem = hStaticIcons[ISI_SCAN_PAUSE]->Handle(); break;  // paused
 		default: tmi.icolibItem = hStaticIcons[ISI_SCAN_START]->Handle(); break;  // running
 		}

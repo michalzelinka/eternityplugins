@@ -506,18 +506,18 @@ void CIcqProto::sendOwnerInfoRequest(void)
 {
 	icq_packet packet;
 
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  pCookieData->bRequestType = DIRECTORYREQUEST_INFOOWNER;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	pCookieData->bRequestType = DIRECTORYREQUEST_INFOOWNER;
 
-  DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
-  WORD wDataLen = getUINLen(m_dwLocalUIN) + 4;
+	DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
+	WORD wDataLen = getUINLen(m_dwLocalUIN) + 4;
 
-  packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
-  packWord(&packet, 0x02);
-  packDWord(&packet, 0x01);
-  packWord(&packet, wDataLen);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 8, META_DIRECTORY_QUERY, DIRECTORY_QUERY_INFO, (WORD)dwCookie);
+	packWord(&packet, 0x03); // with interests (ICQ6 uses 2 at login)
+	packDWord(&packet, 0x01);
+	packWord(&packet, wDataLen);
 
-  packTLVUID(&packet, 0x32, m_dwLocalUIN, NULL);
+	packTLVUID(&packet, 0x32, m_dwLocalUIN, NULL);
 
 	sendServPacket(&packet);
 }
@@ -527,19 +527,19 @@ DWORD CIcqProto::sendUserInfoMultiRequest(BYTE *pRequestData, WORD wDataLen, int
 {
 	icq_packet packet;
 
-  cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
-  if (!pCookieData) return 0; // Failure
-  pCookieData->bRequestType = DIRECTORYREQUEST_INFOMULTI;
+	cookie_directory_data *pCookieData = (cookie_directory_data*)SAFE_MALLOC(sizeof(cookie_directory_data));
+	if (!pCookieData) return 0; // Failure
+	pCookieData->bRequestType = DIRECTORYREQUEST_INFOMULTI;
 
-  DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
+	DWORD dwCookie = AllocateCookie(CKT_DIRECTORY_QUERY, 0, NULL, (void*)pCookieData);
 
-  packServIcqDirectoryHeader(&packet, this, wDataLen + 2, META_DIRECTORY_QUERY, DIRECTORY_QUERY_MULTI_INFO, (WORD)dwCookie);
-  packWord(&packet, nItems);
-  packBuffer(&packet, pRequestData, wDataLen);
+	packServIcqDirectoryHeader(&packet, this, wDataLen + 2, META_DIRECTORY_QUERY, DIRECTORY_QUERY_MULTI_INFO, (WORD)dwCookie);
+	packWord(&packet, nItems);
+	packBuffer(&packet, pRequestData, wDataLen);
 
-  sendServPacket(&packet);
+	sendServPacket(&packet);
 
-  return dwCookie;
+	return dwCookie;
 }
 
 

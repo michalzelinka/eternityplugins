@@ -284,43 +284,46 @@ INT_PTR CIcqProto::ChangeInfoEx(WPARAM wParam, LPARAM lParam)
 
 		if (wParam & CIXT_LOCATION)
 		{
-      BYTE *pBlock = NULL;
-      int cbBlock = 0;
-      int nItems = 1;
+			BYTE *pBlock = NULL;
+			int cbBlock = 0;
+			int nItems = 1;
 
-      // Home Address
+			// Home Address
 			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "Street", 0x64);
 			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "City", 0x6E);
 			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "State", 0x78);
 			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "ZIP", 0x82);
 			ppackTLVDWord(&pBlock, &cbBlock, 0x8C, getSettingWord(NULL, "Country", 0));
-      ppackTLVBlockItems(&buf, &buflen, 0x96, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
+			ppackTLVBlockItems(&buf, &buflen, 0x96, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
 
-      nItems = 1;
-      // Origin Address
-      ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginStreet", 0x64);
+			nItems = 1;
+			// Origin Address
+			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginStreet", 0x64);
 			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginCity", 0x6E);
 			ppackTLVStringUtfFromDB(&pBlock, &cbBlock, "OriginState", 0x78);
 			ppackTLVDWord(&pBlock, &cbBlock, 0x8C, getSettingWord(NULL, "OriginCountry", 0));
-      ppackTLVBlockItems(&buf, &buflen, 0xA0, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
+			ppackTLVBlockItems(&buf, &buflen, 0xA0, &nItems, &pBlock, (WORD*)&cbBlock, TRUE);
 
 			ppackTLVStringFromDB(&buf, &buflen, "Homepage", 0xFA);
 
-			ppackTLVWord(&buf, &buflen, 0x17C, getSettingByte(NULL, "Timezone", 0));
+			// Timezone
+			WORD wTimezone = getSettingByte(NULL, "Timezone", 0);
+			if ((wTimezone & 0x0080) == 0x80) wTimezone |= 0xFF00; // extend signed number
+				ppackTLVWord(&buf, &buflen, 0x17C, wTimezone);
 		}
 
 		if (wParam & CIXT_BACKGROUND)
 		{
-      BYTE *pBlock = NULL;
-      int cbBlock = 0;
-      int nItems = 0;
+			BYTE *pBlock = NULL;
+			int cbBlock = 0;
+			int nItems = 0;
 
-      // Interests
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest0Text", 0x6E, 0x64, getSettingWord(NULL, "Interest0Cat", 0));
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest1Text", 0x6E, 0x64, getSettingWord(NULL, "Interest1Cat", 0));
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest2Text", 0x6E, 0x64, getSettingWord(NULL, "Interest2Cat", 0));
-			nItems += ppackTLVWordStringItemFromDB(&pBlock, &cbBlock, "Interest3Text", 0x6E, 0x64, getSettingWord(NULL, "Interest3Cat", 0));
-      ppackTLVBlockItems(&buf, &buflen, 0x122, &nItems, &pBlock, (WORD*)&cbBlock, FALSE);
+			// Interests
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest0Text", 0x6E, 0x64, getSettingWord(NULL, "Interest0Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest1Text", 0x6E, 0x64, getSettingWord(NULL, "Interest1Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest2Text", 0x6E, 0x64, getSettingWord(NULL, "Interest2Cat", 0));
+			nItems += ppackTLVWordStringUtfItemFromDB(&pBlock, &cbBlock, "Interest3Text", 0x6E, 0x64, getSettingWord(NULL, "Interest3Cat", 0));
+			ppackTLVBlockItems(&buf, &buflen, 0x122, &nItems, &pBlock, (WORD*)&cbBlock, FALSE);
 
       
 /*      WORD w; /// not supported anymore

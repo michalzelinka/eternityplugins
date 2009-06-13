@@ -571,6 +571,7 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   ppackTLVDateFromDB(PBYTE *buf, int *buflen, const char *szSettingYear, const char *szSettingMonth, const char *szSettingDay, WORD wType);
 
 	int    ppackTLVWordStringItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
+	int    ppackTLVWordStringUtfItemFromDB(PBYTE *buf, int *buflen, const char *szSetting, WORD wTypeID, WORD wTypeData, WORD wID);
 
 	BOOL   unpackUID(BYTE **ppBuf, WORD *pwLen, DWORD *pdwUIN, uid_str *ppszUID);
 
@@ -1032,6 +1033,14 @@ struct CIcqProto : public PROTO_INTERFACE
 	char*  GetCapabilityName( BYTE *cap, ICQ_CAPINFO *info );
 	int    IcqAddCapability( WPARAM wParam, LPARAM lParam );
 	int    IcqCheckCapability( WPARAM wParam, LPARAM lParam );
+	void   updateClientID(void);
+
+	// direct
+	void   setContactDCIcon(HANDLE hContact, BOOL bForce, BOOL bRemove);
+	BOOL   IsDirectConnectionOpenEnhanced(HANDLE hContact);
+	HICON  GetDirectConnectIcon(UINT flags);
+	int    __cdecl CListMW_ExtraIconsRebuild_DC(WPARAM wParam, LPARAM lParam);
+	int    __cdecl CListMW_ExtraIconsApply_DC(WPARAM wParam, LPARAM lParam);
 
 	// families
 	void   handleRecvRemoved(BYTE *buf, WORD wLen);
@@ -1108,11 +1117,26 @@ struct CIcqProto : public PROTO_INTERFACE
 	void   CheckSelfRemove() {};
 	void   SetVisibility(int i) { setSettingByte(NULL, "Privacy", (BYTE)i); char a[4]; mir_snprintf( a, 3, "%d", i ); MessageBoxA( NULL, a, "", MB_OK ); };
 
-	// registration
+	// qipstatus
+	HANDLE m_hQIPStatusRoot;
+//	int    m_bHideQIPStatusUI;
+//	int    m_bHideQIPStatusMenu;
+	int    bQIPStatusExtraIconsReady;
+	HANDLE hQIPStatusExtraIcons[XSTATUS_COUNT];
+	IcqIconHandle hQIPStatusIcons[XSTATUS_COUNT];
+	HANDLE hQIPStatusItems[XSTATUS_COUNT + 1];
+
+	int    hQIPStatusCListIcons[XSTATUS_COUNT];
+	BOOL   bQIPStatusCListIconsValid[XSTATUS_COUNT];
+
+	// register uin
 	HWND   m_hRegDialog;
 	HWND   m_hRegDialogCaller;
+	int    icq_regNewUin; // TODO: Refactor
+	int    m_bRegImageRequested;
 
-	void   icq_requestRegImage(HWND hwndDlg) { };
+	void   regUin_sendImageRequest( );
+	void   regUin_requestImage(HWND hwndDlg);
 	void   icq_registerNewUin(const char* password, const char* regimage) { };
 	void   ShowRegUINDialog(HWND hwndDlg);
 

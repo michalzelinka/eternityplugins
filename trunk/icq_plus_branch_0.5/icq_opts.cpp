@@ -1057,7 +1057,7 @@ const TCHAR* CIdComboBox[] =
 	_T("Miranda IM"), _T("Unknown"), _T("QiP 2005a"), _T("YSM"), _T("pyICQ"), _T("&RQ"),
 	_T("Jimm"), _T("Trillian"), _T("Licq"), _T("Kopete"), _T("ICQ for MAC"),
 	_T("Miranda IM 6.6.6 [evil]"), _T("ICQ 5 (Rambler)"), _T("ICQ 5.1"), _T("ICQ 5 (abv)"),
-	_T("ICQ (Netvigator)"), _T("Sim/MacOS X"), _T("Sim/Win32"), _T("Centericq"),
+	_T("ICQ 5 (Netvigator)"), _T("Sim/MacOS X"), _T("Sim/Win32"), _T("Centericq"),
 	_T("libicq2k"), _T("mChat"), _T("stICQ"), _T("KXicq2"), _T("QIP PDA (Windows)"),
 	_T("QIP Mobile (Java)"), _T("ICQ 2002"), _T("ICQ 6"), _T("ICQ for Pocket PC"),
 	_T("Anastasia"), _T("Virus"), _T("alicq"), _T("mICQ"), _T("StrICQ"), _T("vICQ"),
@@ -1161,6 +1161,7 @@ static INT_PTR CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			ppro->m_bCustomCapsEnabled = StoreDBCheckState( ppro, hwndDlg, IDC_CUSTOM_CAP, "CustomCaps" );
 
 			ppro->setUserInfo();
+			ppro->updateClientID();
 			break;
 		}
 		return TRUE;

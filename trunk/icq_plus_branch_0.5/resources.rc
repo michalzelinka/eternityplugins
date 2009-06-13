@@ -939,7 +939,7 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION 0,5,0,7
+ FILEVERSION 0,5,1,1
  PRODUCTVERSION 0,8,0,29
  FILEFLAGSMASK 0x3fL
 #ifdef _DEBUG
@@ -956,12 +956,12 @@ BEGIN
         BLOCK "000004e4"
         BEGIN
             VALUE "Comments", "Licensed under the terms of the GNU General Public License"
-            VALUE "FileDescription", "ICQ protocol plugin for Miranda IM, enhanced"
-            VALUE "FileVersion", "0, 5, 0, 7"
-            VALUE "InternalName", "ICQJ protocol plugin for Miranda IM"
-            VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating"
+            VALUE "FileDescription", "Enhanced ICQ protocol plugin for Miranda IM"
+            VALUE "FileVersion", "0, 5, 1, 1"
+            VALUE "InternalName", "ICQJ Plus Mod protocol plugin for Miranda IM"
+            VALUE "LegalCopyright", "Copyright (C) 2000-2009 Joe Kucera, Angeli-Ka, Bio, Martin Öberg, Richard Hughes, Jon Keating, sss, persei, jarvis, nullbie"
             VALUE "OriginalFilename", "ICQ.dll"
-            VALUE "ProductName", "ICQ Protocol Support"
+            VALUE "ProductName", "Enhanced ICQ Protocol Support"
             VALUE "ProductVersion", "0, 8, 0, 29"
         END
     END

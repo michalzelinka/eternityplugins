@@ -186,6 +186,9 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(MS_XSTATUS_SHOWDETAILS, &CIcqProto::ShowXStatusDetails);
 
 	HookProtoEvent(ME_SKIN2_ICONSCHANGED, &CIcqProto::OnReloadIcons);
+	// Plus -- TODO: I think this should be done differently
+	HookProtoEvent(ME_CLIST_EXTRA_LIST_REBUILD, &CIcqProto::CListMW_ExtraIconsRebuild_DC);
+	HookProtoEvent(ME_CLIST_EXTRA_IMAGE_APPLY, &CIcqProto::CListMW_ExtraIconsApply_DC);
 
 	{ // Initialize IconLib icons
 		TCHAR lib[MAX_PATH];

@@ -1278,6 +1278,8 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 	NETLIBPACKETRECVER packetRecv={0};
 	HANDLE hPacketRecver;
 
+	BOOL bNeedIconRemove = FALSE;
+
 	oc.hContact = otsi->hContact;
 	oc.hConnection = otsi->hConnection;
 	oc.type = otsi->type;
@@ -1293,6 +1295,14 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 			oc.hContact = oc.ft->hContact;
 			oc.ft->connection = &oc;
 			oc.status = OCS_CONNECTED;
+
+			// Show direct connection icon
+			setContactDCIcon(oc.hContact, DC_ICON_FORCE_ENABLED, DC_ICON_SHOW);
+			bNeedIconRemove = TRUE;
+
+			// Remember contact's IP
+			setSettingDword(oc.hContact, "IP", oc.ft->dwRemoteExternalIP);
+			setSettingDword(oc.hContact, "RealIP", oc.ft->dwRemoteInternalIP);
 
 			ReleaseOscarListener((oscar_listener**)&oc.ft->listener);
 		}
@@ -1401,6 +1411,15 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 					oc.ft->connection = &oc;
 					// acknowledge OFT - connection is ready
 					oft_sendFileAccept(oc.dwUin, oc.szUid, oc.ft);
+
+					// Show direct connection icon
+					setContactDCIcon(oc.hContact, DC_ICON_FORCE_ENABLED, DC_ICON_SHOW);
+					bNeedIconRemove = TRUE;
+
+					// Remember contact's IP
+					setSettingDword(oc.hContact, "IP", oc.ft->dwRemoteExternalIP);
+					setSettingDword(oc.hContact, "RealIP", oc.ft->dwRemoteInternalIP);
+
 					// signal UI
 					BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, oc.ft, 0);
 				}
@@ -1540,6 +1559,9 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 		else
 			packetRecv.bytesUsed = oft_handlePackets(&oc, packetRecv.buffer, packetRecv.bytesAvailable);
 	}
+
+	if (bNeedIconRemove)
+		setContactDCIcon(oc.hContact, DC_ICON_FORCE_DISABLED, DC_ICON_HIDE);
 
 	// End of packet receiving loop
 
@@ -2384,7 +2406,7 @@ void CIcqProto::oft_sendPeerInit(oscar_connection *oc)
 		if (ft->cbRawFileName < 64) ft->cbRawFileName = 64;
 		ft->rawFileName = (char*)SAFE_MALLOC(ft->cbRawFileName);
 		// convert to LE ordered string
-    BYTE *pwsThisFileBuf = (BYTE*)pwsThisFile; // need this - unpackWideString moves the address!
+		BYTE *pwsThisFileBuf = (BYTE*)pwsThisFile; // need this - unpackWideString moves the address!
 		unpackWideString(&pwsThisFileBuf, (WCHAR*)ft->rawFileName, (WORD)(strlennull(pwsThisFile) * sizeof(WCHAR)));
 		SAFE_FREE((void**)&pwsThisFile);
 	}

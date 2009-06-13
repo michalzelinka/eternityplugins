@@ -6,7 +6,7 @@
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004-2008 Joe Kucera
-// Copyright © 2008 SSS, jarvis
+// Copyright © 2006-2009 BM, SSS, jarvis, S!N, persei and others
 // 
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -59,17 +59,15 @@ static INT_PTR CALLBACK DlgProcRegDialog( HWND hwndDlg, UINT message, WPARAM wPa
 
 		case IDC_PICTURE:
 			if ( ppro->icqOnline( ) )
-			{
-              if (MessageBox(NULL, TranslateT("If you continue, you will lose current connection with a server.\nContinue?"), TranslateT("Warning"), MB_YESNO) == IDYES)
-				ppro->icq_requestRegImage(hwndDlg);
-			}
-			else
-                ppro->icq_requestRegImage(hwndDlg);
+				if (MessageBox(NULL, TranslateT("If you continue, you will lose current connection with a server.\nContinue?"), TranslateT("Warning"), MB_YESNO) != IDYES)
+					return TRUE;
+
+			ppro->regUin_requestImage(hwndDlg);
 			return TRUE;
 
 		case IDC_REGISTER:
 			{
-			    char password[128];
+				char password[128];
 				char regimage[128];
 				GetDlgItemTextA(hwndDlg, IDC_NEWUIN_PASS, password, sizeof(password));
 				GetDlgItemTextA(hwndDlg, IDC_PICTURE_CONTENT, regimage, sizeof(regimage));
@@ -102,4 +100,33 @@ void CIcqProto::ShowRegUINDialog( HWND hwndCaller )
 		EnableWindow( m_hRegDialogCaller, FALSE );
 	}
 	SetForegroundWindow( m_hRegDialog );
+}
+
+void CIcqProto::regUin_sendImageRequest( )
+{
+	icq_packet packet;
+
+	SetDlgItemText(m_hRegDialog, IDC_NEWUININFO, TranslateT("Requesting image..."));  
+	
+	packet.wLen = 4;
+	write_flap(&packet, ICQ_LOGIN_CHAN);
+	packDWord(&packet, 0x00000001);
+	sendServPacket(&packet);  // greet login server
+	
+	serverPacketInit(&packet, (WORD)(18));
+	packFNACHeader(&packet, ICQ_AUTHORIZATION_FAMILY, ICQ_SIGNON_REQUEST_IMAGE, 0, 0);
+	packTLV(&packet, 0x0001, 0, 0);
+	packDWord(&packet, 0x00000000);
+	sendServPacket(&packet);  // request image
+}
+
+void CIcqProto::regUin_requestImage(HWND hwndDlg)
+{
+	icq_serverDisconnect(FALSE);
+	m_iIcqNewStatus = ID_STATUS_OFFLINE;
+	m_hRegDialog = hwndDlg;
+	m_bRegImageRequested = 1;
+	SetDlgItemText(m_hRegDialog, IDC_NEWUININFO, TranslateT("Connecting to server..."));  
+	icq_login(NULL);
+	icq_regNewUin = 1;
 }
