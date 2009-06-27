@@ -102,6 +102,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\dialogs.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\http.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\main.cpp"
 				>
 			</File>
@@ -110,33 +118,13 @@
 				>
 			</File>
 			<File
+				RelativePath=".\signature.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\theme.cpp"
 				>
 			</File>
-			<Filter
-				Name="rest"
-				>
-				<File
-					RelativePath=".\restmethod.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="signature"
-				>
-				<File
-					RelativePath=".\signature.cpp"
-					>
-				</File>
-			</Filter>
-			<Filter
-				Name="dialogs"
-				>
-				<File
-					RelativePath=".\dialogs.cpp"
-					>
-				</File>
-			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -152,11 +140,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\proto.h"
+				RelativePath=".\http.h"
 				>
 			</File>
 			<File
-				RelativePath=".\restmethod.h"
+				RelativePath=".\proto.h"
 				>
 			</File>
 			<File

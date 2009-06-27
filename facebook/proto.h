@@ -82,6 +82,14 @@ public:
 	// Events
 	int  __cdecl OnOptionsInit(WPARAM,LPARAM);
 
+	// HTTP
+	HANDLE  m_hNetlibUser;
+	BOOL    HttpGetOrPost( int requestType, char* action, char* postData = NULL );
+	BOOL    PerformHttpRequest( int requestType, char* requestData );
+
+	// Test
+	int  __cdecl Test(WPARAM,LPARAM);
+	char*   m_szAccountId;
 };
 
 

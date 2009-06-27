@@ -127,10 +127,11 @@ int OnModulesLoaded(WPARAM,LPARAM)
 		CallService(MS_UPDATE_REGISTER,0,(LPARAM)&upd);
 	}
 
-	list< string >* a = new list< string >( );
-	a->push_back( "abc" );
-	a->push_back( "def" );
-	SignatureUtil::generateSignature( *(a), "secret" );
+	//// signature test
+	//list< string >* a = new list< string >( );
+	//a->push_back( "abc" );
+	//a->push_back( "def" );
+	//SignatureUtil::generateSignature( *(a), "secret" );
 
 	return 0;
 }
