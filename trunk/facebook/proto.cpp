@@ -27,6 +27,28 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 		&FacebookProto::SvcCreateAccMgrUI,this);
 
 	HookProtoEvent(ME_OPT_INITIALISE, &FacebookProto::OnOptionsInit, this);
+
+    NETLIBUSER nlu = {0};
+    nlu.cbSize = sizeof(nlu);
+    nlu.szSettingsModule = m_szModuleName;
+    nlu.szDescriptiveName = "Facebook accounts server connection";
+    nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS;
+
+    m_hNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER, 0, (LPARAM)&nlu);
+
+	CreateProtoService("Facebook","/Test",
+		&FacebookProto::Test,this);
+
+	CLISTMENUITEM mi = {0};
+	mi.cbSize = sizeof(CLISTMENUITEM);
+	mi.flags = 0;
+	mi.hIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FACEBOOK), IMAGE_ICON, 0, 0, 0);
+	mi.pszContactOwner = NULL;
+	mi.position = 1000000000;
+	mi.pszName = Translate("Test Facebook");
+	mi.pszService = "Facebook/Test";
+
+	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 }
 
 FacebookProto::~FacebookProto( )

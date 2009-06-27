@@ -67,6 +67,7 @@ using namespace std;
 #include <m_updater.h>
 
 #include "dialogs.h"
+#include "http.h"
 #include "proto.h"
 #include "restmethod.h"
 #include "signature.h"
@@ -79,7 +80,8 @@ using namespace std;
 
 extern HINSTANCE g_hInstance;
 
-#define FACEBOOK_KEY_UN             "Username"
+// DB keys
+#define FACEBOOK_KEY_UN             "Email"
 #define FACEBOOK_KEY_PASS           "Password"
 
 #define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"
@@ -95,5 +97,9 @@ extern HINSTANCE g_hInstance;
 #define FACEBOOK_KEY_AV_URL         "AvatarURL"
 
 #define FACEBOOK_DB_EVENT_TYPE_MIND 2718
+
+// Facebook request types
+#define FACEBOOK_REQUEST_STATUS_GET 1000
+#define FACEBOOK_REQUEST_STATUS_SET 1001
 
 #define WM_SETREPLY   WM_APP+10
