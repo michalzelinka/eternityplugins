@@ -1,0 +1,20 @@
+#Facebook protocol progres info
+
+= Planned features =
+
+Planned features:
+Synchronizing friends
+Getting/setting own "What's on my mind" status
+Viewing friends' statuses
+Sending/receiving instant messages (not regular inbox/sent messages)
+Popup events
+Updater support
+Friends' avatars
+Users info
+Setting own avatar/info
+Authorizations (processing Friend requests)
+
+
+= Already done =
+
+Nothing yet :)
