@@ -1,4 +1,4 @@
-#Facebook protocol progres info
+#summary Facebook protocol progres info
 
 = Planned features =
 
