@@ -102,6 +102,14 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath=".\communication.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\connection.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\dialogs.cpp"
 				>
 			</File>
@@ -118,11 +126,15 @@
 				>
 			</File>
 			<File
-				RelativePath=".\signature.cpp"
+				RelativePath=".\stubs.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\theme.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\utils.cpp"
 				>
 			</File>
 		</Filter>
@@ -133,6 +145,14 @@
 			>
 			<File
 				RelativePath=".\common.h"
+				>
+			</File>
+			<File
+				RelativePath=".\communication.h"
+				>
+			</File>
+			<File
+				RelativePath=".\constants.h"
 				>
 			</File>
 			<File
@@ -148,19 +168,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\signature.h"
-				>
-			</File>
-			<File
 				RelativePath=".\theme.h"
 				>
 			</File>
 			<File
-				RelativePath=".\utility.h"
-				>
-			</File>
-			<File
-				RelativePath=".\version.h"
+				RelativePath=".\utils.h"
 				>
 			</File>
 		</Filter>
