@@ -1,5 +1,9 @@
 /*
-Copyright © 2009 Jim Porter
+
+Facebook plugin for Miranda Instant Messenger
+_____________________________________________
+
+Copyright © 2009 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -13,11 +17,14 @@ GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
+
+Revision       : $Revision$
+Last change by : $Author$
+Last change on : $Date$
+
 */
 
 #pragma once
-
-#include "common.h"
 
 template<typename T>
 void CreateProtoService(const char *module,const char *service,
@@ -47,3 +54,49 @@ void ForkThread(void (__cdecl T::*thread)(void*),T *self,void *data = 0)
 {
 	CloseHandle(ForkThreadEx(thread,self,data));
 }
+
+namespace utils
+{
+	namespace url {
+		std::string encode(const std::string &s);
+	};
+
+	namespace debug {
+		void info( const char* info );
+		void test( FacebookProto* fbp );
+		void log( char* message );
+	};
+
+	namespace mem {
+		void __fastcall detract(char** str );
+		void __fastcall detract(void** p);
+		void* __fastcall allocate(size_t size);
+	};
+};
+
+void DebugInfo( const char* debugInfo );
+void LOG( char* message );
+void MB( char* m );
+void ShowPopup( TCHAR* message );
+
+class ScopedLock
+{
+public:
+	ScopedLock(HANDLE h) : handle_(h)
+	{
+		WaitForSingleObject(handle_,INFINITE);
+	}
+	~ScopedLock()
+	{
+		if(handle_)
+			ReleaseMutex(handle_);
+	}
+
+	void Unlock()
+	{
+		ReleaseMutex(handle_);
+		handle_ = 0;
+	}
+private:
+	HANDLE handle_;
+};
