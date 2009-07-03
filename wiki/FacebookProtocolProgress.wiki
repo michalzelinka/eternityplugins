@@ -2,16 +2,16 @@
 
 = Planned features =
 
- * Synchronizing friends [UP]
- * Getting/setting own "What's on my mind" status [UP/DONE]
- * Viewing friends' statuses [UP]
- * Sending/receiving instant messages (not regular inbox/sent messages) [DONE/UP]
- * Popup events [TBD]
- * Updater support [TBD]
- * Friends' avatars [TBD]
- * Users info [TBD]
- * Setting own avatar/info [TBD]
- * Authorizations (processing Friend requests) [TBD]
+ * Synchronizing friends // UP
+ * Getting/setting own "What's on my mind" status // UP/DONE
+ * Viewing friends' statuses // UP
+ * Sending/receiving instant messages (not regular inbox/sent messages) // DONE/UP
+ * Popup events // TBD
+ * Updater support // TBD
+ * Friends' avatars // TBD
+ * Users info // TBD
+ * Setting own avatar/info // TBD
+ * Authorizations (processing Friend requests) // TBD
 
 = Currently working on =
 
