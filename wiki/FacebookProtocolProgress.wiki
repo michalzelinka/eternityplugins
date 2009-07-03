@@ -2,23 +2,26 @@
 
 = Planned features =
 
- * Synchronizing friends
- * Getting/setting own "What's on my mind" status
- * Viewing friends' statuses
- * Sending/receiving instant messages (not regular inbox/sent messages)
- * Popup events
- * Updater support
- * Friends' avatars
- * Users info
- * Setting own avatar/info
- * Authorizations (processing Friend requests)
-
+ * Synchronizing friends [UP]
+ * Getting/setting own "What's on my mind" status [UP/DONE]
+ * Viewing friends' statuses [UP]
+ * Sending/receiving instant messages (not regular inbox/sent messages) [DONE/UP]
+ * Popup events [TBD]
+ * Updater support [TBD]
+ * Friends' avatars [TBD]
+ * Users info [TBD]
+ * Setting own avatar/info [TBD]
+ * Authorizations (processing Friend requests) [TBD]
 
 = Currently working on =
 
-Login sequence, cookies/session handling
-
+ * Getting contacts
+ * Getting users' statuses
+ * Getting notifications
 
 = Already done =
 
-Nothing yet :)
+ * Login sequence
+ * Cookies/Session handling
+ * Setting own status (What's on my mind?)
+ * Sending messages to others
