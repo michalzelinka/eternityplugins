@@ -1,4 +1,4 @@
-#summary Facebook protocol progress info
+#summary Facebook protocol development progress info
 
 = Planned features =
 
@@ -13,15 +13,21 @@
  * Setting own avatar/info // TBD
  * Authorizations (processing Friend requests) // TBD
 
+_^TBD — To Be Done^_<br>
+_^UP — Under Progress^_<br>
+_^DONE — Already Done^_
+
+----
+
 = Currently working on =
 
- * Getting contacts
- * Getting users' statuses
+ * Getting contacts and their statuses
  * Getting notifications
+ * Receiving instant messages from friends
 
 = Already done =
 
  * Login sequence
  * Cookies/Session handling
  * Setting own status (What's on my mind?)
- * Sending messages to others
+ * Sending instant messages to friends
