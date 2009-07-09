@@ -40,7 +40,7 @@
 			/>
 			<Tool
 				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../include"
+				AdditionalIncludeDirectories="../../include;.;../../miranda/miranda/include"
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FACEBOOK_EXPORTS;_CRT_SECURE_NO_WARNINGS;NOMINMAX"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
@@ -156,6 +156,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\db.h"
+				>
+			</File>
+			<File
 				RelativePath=".\dialogs.h"
 				>
 			</File>
@@ -169,6 +173,10 @@
 			</File>
 			<File
 				RelativePath=".\theme.h"
+				>
+			</File>
+			<File
+				RelativePath=".\tinyjson.hpp"
 				>
 			</File>
 			<File

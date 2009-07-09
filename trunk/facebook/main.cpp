@@ -27,13 +27,12 @@ Last change on : $Date$
 #include "common.h"
 
 PLUGINLINK *pluginLink;
+CLIST_INTERFACE* pcli;
 MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
 UTF8_INTERFACE utfi;
 LIST_INTERFACE li;
 XML_API xi;
-
-CLIST_INTERFACE* pcli;
 
 HINSTANCE g_hInstance;
 

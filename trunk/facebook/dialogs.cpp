@@ -167,26 +167,31 @@ INT_PTR CALLBACK FBPopupsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 
 INT_PTR CALLBACK FBDebugDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
+	HFONT hFont = NULL;
+
 	switch(message) 
 	{
 
 	case WM_INITDIALOG: {
 		TranslateDialogDefault(hwnd);
 
-		HFONT hFont = CreateFont( 14, 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 0, 2, TEXT( "Courier New" ) );
+		hFont = CreateFont( 14, 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 0, 2, TEXT( "Courier New" ) );
 		SendMessage(GetDlgItem( hwnd, IDC_DEBUGINFO  ), WM_SETFONT, (WPARAM)hFont, (LPARAM)TRUE);
-		DeleteObject( hFont );
 
 		char* debugInfo = reinterpret_cast< char* >(lparam);
 		SetDlgItemTextA( hwnd, IDC_DEBUGINFO, debugInfo );
 		} return TRUE;
 
 	case WM_COMMAND:
-		if(LOWORD(wparam) == IDCLOSE)
+		if ( LOWORD( wparam ) == IDCLOSE )
 		{
 			CloseWindow( hwnd );
 			DestroyWindow( hwnd );
 		}
+		break;
+
+	case WM_DESTROY:
+		DeleteObject( hFont );
 		break;
 
 	}

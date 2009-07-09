@@ -42,28 +42,12 @@ Last change on : $Date$
 #define FACEBOOK_SERVER_REGULAR     "http://www.facebook.com/"
 #define FACEBOOK_SERVER_LOGIN       "https://login.facebook.com/"
 
-// DB keys
-#define FACEBOOK_KEY_ID             "Email"
-#define FACEBOOK_KEY_PASS           "Password"
-
-#define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"
-#define FACEBOOK_KEY_POPUP_SIGNON   "Popup/Signon"
-#define FACEBOOK_KEY_POPUP_COLBACK  "Popup/ColorBack"
-#define FACEBOOK_KEY_POPUP_COLTEXT  "Popup/ColorText"
-#define FACEBOOK_KEY_POPUP_TIMEOUT  "Popup/Timeout"
-
-#define FACEBOOK_KEY_SINCEID        "SinceID"
-#define FACEBOOK_KEY_DMSINCEID      "DMSinceID"
-#define FACEBOOK_KEY_NEW            "NewAcc"
-
-#define FACEBOOK_KEY_AV_URL         "AvatarURL"
-
 // Input constants
 #define FACEBOOK_MIND_LIMIT         420
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
 
-// DB event types
-#define FACEBOOK_DB_EVENT_TYPE_MIND 2718
+// Defaults
+#define FACEBOOK_POLL_RATE          8 // in seconds
 
 // Facebook request types // TODO: Convert to MS_ and release in FB plugin SDK?
 #define FACEBOOK_REQUEST_LOGIN                  100

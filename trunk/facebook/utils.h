@@ -61,10 +61,17 @@ namespace utils
 		std::string encode(const std::string &s);
 	};
 
+	namespace time {
+		std::string unix_timestamp( );
+	};
+
+	namespace number {
+		std::string random( );
+	};
+
 	namespace debug {
 		void info( const char* info );
 		void test( FacebookProto* fbp );
-		void log( char* message );
 	};
 
 	namespace mem {
@@ -73,11 +80,6 @@ namespace utils
 		void* __fastcall allocate(size_t size);
 	};
 };
-
-void DebugInfo( const char* debugInfo );
-void LOG( char* message );
-void MB( char* m );
-void ShowPopup( TCHAR* message );
 
 class ScopedLock
 {
@@ -100,3 +102,9 @@ public:
 private:
 	HANDLE handle_;
 };
+
+void DebugInfo( const char* debugInfo );
+void NOTIFY( char* title, char* message );
+void LOG( char* message );
+void MB( char* m );
+void ShowPopup( TCHAR* message );

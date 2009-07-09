@@ -141,65 +141,48 @@ bool FacebookProto::NegotiateConnection( )
 	}
 }
 
-//void SignOn( void* )
-//{
-//	// prepare data
-//
-//	string user, pass;
-//	DBVARIANT dbv = {0};
-//
-//	if( !DBGetContactSettingString(0,m_szModuleName,FACEBOOK_KEY_ID,&dbv) )
-//	{
-//		user = dbv.pszVal;
-//		DBFreeVariant(&dbv);
-//	}
-//
-//	if( !DBGetContactSettingString(0,m_szModuleName,FACEBOOK_KEY_PASS,&dbv) )
-//	{
-//		CallService(MS_DB_CRYPT_DECODESTRING,strlen(dbv.pszVal)+1,
-//			reinterpret_cast<LPARAM>(dbv.pszVal));
-//		pass = dbv.pszVal;
-//		DBFreeVariant(&dbv);
-//	}
-//
-//	// [ LOGIN ] login post data string urlencode(username, password), ...
-//	string data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&email=";
-//	data += utils::url::encode( user );
-//	data += "&pass=";
-//	data += utils::url::encode( pass );
-//	data += "&pass_placeHolder=Password&persistent=1&login=Login&charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84\0";
-//
-//	char* datac = ( char* )utils::mem::malloc( data.size( ) * sizeof( char ) );
-//	strcpy( datac, data.c_str( ) );
-//
-//	// send request and get response
-//	NETLIBHTTPREQUEST* pnlhr = HttpGetPost( FACEBOOK_REQUEST_LOGIN, datac );
-//
-//	utils::mem::free( datac );
-//
-//	// process response
-//
-//	DebugInfo( pnlhr->pData );
-//
-//	/*if(!pnlhr || (pnlhr->resultCode != 200) || (pnlhr->dataLength != 1))
-//	{
-//        MessageBoxA( NULL, "Error", "", MB_OK );
-//	}
-//	else
-//	{ // check if OK
-//		MessageBoxA( NULL, pnlhr->pData, "OK", MB_OK );
-//	}*/
-//
-//	CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)pnlhr);
-//
-//	return FALSE;
-//}
-
-//bool FacebookProto::NegotiateConnection( )
-//{
-//}
-
 void FacebookProto::MessageLoop(void *)
 {
+	LOG("***** Entering Facebook::MessageLoop");
+
+	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_POLL_RATE );
+
+	for ( WORD i = 0; ; i++ )
+	{
+		if ( m_iStatus != ID_STATUS_ONLINE )
+			goto exit;
+		KeepAlive( );
+
+		//if ( m_iStatus != ID_STATUS_ONLINE )
+		//	goto exit;
+		//if ( i % 4 == 0 )
+		//	UpdateFriends( );
+
+		//if ( m_iStatus != ID_STATUS_ONLINE )
+		//	goto exit;
+		//UpdateStatuses( new_account,popups );
+
+		//if ( m_iStatus != ID_STATUS_ONLINE )
+		//	goto exit;
+		//UpdateMessages( new_account );
+
+		if ( m_iStatus != ID_STATUS_ONLINE )
+			goto exit;
+		LOG( "***** FacebookProto::MessageLoop going to sleep..." );
+		if ( SleepEx( poll_rate * 1000, true ) == WAIT_IO_COMPLETION )
+			goto exit;
+		LOG( "***** FacebookProto::MessageLoop waking up..." );
+	}
+
+exit:
+	{
+		ScopedLock s(facebook_lock_);
+		facy.devalidate_user( );
+	}
+	LOG("***** Exiting Facebook::MessageLoop");
 }
 
+void FacebookProto::KeepAlive( )
+{
+	facy.send_keep_alive( );
+}
