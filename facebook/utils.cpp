@@ -36,6 +36,26 @@ std::string utils::url::encode(const std::string &s)
 	return ret;
 }
 
+std::string utils::time::unix_timestamp( )
+{
+	string timestamp = "";
+	int in = ::time( NULL );
+	std::stringstream out;
+	out << in;
+	timestamp = out.str();
+	return timestamp;
+}
+
+std::string utils::number::random( )
+{
+	string number = "";
+	int in = ::time( NULL );
+	std::stringstream out;
+	out << in;
+	number = out.str();
+	return number;
+}
+
 void utils::debug::info( const char* info )
 {
 	CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_DEBUGINFO ), 
@@ -47,11 +67,6 @@ void utils::debug::test( FacebookProto* fbp )
 	fbp->SignOn( fbp );
 
 	return;
-}
-
-void utils::debug::log( char* message )
-{
-	// TO BE DONE
 }
 
 void __fastcall utils::mem::detract(char** str )
@@ -96,9 +111,19 @@ void DebugInfo( const char* debugInfo ) // OBSOLETE
 	utils::debug::info( debugInfo );
 }
 
+void NOTIFY( char* title, char* message )
+{
+	// Notify
+	//POPUP( title, message );
+
+	// Log
+	string log_message = title;
+	log_message += message;
+	LOG( ( char* )log_message.c_str( ) );
+}
+
 void LOG( char* message )
 {
-	utils::debug::log( message );
 }
 
 void MB( char* m )

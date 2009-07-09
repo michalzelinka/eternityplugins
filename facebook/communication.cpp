@@ -24,13 +24,12 @@ Last change on : $Date$
 
 */
 
+#include "tinyjson.hpp"
 #include "common.h"
 
 facebook::facebook( )
 {
-	username_ = "";
-	password_ = "";
-	post_form_id_ = "";
+	username_ = password_ = user_id_ = post_form_id_ = "";
 }
 
 http::response facebook::flap( const int request_type, char* request_data )
@@ -259,9 +258,16 @@ bool facebook::validate_user(const std::string &username,const std::string &pass
 	data += "&pass_placeHolder=Password&persistent=1&login=Login&charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84";
 
 	// Send validation
+
+	http::response resp = flap( FACEBOOK_REQUEST_LOGIN, (char*)data.c_str( ) );
+
+	// Process response data
+
+	user_id_ = cookies["c_user"];
+
 	if ( test )
 	{
-		switch ( flap( FACEBOOK_REQUEST_LOGIN, (char*)data.c_str( ) ).code )
+		switch ( resp.code )
 		{
 
 		case 200: // OK page returned, but that is regular login page we don't want in fact
@@ -282,10 +288,15 @@ bool facebook::validate_user(const std::string &username,const std::string &pass
 
 bool facebook::devalidate_user( )
 {
-	username_ = password_ = "";
+	username_ = password_ = user_id_ = "";
 
 	// TODO: Logout process
 
+	return true;
+}
+
+bool facebook::send_keep_alive( )
+{
 	return true;
 }
 
@@ -300,7 +311,7 @@ bool facebook::get_post_form_id( )
 	switch ( resp.code )
 	{
 
-	case 200: // OK page returned, but that is regular login page we don't want in fact
+	case 200:
 		return true;
 
 	default:
@@ -331,7 +342,7 @@ bool facebook::set_status(const std::string &status_text)
 	switch ( flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str( ) ).code )
 	{
 
-	case 200: // OK page returned, but that is regular login page we don't want in fact
+	case 200:
 		return true;
 
 	default:
@@ -346,18 +357,18 @@ bool facebook::send_message( string message_recipient, string message_text )
 	string data = "msg_text=";
 	data += utils::url::encode( message_text );
 	data += "&msg_id=";
-	data += rand( ); // message ID = random INT x)
+	data += utils::number::random( );
 	data += "&to=";
 	data += message_recipient;
 	data += "&client_time=";
-	data += time( NULL );
+	data += utils::time::unix_timestamp( );
 	data += "&post_form_id=";
-	data += ( post_form_id_.length( ) ) ? post_form_id_ : 0;
+	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
 
 	switch ( flap( FACEBOOK_REQUEST_MESSAGE_SEND, (char*)data.c_str( ) ).code )
 	{
 
-	case 200: // OK page returned, but that is regular login page we don't want in fact
+	case 200:
 		return true;
 
 	default:

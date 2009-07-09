@@ -26,19 +26,25 @@ Last change on : $Date$
 
 #pragma once
 
-struct facebook_status
+struct facebook_status // TODO: Needed?
 {
 	std::string text;
-	int id;
 	time_t time;
 };
 
 struct facebook_user
 {
-	std::string username;
+	std::string user_id;
 	std::string real_name;
 	std::string profile_image_url;
 	facebook_status status;
+};
+
+struct facebook_message
+{
+	std::string user_id;
+	std::string message_text;
+	time_t time;
 };
 
 class facebook
@@ -51,24 +57,30 @@ public:
 
 	std::string username_;
 	std::string password_;
+	std::string user_id_;
 	std::string post_form_id_;
+
+	std::string log;
 
 	// Session, Cookies, Data handling
 	std::map< string, string >   cookies;
 
-	char*   get_user_agent( );
-	char*   load_cookies( );
-	void    store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
-	void    clear_cookies( );
+	char* get_user_agent( );
+	char* load_cookies( );
+	void store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
+	void clear_cookies( );
+
+	bool send_keep_alive( );
 
 	// Login handling
-	bool validate_user(const std::string &username,const std::string &password,bool test = true);
+	bool validate_user(const std::string &username,const std::string &password,bool test = true); // TODO: test??
 	bool devalidate_user( );
 
 	const std::string & get_username() const;
 
 	// Users handling
 
+	bool get_post_form_id( );
 	//bool get_info(const std::string &name,facebook_user *);
 	//bool get_info_by_email(const std::string &email,facebook_user *);
 	//std::vector<facebook_user> get_friends();
@@ -83,7 +95,6 @@ public:
 
 	// Messages handling
 
-	bool get_post_form_id( );
 	bool send_message( string message_recipient, string message_text );
 
 	////////////////////////////////////////////////////////////

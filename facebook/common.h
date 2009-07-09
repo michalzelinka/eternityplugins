@@ -37,7 +37,10 @@ Last change on : $Date$
 #include <list>
 #include <map>
 #include <vector>
+#include <sstream>
 #include <time.h>
+#include <cstring>
+#include <ctime>
 using namespace std;
 
 #include <windows.h>
@@ -51,12 +54,12 @@ using namespace std;
 #include <m_system_cpp.h>
 #include <m_avatars.h>
 #include <m_button.h>
-#include <m_chat.h>
+#include <m_chat.h> // causes Boost/tinyJSON throwing marvellous errors -> tinyJSON must be included first
 #include <m_clc.h>
 #include <m_clist.h>
 #include <m_clistint.h>
 #include <m_clui.h>
-//#include "m_cluiframes.h"
+//#include <m_cluiframes.h>
 #include <m_database.h>
 #include <m_history.h>
 #include <m_idle.h>
@@ -79,6 +82,7 @@ using namespace std;
 #include <m_hotkeys.h>
 #include <m_updater.h>
 
+#include "db.h"
 #include "http.h"
 #include "communication.h"
 #include "proto.h"

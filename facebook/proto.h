@@ -102,9 +102,6 @@ public:
 
 	////////////////////////
 
-	// Account details
-	char*   m_szAccountId;
-
 	// Services
 	int  __cdecl GetName( WPARAM, LPARAM );
 	int  __cdecl GetStatus( WPARAM, LPARAM );
@@ -131,14 +128,20 @@ public:
 	void __cdecl UpdateAvatarWorker(void *);
 	void __cdecl UpdateInfoWorker(void *);
 
-	bool NegotiateConnection( );
+	// Message Loop
+	bool    NegotiateConnection( );
+	void    KeepAlive( );
+
 
 	// User
 
 	facebook    facy;
 	int __cdecl Test( WPARAM, LPARAM );
+	string      error_log;
 
 	// Handles, Locks
+
+	HANDLE  m_hStatusMind;
 
 	HANDLE  signon_lock_;
 	HANDLE  avatar_lock_;

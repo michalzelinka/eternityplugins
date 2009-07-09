@@ -31,15 +31,11 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	m_szProtoName  = mir_strdup( proto_name );
 	m_szModuleName = mir_strdup( proto_name );
 	m_tszUserName  = mir_tstrdup( username );
-	m_szAccountId  = "1627557216"; // TODO: set on login/cookie handling
 
 	CreateProtoService(m_szModuleName,PS_CREATEACCMGRUI,
 		&FacebookProto::SvcCreateAccMgrUI,this);
 	CreateProtoService(m_szModuleName,PS_GETNAME,  &FacebookProto::GetName,   this);
 	CreateProtoService(m_szModuleName,PS_GETSTATUS,&FacebookProto::GetStatus, this);
-
-//	CreateProtoService(m_szModuleName,PS_JOINCHAT, &FacebookProto::OnJoinChat,    this);
-//	CreateProtoService(m_szModuleName,PS_LEAVECHAT,&FacebookProto::OnLeaveChat,   this);
 
 //	HookProtoEvent(ME_DB_CONTACT_DELETED,       &FacebookProto::OnContactDeleted,     this);
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &FacebookProto::OnBuildStatusMenu,    this);
@@ -119,7 +115,7 @@ int FacebookProto::SetStatus( int new_status )
 
 	if ( new_status == ID_STATUS_ONLINE )
 	{
-		if ( old_status == ID_STATUS_CONNECTING )
+		if ( old_status == ID_STATUS_CONNECTING || old_status == ID_STATUS_ONLINE )
 			return 0;
 
 		m_iStatus = ID_STATUS_CONNECTING;
@@ -128,8 +124,12 @@ int FacebookProto::SetStatus( int new_status )
 
 		ForkThread( &FacebookProto::SignOn, this );
 	}
+	// TODO: Idle/Away?
 	else if ( new_status == ID_STATUS_OFFLINE )
 	{
+		if ( old_status == ID_STATUS_OFFLINE )
+			return 0;
+
 		m_iStatus = m_iDesiredStatus;
 		ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 			( HANDLE ) old_status, m_iStatus );
@@ -257,7 +257,7 @@ int FacebookProto::OnBuildStatusMenu(WPARAM wParam,LPARAM lParam)
 	mi.pszName = LPGEN("Mind...");
 	mi.popupPosition = 200001;
 	mi.icolibItem = GetIconHandle("mind");
-	HANDLE m_hMenuBookmarks = reinterpret_cast<HGENMENU>( CallService(
+	m_hStatusMind = reinterpret_cast<HGENMENU>( CallService(
 		MS_CLIST_ADDSTATUSMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) );
 
 	return 0;
@@ -286,7 +286,7 @@ int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 {
 	facy.get_post_form_id( );
-	facy.get_user_agent( );
+	facy.send_message( "1627557216", "Ahoj... x)" );
 
 	return FALSE;
 }

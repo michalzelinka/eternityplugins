@@ -39,8 +39,6 @@ static const icons[] =
 {
 	{ "facebook", "Facebook Icon", IDI_FACEBOOK },
 	{ "mind",     "Mind",          IDI_FACEBOOK },
-	{ "reply",    "Reply to Mind", IDI_FACEBOOK },
-
 	{ "homepage", "Visit Homepage", 0, "core_main_2" }, 
 };
 
