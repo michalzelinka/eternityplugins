@@ -70,4 +70,4 @@ b) your own request-optimised code (because proper JSON parsing is too "heavy" I
 
 == Solution ==
 
-Not done yet
+Quote/Bracket matching based solution under implementation progress, but still open to your ideas :)
