@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL$
-// Revision       : $Revision$
-// Last change on : $Date$
-// Last change by : $Author$
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/icq_opts.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -72,16 +72,16 @@ static void OptDlgChanged(HWND hwndDlg)
 
 TCHAR HttpUserAgents[][255] = 
 {
-  _T( "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)" ),
-  _T( "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)" ),
-  _T( "Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9" ),
-  _T( "Opera/9.23 (Windows NT 5.1; U; ru)" ),
-  _T( "Opera/9.27 (Windows NT 5.1; U; en)" ),
-  _T( "Opera/8.01 (J2ME/MIDP; Opera Mini/3.0.6306/1528; nb; U; ssr)" ),
-  _T( "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1" ),
-  _T( "Mozilla/5.0 (compatible; Konqueror/3.5; Linux 2.6.21-rc1; x86_64; cs, en_US) KHTML/3.5.6 (like Gecko)" ),
-  _T( "Lynx/2.8.4rel.1 libwww-FM/2.14" ),
-  _T( "Mozilla/4.08 [en] (WinNT; U ;Nav)" )
+  TEXT( "Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)" ),
+  TEXT( "Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)" ),
+  TEXT( "Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9" ),
+  TEXT( "Opera/9.23 (Windows NT 5.1; U; ru)" ),
+  TEXT( "Opera/9.27 (Windows NT 5.1; U; en)" ),
+  TEXT( "Opera/8.01 (J2ME/MIDP; Opera Mini/3.0.6306/1528; nb; U; ssr)" ),
+  TEXT( "Mozilla/5.0 (X11; U; Linux i686; en-US; rv:1.8.1.2) Gecko/20070221 SeaMonkey/1.1.1" ),
+  TEXT( "Mozilla/5.0 (compatible; Konqueror/3.5; Linux 2.6.21-rc1; x86_64; cs, en_US) KHTML/3.5.6 (like Gecko)" ),
+  TEXT( "Lynx/2.8.4rel.1 libwww-FM/2.14" ),
+  TEXT( "Mozilla/4.08 [en] (WinNT; U ;Nav)" )
 };
 
 /////////////////////////////////////////////////////////////////////////////////////////
@@ -766,7 +766,7 @@ static INT_PTR CALLBACK DlgProcIcqContactsOpts(HWND hwndDlg, UINT msg, WPARAM wP
 			{
 				TCHAR buf[255];
 				GetDlgItemText(hwndDlg, IDC_TMP_CONTACTS_GROUP, buf, sizeof(buf));
-				DBWriteContactSettingTString(NULL, ppro->m_szModuleName, "TmpContactsGroup", sizeof(buf) > 0 ? buf : _T(""));
+				DBWriteContactSettingTString(NULL, ppro->m_szModuleName, "TmpContactsGroup", sizeof(buf) > 0 ? buf : TEXT(""));
 			}
 			if (IsDlgButtonChecked(hwndDlg, IDC_DELETE_TMP_CONTACTS))
 				ppro->setSettingByte(NULL, "TempContacts", 0);
@@ -993,12 +993,12 @@ static INT_PTR CALLBACK DlgProcIcqEventsLogOpts(HWND hwndDlg, UINT msg, WPARAM w
 				ofn.lpstrTitle = TranslateT("Select the location of the file where events will be logged");
 			else {
 				ofn.Flags |= OFN_PATHMUSTEXIST | OFN_FILEMUSTEXIST;
-				ofn.lpstrTitle = _T("");
+				ofn.lpstrTitle = TEXT("");
 			}
 			_tcscpy(filter, TranslateT("All Files"));
-			_tcscat(filter, _T(" (*.*)"));
+			_tcscat(filter, TEXT(" (*.*)"));
 			pfilter = filter + lstrlen(filter) + 1;
-			_tcscpy(pfilter, _T("*"));
+			_tcscpy(pfilter, TEXT("*"));
 			pfilter = pfilter + lstrlen(pfilter) + 1;
 			*pfilter = '\0';
 			ofn.lpstrFilter = filter;
@@ -1041,7 +1041,7 @@ static INT_PTR CALLBACK DlgProcIcqEventsLogOpts(HWND hwndDlg, UINT msg, WPARAM w
 			{
 				TCHAR buf[255];
 				GetDlgItemText(hwndDlg, IDC_FILEPATH, buf, sizeof(buf) - 1);
-				DBWriteContactSettingTString(NULL, ppro->m_szModuleName, "EventsLogFile", lstrlen(buf) > 0 ? buf : _T(""));
+				DBWriteContactSettingTString(NULL, ppro->m_szModuleName, "EventsLogFile", lstrlen(buf) > 0 ? buf : TEXT(""));
 			}
 			return TRUE;
 		}
@@ -1054,23 +1054,23 @@ return FALSE;
 
 const TCHAR* CIdComboBox[] =
 {
-	_T("Miranda IM"), _T("Unknown"), _T("QiP 2005a"), _T("YSM"), _T("pyICQ"), _T("&RQ"),
-	_T("Jimm"), _T("Trillian"), _T("Licq"), _T("Kopete"), _T("ICQ for MAC"),
-	_T("Miranda IM 6.6.6 [evil]"), _T("ICQ 5 (Rambler)"), _T("ICQ 5.1"), _T("ICQ 5 (abv)"),
-	_T("ICQ 5 (Netvigator)"), _T("Sim/MacOS X"), _T("Sim/Win32"), _T("Centericq"),
-	_T("libicq2k"), _T("mChat"), _T("stICQ"), _T("KXicq2"), _T("QIP PDA (Windows)"),
-	_T("QIP Mobile (Java)"), _T("ICQ 2002"), _T("ICQ 6"), _T("ICQ for Pocket PC"),
-	_T("Anastasia"), _T("Virus"), _T("alicq"), _T("mICQ"), _T("StrICQ"), _T("vICQ"),
-	_T("IM2"), _T("GAIM"), _T("ICQ99"), _T("WebICQ"), _T("SmartICQ"), _T("IM+"),
-	_T("uIM"), _T("TICQClient"), _T("IC@"), _T("PreludeICQ"), _T("Qnext"), _T("ICQ Lite"),
-	_T("QIP Infium"), _T("JICQ"),_T("SpamBot"), _T("MIP"), _T("Trillian Astra"),
-	_T("R&Q"), _T("NanoICQ"), _T("IMadering"), _T("MirandaMobile")
+	TEXT("Miranda IM"), TEXT("Unknown"), TEXT("QiP 2005a"), TEXT("YSM"), TEXT("pyICQ"), TEXT("&RQ"),
+	TEXT("Jimm"), TEXT("Trillian"), TEXT("Licq"), TEXT("Kopete"), TEXT("ICQ for MAC"),
+	TEXT("Miranda IM 6.6.6 [evil]"), TEXT("ICQ 5 (Rambler)"), TEXT("ICQ 5.1"), TEXT("ICQ 5 (abv)"),
+	TEXT("ICQ 5 (Netvigator)"), TEXT("Sim/MacOS X"), TEXT("Sim/Win32"), TEXT("Centericq"),
+	TEXT("libicq2k"), TEXT("mChat"), TEXT("stICQ"), TEXT("KXicq2"), TEXT("QIP PDA (Windows)"),
+	TEXT("QIP Mobile (Java)"), TEXT("ICQ 2002"), TEXT("ICQ 6"), TEXT("ICQ for Pocket PC"),
+	TEXT("Anastasia"), TEXT("Virus"), TEXT("alicq"), TEXT("mICQ"), TEXT("StrICQ"), TEXT("vICQ"),
+	TEXT("IM2"), TEXT("GAIM"), TEXT("ICQ99"), TEXT("WebICQ"), TEXT("SmartICQ"), TEXT("IM+"),
+	TEXT("uIM"), TEXT("TICQClient"), TEXT("IC@"), TEXT("PreludeICQ"), TEXT("Qnext"), TEXT("ICQ Lite"),
+	TEXT("QIP Infium"), TEXT("JICQ"),TEXT("SpamBot"), TEXT("MIP"), TEXT("Trillian Astra"),
+	TEXT("R&Q"), TEXT("NanoICQ"), TEXT("IMadering"), TEXT("MirandaMobile")
 };
 
 const TCHAR* ModIdComboBox[] =
 {
-	_T("Regular by Joe@Whale"), _T(ICQ_BM_NAME), _T(ICQ_S7SSS_NAME),
-	_T(CIQ_SIN_NAME), _T(ICQ_PLUG_NAME), _T(ICQ_PLUSPLUS_NAME)
+	TEXT("Regular by Joe@Whale"), TEXT(ICQ_BM_NAME), TEXT(ICQ_S7SSS_NAME),
+	TEXT(ICQ_SIN_NAME), TEXT(ICQ_PLUG_NAME), TEXT(ICQ_PLUSPLUS_NAME)
 };
 
 static INT_PTR CALLBACK DlgProcIcqClientIDOpts(HWND hwndDlg, UINT msg, WPARAM wParam, LPARAM lParam)

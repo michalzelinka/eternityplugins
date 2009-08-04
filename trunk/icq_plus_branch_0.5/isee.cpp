@@ -125,7 +125,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	// Global Users Status Scan
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s", m_szModuleName, MS_ISEE_SCAN_USER_STATUS_GLOBAL);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s", m_szModuleName, PS_ISEE_SCAN_USER_STATUS_GLOBAL);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 	// TODO: proper service
 
@@ -143,7 +143,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 	mi.flags = CMIF_TCHAR | CMIF_CHILDPOPUP | CMIF_ICONFROMICOLIB;
 	mi.pszPopupName = (char*)m_hMenuAdvFeaturesRoot;
 
- 	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+ 	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.position = 1000010000;
@@ -156,7 +156,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 	                            (LPARAM)&mi
 	                         );
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.position = 1100010000;
@@ -171,7 +171,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	mi.position++;
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.ptszName = LPGENT("Block all users from seeing you");
@@ -185,7 +185,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	mi.position++;
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.ptszName = LPGENT("Allow only users in the Visible list to see you");
@@ -199,7 +199,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	mi.position++;
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.ptszName = LPGENT("Block only users in the Invisible list from seeing you");
@@ -213,7 +213,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	mi.position++;
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.ptszName = LPGENT("Allow only users in the Contact list to see you");
@@ -227,7 +227,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	mi.position++;
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.ptszName = LPGENT("Allow only users in the Contact list to see you, except Invisible list users");
@@ -239,7 +239,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 	                           (LPARAM)&mi
 	                         );
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.position = 1200010000;
@@ -253,7 +253,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 	                           (LPARAM)&mi
 	                         );
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.position = 1300010000;
@@ -269,7 +269,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 
 	mi.position++;
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.ptszName = LPGENT("Web Aware");
@@ -282,7 +282,7 @@ void CIcqProto::InitAdvancedFeaturesItems()
 	                           (LPARAM)&mi
 	                         );
 
-	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, MS_ISEE_ADVANCED_FEATURES, i);
+	null_snprintf(svcFnc, sizeof(svcFnc), "%s/%s%d", m_szModuleName, PS_ISEE_ADVANCED_FEATURES, i);
 	CreateProtoServiceParam(svcFnc + len, &CIcqProto::menuAdvFeatures, i);
 
 	mi.position = 1400010000;

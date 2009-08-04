@@ -26,14 +26,19 @@
 // -----------------------------------------------------------------------------
 //
 // File name      : $Source$
-// Revision       : $Revision: 36 $
-// Last change on : $Date: 2007-08-05 03:45:10 +0300 (Вс, 05 авг 2007) $
-// Last change by : $Author: jarvis141 $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 //
 // DESCRIPTION:
 //
 //  Capabilities List GUI
+//
+// TODO:
+//
+//  Rewrite whole file into human-acceptable form :))
+//  Add binary/BLOB capabilities support
 //
 // -----------------------------------------------------------------------------
 
@@ -46,7 +51,7 @@ static INT_PTR CALLBACK DlgProcCapsList( HWND hwndDlg, UINT message, WPARAM wPar
 	char buf2[64];
 	TCHAR buf3[64];
 	WORD m_wCapsCountNew = 0;
-	int iIndex, i, iRow;
+	int i;
 	LVCOLUMN col;
 	LVITEM item;
 	HWND hwndList = GetDlgItem( hwndDlg, IDC_CAPABILITIES );
@@ -57,7 +62,6 @@ static INT_PTR CALLBACK DlgProcCapsList( HWND hwndDlg, UINT message, WPARAM wPar
 
 	case WM_INITDIALOG:
 		{
-			//id = FALSE;
 			char szCapsDBKeyName[64];
 			ppro = (CIcqProto*)lParam;
 			SetWindowLongPtr( hwndDlg, GWLP_USERDATA, lParam );
@@ -76,20 +80,21 @@ static INT_PTR CALLBACK DlgProcCapsList( HWND hwndDlg, UINT message, WPARAM wPar
 				lstrcpy( dbv.ptszVal, _T( "" ) );
 				mir_snprintf( buf2, 64, "cap%luname", i );
 				DBGetContactSettingTString( NULL, szCapsDBKeyName, buf2, &dbv );
-				if ( !dbv.ptszVal ) break;
-				else {
-				item.mask = LVIF_TEXT;
-				item.iItem = i;
-				item.iSubItem = 0;
-				item.pszText = _T( "<capability>" );
-				iRow = ListView_InsertItem( hwndList, &item );
-				//lstrcpy( buf3, dbv.ptszVal );
-				ListView_SetItemText( hwndList, iRow, 0, dbv.ptszVal );
+				if ( !dbv.ptszVal )
+					break;
+				else
+				{
+					item.mask = LVIF_TEXT;
+					item.iItem = i;
+					item.iSubItem = 0;
+					item.pszText = _T( "<capability>" );
+					int row = ListView_InsertItem( hwndList, &item );
+					ListView_SetItemText( hwndList, row, 0, dbv.ptszVal );
+				}
 			}
+			ppro->m_wCapsCount = ListView_GetItemCount( hwndList );
 		}
-		ppro->m_wCapsCount = ListView_GetItemCount( hwndList );
-	}
-	return TRUE;
+		return TRUE;
 
 	case WM_COMMAND:
 		{
@@ -105,21 +110,21 @@ static INT_PTR CALLBACK DlgProcCapsList( HWND hwndDlg, UINT message, WPARAM wPar
 				item.iItem = ListView_GetItemCount( hwndList );
 				item.iSubItem = 0;
 				item.pszText = NULL;
-				iRow = ListView_InsertItem( hwndList, &item );
-				ListView_SetItemText( hwndList, iRow, 0, buf3 );
+				i = ListView_InsertItem( hwndList, &item );
+				ListView_SetItemText( hwndList, i, 0, buf3 );
 				break;
 
 			case IDC_CAPL_MODIFY:
-				iIndex = ListView_GetSelectionMark( hwndList );
-				if ( iIndex < 0 ) return FALSE;
+				i = ListView_GetSelectionMark( hwndList );
+				if ( i < 0 ) return FALSE;
 				GetDlgItemText( hwndDlg, IDC_CAPL_EDIT, buf3 , 64 );
-				ListView_SetItemText( hwndList, iIndex, 0, buf3 );
+				ListView_SetItemText( hwndList, i, 0, buf3 );
 				break;
 
 			case IDC_CAPL_DELETE:
-				iIndex = ListView_GetSelectionMark( hwndList );
-				if( iIndex < 0 ) return FALSE;
-				ListView_DeleteItem( hwndList, iIndex );
+				i = ListView_GetSelectionMark( hwndList );
+				if( i < 0 ) return FALSE;
+				ListView_DeleteItem( hwndList, i );
 				break;
 
 			case IDOK:
@@ -134,9 +139,9 @@ static INT_PTR CALLBACK DlgProcCapsList( HWND hwndDlg, UINT message, WPARAM wPar
 	case WM_NOTIFY:
 		if ( hdr && hdr->hdr.code == LVN_ITEMCHANGED && IsWindowVisible( hdr->hdr.hwndFrom ) && hdr->iItem != ( -1 ) )
 		{
-			iIndex = hdr->iItem;
-			if( iIndex < 0 ) return FALSE;
-			ListView_GetItemText( hwndList, iIndex, 0, buf3, 64 );
+			i = hdr->iItem;
+			if( i < 0 ) return FALSE;
+			ListView_GetItemText( hwndList, i, 0, buf3, 64 );
 			SetDlgItemText( hwndDlg, IDC_CAPL_EDIT, buf3 );
 			break;
 		}
@@ -148,27 +153,24 @@ static INT_PTR CALLBACK DlgProcCapsList( HWND hwndDlg, UINT message, WPARAM wPar
 
 	case WM_DESTROY:
 		{
-			int j;
 			char szCapsDBKeyName[64];
 
 			m_wCapsCountNew = ListView_GetItemCount( hwndList );
 			mir_snprintf( szCapsDBKeyName, 64, "%sCaps", ppro->m_szModuleName );
-			for ( iRow = 0; iRow < m_wCapsCountNew; iRow++ )
+
+			for ( int i = 0; i < m_wCapsCountNew; i++ )
 			{
-				mir_snprintf( buf2, 64, "cap%luname", iRow + 1 );
-				ListView_GetItemText( hwndList, iRow, 0, buf3, 64 )
+				mir_snprintf( buf2, 64, "cap%luname", i + 1 );
+				ListView_GetItemText( hwndList, i, 0, buf3, 64 )
 				DBWriteContactSettingTString( NULL, szCapsDBKeyName, buf2, buf3 );
-				//id = TRUE;
 			}
-			for ( j = m_wCapsCountNew + 1; j <= ppro->m_wCapsCount; j++ )
+			for ( int i = m_wCapsCountNew + 1; i <= ppro->m_wCapsCount; i++ )
 			{
-				mir_snprintf( buf2, 64, "cap%luname", j );
+				mir_snprintf( buf2, 64, "cap%luname", i );
 				DBDeleteContactSetting( NULL, szCapsDBKeyName, buf2 );
-				//id = TRUE;
 			}
 			ppro->m_hCapsList = NULL;
 			EnableWindow( ppro->m_hCapsListCaller, TRUE );
-			// TODO: Send updated capabilities
 		}
 		break;
 	}

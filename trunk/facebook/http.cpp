@@ -24,6 +24,4 @@ Last change on : $Date$
 
 */
 
-#pragma once
-
 #include "common.h"

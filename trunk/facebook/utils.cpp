@@ -46,6 +46,93 @@ std::string utils::time::unix_timestamp( )
 	return timestamp;
 }
 
+unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int start_bracket_position )
+{
+	string beginBracket = msg.substr( start_bracket_position, 1 );
+	string endBracket = "";
+	string textIdentifier = "";
+	bool   insideText = false;
+
+	if      ( beginBracket == "(" ) endBracket = ")";
+	else if ( beginBracket == "[" ) endBracket = "]";
+	else if ( beginBracket == "{" ) endBracket = "}";
+	else if ( beginBracket == "<" ) endBracket = ">";
+	else return 0;
+
+	int depthLevel = 1;
+
+	for ( unsigned int i = start_bracket_position + 1; i < msg.length( ); i++ )
+	{
+		string currChar = msg.substr( i, 1 );
+		string prevChar = msg.substr( i - 1, 1 );
+
+		if ( currChar == "\"" || currChar == "'" )
+		{
+			if ( prevChar == "\\" )
+				continue;
+			else
+			{
+				if ( !insideText )
+				{
+					textIdentifier = currChar;
+					insideText = !insideText;
+				}
+				else
+				{
+					if ( currChar == textIdentifier )
+					{
+						textIdentifier = "";
+						insideText = !insideText;
+					}
+				}
+				continue;
+			}
+		}
+		else if ( currChar == beginBracket )
+		{
+			if ( insideText || prevChar == "\\" )
+				continue;
+			else
+				depthLevel++;
+		}
+		else if ( currChar == endBracket )
+		{
+			if ( insideText || prevChar == "\\" )
+				continue;
+			else
+				depthLevel--;
+		}
+
+		if ( depthLevel == 0 )
+			return i;
+	}
+	return 0;
+}
+
+unsigned int utils::text::find_matching_quote( std::string msg, unsigned int start_quote_position )
+{
+	string beginEndQuote = msg.substr( start_quote_position, 1 );
+	bool   insideText = false;
+
+	if ( beginEndQuote != "\"" && beginEndQuote != "'" )
+		return 0;
+
+	for ( unsigned int i = start_quote_position + 1; i < msg.length( ); i++ )
+	{
+		string currChar = msg.substr( i, 1 );
+
+		if ( currChar == "\"" || currChar == "'" )
+		{
+			if ( msg.substr( i - 1, 1 ) == "\\" )
+				continue;
+
+			else if ( currChar == beginEndQuote )
+				return i;
+		}
+	}
+	return 0;
+}
+
 std::string utils::number::random( )
 {
 	string number = "";
@@ -58,14 +145,12 @@ std::string utils::number::random( )
 
 void utils::debug::info( const char* info )
 {
-	CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_DEBUGINFO ), 
+	CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_DEBUGINFO ),
 		NULL, FBDebugDialogProc, ( LPARAM )info );
 }
 
 void utils::debug::test( FacebookProto* fbp )
 {
-	fbp->SignOn( fbp );
-
 	return;
 }
 
@@ -98,15 +183,9 @@ void* __fastcall utils::mem::allocate(size_t size)
 }
 
 
+// OBSOLETE
 
-
-
-
-
-
-
-
-void DebugInfo( const char* debugInfo ) // OBSOLETE
+void DebugInfo( const char* debugInfo )
 {
 	utils::debug::info( debugInfo );
 }
@@ -133,4 +212,5 @@ void MB( char* m )
 
 void ShowPopup( TCHAR* message )
 {
+	MessageBox( NULL, message, TEXT( "Facebook Protocol" ), MB_OK ); // TODO: Popup? Merge with events?
 }

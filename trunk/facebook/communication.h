@@ -59,6 +59,8 @@ public:
 	std::string password_;
 	std::string user_id_;
 	std::string post_form_id_;
+	unsigned int chat_channel_num_;
+	unsigned int chat_sequence_num_;
 
 	std::string log;
 
@@ -70,17 +72,21 @@ public:
 	void store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
 	void clear_cookies( );
 
-	bool send_keep_alive( );
-
 	// Login handling
-	bool validate_user(const std::string &username,const std::string &password,bool test = true); // TODO: test??
-	bool devalidate_user( );
+	bool login( const std::string &username, const std::string &password, bool test = true ); // TODO: test??
+	bool logout( );
 
 	const std::string & get_username() const;
 
+	// Chat session handling
+	bool popout( );
+	bool reconnect( );
+	bool settings( );
+
 	// Users handling
 
-	bool get_post_form_id( );
+	bool update( );
+	bool fetch( );
 	//bool get_info(const std::string &name,facebook_user *);
 	//bool get_info_by_email(const std::string &email,facebook_user *);
 	//std::vector<facebook_user> get_friends();
@@ -96,6 +102,7 @@ public:
 	// Messages handling
 
 	bool send_message( string message_recipient, string message_text );
+	bool channel( );
 
 	////////////////////////////////////////////////////////////
 

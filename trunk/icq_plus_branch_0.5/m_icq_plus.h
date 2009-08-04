@@ -29,32 +29,46 @@
 #ifndef M_ICQ_PLUS_H__
 #define M_ICQ_PLUS_H__ 1
 
-//Sending tZer in filled structure to contact.
+// Sending tZer in filled structure to contact.
 //
-//wParam=(WPARAM)&TZERTOSEND
-//lParam=0
-#define MS_ISEE_SEND_TZER "/SendTzer"
+// wParam=(WPARAM)&TZERTOSEND
+// lParam=0
+#define PS_ICQP_SEND_TZER "/SendTzer"
 
-//Showing "Send tZer" dialog -- used when menu item is clicked
+// Showing "Send tZer" dialog -- used when menu item is clicked
 //
-//wParam=(WPARAM)hContact
-//lParam=0
-#define MS_ISEE_SEND_TZER_DIALOG "/SendTzerDialog"
+// wParam=(WPARAM)hContact
+// lParam=0
+#define PS_ICQP_SEND_TZER_DIALOG "/SendTzerDialog"
 
-//Requesting an Incognito Status Message
+// Requesting an Incognito Status Message
 //
-//wParam=(WPARAM)hContact
-//lParam=0
-#define MS_ISEE_INCOGNITO_REQUEST "/IncognitoRequest"
+// wParam=(WPARAM)hContact
+// lParam=0
+#define PS_ICQP_INCOGNITO_REQUEST "/IncognitoRequest"
 
-#define MS_ISEE_SET_ALWAYS_VISIBLE      "/SetAlwaysVisible"
-#define MS_ISEE_SET_NEVER_VISIBLE       "/SetNeverVisible"
-#define MS_ISEE_SCAN_USER_STATUS        "/ScanUserStatus"
-#define MS_ISEE_SCAN_USER_STATUS_GLOBAL "/ScanUserStatusGlobal"
-#define MS_ISEE_ADVANCED_FEATURES       "/AdvFeatures"
-#define MS_XSTATUS_UPDATE_FOR_ALL_USERS "/XStatusUpdateForAllUsers"
 
-#define PS_ICQ_ADD_CAPABILITY "/IcqAddCapability"
+#define PS_ISEE_SET_ALWAYS_VISIBLE      "/SetAlwaysVisible"
+#define PS_ISEE_SET_NEVER_VISIBLE       "/SetNeverVisible"
+#define PS_ISEE_SCAN_USER_STATUS        "/ScanUserStatus"
+#define PS_ISEE_SCAN_USER_STATUS_GLOBAL "/ScanUserStatusGlobal"
+#define PS_ISEE_ADVANCED_FEATURES       "/AdvFeatures"
+#define PS_ICQP_XSTATUS_UPDATE_FOR_ALL_USERS    "/XStatusUpdateForAllUsers"
+
+
+// Add a custom ICQ capability
+//
+// wParam = 0;
+// lParam = (LPARAM)(ICQ_CUSTOMCAP *)&icqCustomCap;
+#define PS_ICQP_ADD_CAPABILITY         "/IcqAddCapability"
+
+
+// Check if capability is supported (only icqCustomCap caps are)
+//
+// wParam = (WPARAM)(HANDLE)hContact;
+// lParam = (LPARAM)(ICQ_CUSTOMCAP *)&icqCustomCap;
+// returns non-zero if capability is supported
+#define PS_ICQP_CHECK_CAPABILITY       "/IcqCheckCapability"
 
 //
 
@@ -70,6 +84,7 @@
 #define ICQEVENTTYPE_WASFOUND          2013 // database event type
 
 #define MAX_CAPNAME 64
+
 typedef struct
 {
 	int cbSize;

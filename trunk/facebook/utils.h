@@ -69,6 +69,11 @@ namespace utils
 		std::string random( );
 	};
 
+	namespace text {
+		unsigned int find_matching_bracket( std::string msg, unsigned int start_bracket_position );
+		unsigned int find_matching_quote( std::string msg, unsigned int start_quote_position );
+	};
+
 	namespace debug {
 		void info( const char* info );
 		void test( FacebookProto* fbp );

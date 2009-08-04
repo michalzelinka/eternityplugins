@@ -169,4 +169,3 @@ extern "C" int __declspec(dllexport) Unload(void)
 	//UninitContactMenus();
 	return 0;
 }
-

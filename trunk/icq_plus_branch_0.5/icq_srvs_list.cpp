@@ -25,9 +25,9 @@
 // -----------------------------------------------------------------------------
 //
 // File name      : $Source$
-// Revision       : $Revision: 36 $
-// Last change on : $Date: 2007-08-05 03:45:10 +0300 (Вс, 05 авг 2007) $
-// Last change by : $Author: sss123next $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 //
 // DESCRIPTION:

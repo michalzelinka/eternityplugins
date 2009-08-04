@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_proto.h $
-// Revision       : $Revision: 8822 $
-// Last change on : $Date: 2009-01-11 18:17:05 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/icq_proto.h $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -1021,19 +1021,18 @@ struct CIcqProto : public PROTO_INTERFACE
 	WORD   m_wCapsCount;
 	WORD   m_wClass;
 	SortedList* lstCustomCaps;
-	LIST_INTERFACE cli;
 
 	WORD   GetProtoVersion();
 	void   ShowCapsListDialog(HWND hwndCaller);
-	int    __cdecl EnumCustomCapsProc(WPARAM wParam, LPARAM lParam) { return 0; };
 	void   SetDwFT(DWORD *dwFT, char* DbValue, DWORD DwValue);
 	void   SetTimeStamps(DWORD *dwFT1, DWORD *dwFT2, DWORD *dwFT3);
-	int    EnumCustomCapsProc( const char *szSetting, LPARAM lParam );
+	static int __cdecl EnumCustomCapsProc(const char *szSetting, LPARAM lParam);
 	void   AddCapabilitiesToBuffer( BYTE* packet, DWORD fdwContactCaps );
 	char*  GetCapabilityName( BYTE *cap, ICQ_CAPINFO *info );
-	int    IcqAddCapability( WPARAM wParam, LPARAM lParam );
-	int    IcqCheckCapability( WPARAM wParam, LPARAM lParam );
+	int    __cdecl IcqAddCapability( WPARAM wParam, LPARAM lParam );
+	int    __cdecl IcqCheckCapability( WPARAM wParam, LPARAM lParam );
 	void   updateClientID(void);
+	void   updateCustomCapabilities();
 
 	// direct
 	void   setContactDCIcon(HANDLE hContact, BOOL bForce, BOOL bRemove);
@@ -1102,7 +1101,7 @@ struct CIcqProto : public PROTO_INTERFACE
 
 	void   ShowSrvsListDialog(HWND hwndCaller);
 	void   TryNextServer();
-	DWORD __cdecl icq_TryNextServerThread(LPVOID lp);
+	DWORD  __cdecl icq_TryNextServerThread(LPVOID lp);
 
 	// popups
 	HWND   hPopupDialog;
@@ -1123,7 +1122,7 @@ struct CIcqProto : public PROTO_INTERFACE
 //	int    m_bHideQIPStatusMenu;
 	int    bQIPStatusExtraIconsReady;
 	HANDLE hQIPStatusExtraIcons[XSTATUS_COUNT];
-	IcqIconHandle hQIPStatusIcons[XSTATUS_COUNT];
+	IcqIconHandle   hQIPStatusIcons[XSTATUS_COUNT];
 	HANDLE hQIPStatusItems[XSTATUS_COUNT + 1];
 
 	int    hQIPStatusCListIcons[XSTATUS_COUNT];

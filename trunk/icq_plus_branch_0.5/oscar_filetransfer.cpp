@@ -6,6 +6,7 @@
 // Copyright © 2001-2002 Jon Keating, Richard Hughes
 // Copyright © 2002-2004 Martin Öberg, Sam Kothari, Robert Rainwater
 // Copyright © 2004-2009 Joe Kucera
+// Copyright Plus
 //
 // This program is free software; you can redistribute it and/or
 // modify it under the terms of the GNU General Public License
@@ -23,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/oscar_filetransfer.cpp $
-// Revision       : $Revision: 8822 $
-// Last change on : $Date: 2009-01-11 18:17:05 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/oscar_filetransfer.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -1344,8 +1345,8 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 				if (oc.ft->dwRemoteInternalIP != oc.ft->dwRemoteExternalIP)
 					addr2.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
 			}
-      else // try LAN
-        addr.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
+			else // try LAN
+				addr.S_un.S_addr = htonl(oc.ft->dwRemoteInternalIP);
 
 			// Inform UI that we will attempt to connect
 			BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTING, oc.ft, 0);
@@ -1381,6 +1382,11 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 					nloc.szHost = inet_ntoa(addr2);
 					oc.hConnection = NetLib_OpenConnection(m_hDirectNetlibUser, oc.type==OCT_REVERSE?"Reverse ":NULL, &nloc);
 				}
+
+				// Remember contact's IP
+				setSettingDword(oc.hContact, "IP", oc.ft->dwRemoteExternalIP);
+				setSettingDword(oc.hContact, "RealIP", oc.ft->dwRemoteInternalIP);
+
 				if (!oc.hConnection)
 				{
 					if (oc.type == OCT_NORMAL)
@@ -1415,10 +1421,6 @@ void __cdecl CIcqProto::oft_connectionThread( oscarthreadstartinfo *otsi )
 					// Show direct connection icon
 					setContactDCIcon(oc.hContact, DC_ICON_FORCE_ENABLED, DC_ICON_SHOW);
 					bNeedIconRemove = TRUE;
-
-					// Remember contact's IP
-					setSettingDword(oc.hContact, "IP", oc.ft->dwRemoteExternalIP);
-					setSettingDword(oc.hContact, "RealIP", oc.ft->dwRemoteInternalIP);
 
 					// signal UI
 					BroadcastAck(oc.ft->hContact, ACKTYPE_FILE, ACKRESULT_CONNECTED, oc.ft, 0);

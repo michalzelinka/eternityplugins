@@ -178,6 +178,7 @@
 
 // ======================================================================== */
 
+#include <vector>
 #include "cslist.h"
 #include "strpos.h"
 #include "legacy.h"
@@ -283,7 +284,7 @@ CSList::CSList( )
 		this->hHookOnStatusMenuBuild = NULL && this->createMenuItems( NULL, NULL );
 	this->hHookOnStatusMenuBuild = NULL;
 	this->hServiceShowList = CreateServiceFunction( MS_CSLIST_SHOWLIST, this->showList );
-	this->hMainMenuItem = this->hToolbarIcon = NULL;
+	this->hAnyMenuItem = this->hToolbarIcon = NULL;
 }
 
 
@@ -461,7 +462,7 @@ int CSList::createMenuItems( WPARAM wparam, LPARAM lparam )
 	if ( icqProtoCount == 0 )
 		return FALSE;
 
-	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hMainMenuItem, 0 );
+	CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )hAnyMenuItem, 0 );
 
 	BOOL service = ServiceExists( MS_CLIST_ADDSTATUSMENUITEM );
 
@@ -484,7 +485,7 @@ int CSList::createMenuItems( WPARAM wparam, LPARAM lparam )
 	case MENU_PLACEMENT_MAIN:
 		mi.position = 2000040000;
 		mi.ptszName = LPGENT( PLUGIN_LONG_NAME );
-		hMainMenuItem = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
+		hAnyMenuItem = ( HANDLE )CallService( MS_CLIST_ADDMAINMENUITEM, 0, ( LPARAM )&mi );
 		break;
 
 	case MENU_PLACEMENT_ICQ:
@@ -498,20 +499,19 @@ int CSList::createMenuItems( WPARAM wparam, LPARAM lparam )
 			mi.ptszName = TranslateT( LPGEN( PLUGIN_LONG_NAME ) );
 			mi.position = 2000040000; // default // TODO: smaller value?
 		}
-
 		ForAllProtocols( addProtoStatusMenuItem, ( void* )&mi );
 		break;
 
 	case MENU_PLACEMENT_GLOBAL_TOP:
 		mi.ptszName = TranslateT( LPGEN( PLUGIN_LONG_NAME ) );
 		mi.position = -0x7fffffff;
-		CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+		hAnyMenuItem = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 		break;
 
 	case MENU_PLACEMENT_GLOBAL_BOTTOM:
 		mi.ptszName = TranslateT( LPGEN( PLUGIN_LONG_NAME ) );
 		mi.position = 2000040000;
-		CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
+		hAnyMenuItem = ( HANDLE )CallService( MS_CLIST_ADDSTATUSMENUITEM, 0, ( LPARAM )&mi );
 		break;
 
 	//case CSLIST_MENU_PLACEMENT_TRAY:
@@ -633,8 +633,8 @@ INT_PTR __cdecl CSList::showList( WPARAM wparam, LPARAM lparam )
 	}
 	else
 	{
-		MessageBoxA( NULL, "Already opened!", "CSList", MB_OK );
 		cslist->mainWindow->setForeground( );
+//		MessageBoxA( NULL, "Already opened!", "CSList", MB_OK );
 	}
 
 	return FALSE;
@@ -742,25 +742,25 @@ void CSList::importCustomStatusUIStatusesFromAllProtos( char* protoName, void* a
 	{
 		DBVARIANT dbv = { 0 };
 		char bufTitle[32], bufMessage[32];
-		StatusItem* csi = new StatusItem( );
+		StatusItem* si = new StatusItem( );
 
-		csi->iIcon = i - 1;
+		si->iIcon = i - 1;
 
 		mir_snprintf( bufTitle, 32, "XStatus%luName", i );
 		DBGetContactSettingTString( NULL, protoName, bufTitle, &dbv );
-		lstrcpy( csi->tszTitle, dbv.ptszVal );
+		lstrcpy( si->tszTitle, dbv.ptszVal );
 
 		mir_snprintf( bufMessage, 32, "XStatus%luMsg", i );
 		DBGetContactSettingTString( NULL, protoName, bufMessage, &dbv );
-		lstrcpy( csi->tszMessage, dbv.ptszVal );
+		lstrcpy( si->tszMessage, dbv.ptszVal );
 
-		if ( lstrlen( csi->tszTitle ) || lstrlen( csi->tszMessage ) )
+		if ( lstrlen( si->tszTitle ) || lstrlen( si->tszMessage ) )
 		{
-			cslist->mainWindow->itemslist->list->add( csi );
+			cslist->mainWindow->itemslist->list->add( si );
 			cslist->mainWindow->bSomethingChanged = TRUE;
 		}
 		else
-			delete csi;
+			delete si;
 
 		if ( *result == IDYES )
 		{
@@ -931,7 +931,7 @@ void CSWindow::toggleFilter( )
 }
 
 
-BOOL CSWindow::toggleSelection( )
+BOOL CSWindow::toggleButtons( )
 {
 	int selection = ListView_GetSelectedItemMacro( this->listview->handle );
 	BOOL validSelection = ( selection >= 0 && ( unsigned int )selection < this->itemslist->list->getCount( ) ) ? TRUE : FALSE;
@@ -942,7 +942,8 @@ BOOL CSWindow::toggleSelection( )
 	EnableWindow( GetDlgItem( this->handle, IDC_MODIFY    ), validSelection && !filterEnabled );
 	EnableWindow( GetDlgItem( this->handle, IDC_REMOVE    ), validSelection && !filterEnabled );
 	EnableWindow( GetDlgItem( this->handle, IDC_FAVOURITE ), validSelection && !filterEnabled );
-//	EnableWindow( GetDlgItem( this->handle, IDC_UNDO      ), somethingChanged && !filterEnabled );
+	EnableWindow( GetDlgItem( this->handle, IDC_UNDO      ), somethingChanged && !filterEnabled );
+	EnableWindow( GetDlgItem( this->handle, IDC_IMPORT    ), !filterEnabled );
 //	EnableWindow( GetDlgItem( this->handle, IDC_GLOBAL    ), !filterEnabled );
 	EnableWindow( GetDlgItem( this->handle, IDOK          ), validSelection );
 
@@ -1187,6 +1188,14 @@ int CSListView::getPositionInList( )
 }
 
 
+void CSListView::setFullFocusedSelection( int selection )
+{
+	ListView_EnsureVisible( this->handle, selection, FALSE );
+	ListView_SetItemState( this->handle, selection, LVIS_SELECTED, LVIS_SELECTED );
+	ListView_SetItemState( this->handle, selection, LVIS_FOCUSED , LVIS_FOCUSED  );
+}
+
+
 // ====[ THREAD FORK ]========================================================
 
 void ForkThread( pThreadFunc pFunc, void* arg )
@@ -1246,7 +1255,6 @@ int CSItemsList::compareItems( const StatusItem* p1, const StatusItem* p2 )
 
 	return 0;
 }
-
 
 
 void CSItemsList::loadItems( )
@@ -1326,8 +1334,8 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 		csw->initButtons( );
 		csw->listview = new CSListView( GetDlgItem( hwnd, IDC_CSLIST ), csw );
 		csw->listview->initItems( csw->itemslist->list->getListHead( ) );
+		csw->toggleButtons( );
 		csw->toggleEmptyListMessage( );
-		csw->toggleSelection( );
 		csw->loadWindowPosition( );
 		SetWindowText( hwnd, TranslateT( PLUGIN_LONG_NAME ) );
 		translateDialog( hwnd );
@@ -1346,9 +1354,11 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 				if ( LOWORD( wparam ) == IDC_MODIFY )
 					csw->itemslist->list->remove( csw->listview->getPositionInList( ) );
 
-				csw->itemslist->list->add( csw->addModifyDlg->item );
+				int selection = csw->itemslist->list->add( csw->addModifyDlg->item );
 				csw->bSomethingChanged = TRUE;
 				csw->listview->reinitItems( csw->itemslist->list->getListHead( ) );
+				csw->listview->setFullFocusedSelection( selection );
+				csw->toggleButtons( );
 				csw->toggleEmptyListMessage( );
 			}
 			delete csw->addModifyDlg;
@@ -1361,6 +1371,7 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 			csw->itemslist->list->remove( csw->listview->getPositionInList( ) );
 			csw->bSomethingChanged = TRUE;
 			csw->listview->reinitItems( csw->itemslist->list->getListHead( ) );
+			csw->toggleButtons( );
 			csw->toggleEmptyListMessage( );
 			break;
 
@@ -1370,15 +1381,20 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 				StatusItem* f = new StatusItem( *csw->itemslist->list->get( selection ) );
 				f->bFavourite = ! f->bFavourite;
 				csw->itemslist->list->remove( selection );
-				csw->itemslist->list->add( f );
+				selection = csw->itemslist->list->add( f );
 				csw->bSomethingChanged = TRUE;
 				csw->listview->reinitItems( csw->itemslist->list->getListHead( ) );
-				csw->toggleSelection( );
+				csw->listview->setFullFocusedSelection( selection );
+				csw->toggleButtons( );
 			}
 			break;
 
 		case IDC_UNDO:
-			//csw->listview->reinitItems( csw->itemslist->list->top );
+			csw->itemslist->list->destroy( );
+			csw->itemslist->loadItems( );
+			csw->bSomethingChanged = FALSE;
+			csw->listview->reinitItems( csw->itemslist->list->getListHead( ) );
+			csw->toggleButtons( );
 			break;
 
 		case IDC_IMPORT:
@@ -1394,12 +1410,14 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 				}
 
 				CSList::ForAllProtocols( CSList::importCustomStatusUIStatusesFromAllProtos, ( void* )&result );
+				csw->bSomethingChanged = TRUE;
+				csw->toggleButtons( );
 			}
 			break;
 
 		case IDC_FILTER:
 			csw->toggleFilter( );
-			csw->toggleSelection( );
+			csw->toggleButtons( );
 			break;
 
 		case IDC_FILTER_FIELD:
@@ -1411,7 +1429,7 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
         case IDCANCEL:   // close and save, cancel custom status
         case IDOK:       // close and save, set selected custom status
 
-			if ( LOWORD( wparam ) == IDOK && csw->toggleSelection( ) )
+			if ( LOWORD( wparam ) == IDOK && csw->toggleButtons( ) )
 				cslist->setStatus( IDOK, csw->itemslist->list->get(
 					csw->listview->getPositionInList( ) ) );
 			if ( LOWORD( wparam ) == IDCANCEL )
@@ -1441,7 +1459,7 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 
 			case LVN_ITEMCHANGED:
 			case NM_CLICK:
-				csw->toggleSelection( );
+				csw->toggleButtons( );
 				break;
 
 			}

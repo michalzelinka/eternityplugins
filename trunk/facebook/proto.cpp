@@ -75,15 +75,15 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 	switch(type)
 	{
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_MODEMSGRECV | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL;
+		return PF1_IM | PF1_MODEMSGRECV; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL;
 	case PFLAGNUM_2:
 		return PF2_ONLINE;
 	case PFLAGNUM_3:
 		return PF2_ONLINE;
 	case PFLAGNUM_4:
-		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS;
+		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE;
 	case PFLAG_MAXLENOFMESSAGE:
-		return 140;
+		return FACEBOOK_MESSAGE_LIMIT;
 	case PFLAG_UNIQUEIDTEXT:
 		return (int) "Email";
 	case PFLAG_UNIQUEIDSETTING:
@@ -285,8 +285,9 @@ int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 
 int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 {
-	facy.get_post_form_id( );
-	facy.send_message( "1627557216", "Ahoj... x)" );
+	//facy.get_post_form_id( ); // TODO: Move to "connection"
+	//facy.send_message( "1627557216", "Ahoj... x)" );
+	utils::debug::info( facy.choose_request_url( FACEBOOK_REQUEST_MESSAGES_RECEIVE ) );
 
 	return FALSE;
 }
