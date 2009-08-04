@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/capabilities.cpp $
-// Revision       : $Revision: 7500 $
-// Last change on : $Date: 2008-03-24 19:07:37 +0100 (Mon, 24 Mar 2008) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/capabilities.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -82,6 +82,7 @@ const capstr capAndRQ            = {'&', 'R', 'Q', 'i', 'n', 's', 'i', 'd', 'e',
 const capstr capRAndQ            = {'R', '&', 'Q', 'i', 'n', 's', 'i', 'd', 'e', 0, 0, 0, 0, 0, 0, 0};
 const capstr capmChat            = {'m', 'C', 'h', 'a', 't', ' ', 'i', 'c', 'q', ' ', 0, 0, 0, 0, 0, 0};
 const capstr capJimm             = {'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
+const capstr capwJimm            = {'w', 'J', 'i', 'm', 'm', ' ', 0, 0, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capBayan            = {0x62, 0x61, 0x79, 0x61, 0x6e, 0x49, 0x43, 0x51, 0, 0, 0, 0, 0, 0, 0, 0};
 const capstr capCorePager        = {'C', 'O', 'R', 'E', ' ', 'P', 'a', 'g', 'e', 'r', 0, 0, 0, 0, 0, 0};
 const capstr capDiChat           = {'D', '[', 'i', ']', 'C', 'h', 'a', 't', 0, 0, 0, 0, 0, 0, 0, 0};
@@ -284,7 +285,7 @@ int CIcqProto::IcqAddCapability(WPARAM wParam, LPARAM lParam)
 	ICQ_CUSTOMCAP *icqCustomCapIn = ( ICQ_CUSTOMCAP* )lParam;
 	ICQ_CUSTOMCAP *icqCustomCap = ( ICQ_CUSTOMCAP* )malloc( sizeof( ICQ_CUSTOMCAP ) );
 	memcpy( icqCustomCap, icqCustomCapIn, sizeof( ICQ_CUSTOMCAP ) );
-	cli.List_Insert( lstCustomCaps, icqCustomCap, lstCustomCaps->realCount );
+	li.List_Insert( lstCustomCaps, icqCustomCap, lstCustomCaps->realCount );
 //	MessageBoxA(NULL, ((ICQ_CUSTOMCAP *)(lstCustomCaps->items[lstCustomCaps->realCount-1]))->name, "custom cap", MB_OK);
 	return 0;
 }
@@ -337,14 +338,14 @@ const STDCAPINFO stdCapInfo[] = {
 	{"Avatars (ICQDevil)", 0, capIcqDevil, 16},
 	{"Direct Connections", 0, capIcqDirect, 16},
 	{"Miranda IM", 0, capMirandaIm, 8},
-	{"Miranda IM Mobile", 0, capMimMobile, 13},
+	{"Miranda IM (Mobile)", 0, capMimMobile, 13},
 	{"Miranda IM Custom Pack", 0, capMimPack, 4},
-	{"Miranda ICQJ eternity/PlusPlus++", 0, capIcqJen, 4},
-	{"Miranda ICQJ S7&SSS OLD", 0, capIcqJs7old, 16},
-	{"Miranda ICQJ S7&SSS + SecureIM", 0, capIcqJs7s, 16},
-	{"Miranda ICQJ S7&SSS", 0, capIcqJs7, 4},
 	{"Miranda ICQJ Plus", 0, capIcqJp, 4},
 	{"Miranda ICQJ S!N", 0, capIcqJSin, 4},
+	{"Miranda ICQJ eternity/PlusPlus++", 0, capIcqJen, 4},
+	{"Miranda ICQJ S7 & SSS OLD", 0, capIcqJs7old, 16},
+	{"Miranda ICQJ S7 & SSS + SecureIM", 0, capIcqJs7s, 16},
+	{"Miranda ICQJ S7 & SSS", 0, capIcqJs7, 4},
 	{"AIM Oscar", 0, capAimOscar, 8},
 	{"IMadering Client", 0, capIMadering, 0x10},
 	{"Trillian", 0, capTrillian, 16},
@@ -554,29 +555,58 @@ char* CIcqProto::GetCapabilityName(BYTE *cap, ICQ_CAPINFO *info)
 
 ///////////
 
-int CIcqProto::EnumCustomCapsProc( const char *szSetting, LPARAM lParam )
+void CIcqProto::updateCustomCapabilities()
 {
-	DBVARIANT dbv;
-	DBCONTACTGETSETTING dbcgs;
-	dbcgs.szModule = (char *)lParam;
-	dbcgs.szSetting = szSetting;
+	char capsBranch[MAXMODULELABELLENGTH];
+
+	//TODO: destroying of previous list
+	if (lstCustomCaps)
+	{
+		li.List_Destroy( lstCustomCaps );
+		lstCustomCaps = NULL;
+	}
+	//TODO CHECKTHIS
+	lstCustomCaps = li.List_Create(0, 1);
+	lstCustomCaps->sortFunc = NULL;
+
+	DBCONTACTENUMSETTINGS dbces = {0};
+	mir_snprintf(capsBranch, MAXMODULELABELLENGTH, "%sCaps", m_szModuleName);
+	dbces.pfnEnumProc = &CIcqProto::EnumCustomCapsProc;
+	dbces.lParam = (LPARAM)this;
+	dbces.szModule = capsBranch;
+	CallService(MS_DB_CONTACT_ENUMSETTINGS, 0, (LPARAM)&dbces);
+}
+
+int CIcqProto::EnumCustomCapsProc(const char *szSetting, LPARAM lParam)
+{
+	DBVARIANT dbv = {0};
+	DBCONTACTGETSETTING dbcgs = {0};
+	char capsBranch[MAXMODULELABELLENGTH];
+
+	CIcqProto* ppro = (CIcqProto*)lParam;
+
+	mir_snprintf(capsBranch, MAXMODULELABELLENGTH, "%sCaps", ppro->m_szModuleName);
+
+	dbcgs.szModule = capsBranch;
+	dbcgs.szSetting = (char*)szSetting;
 	dbcgs.pValue = &dbv;
 	CallService(MS_DB_CONTACT_GETSETTING, 0, (LPARAM)&dbcgs);
+
 	if ( dbv.type == DBVT_BLOB )
 	{
-		ICQ_CUSTOMCAP icqCustomCap;
+		ICQ_CUSTOMCAP icqCustomCap = {0};
 		icqCustomCap.cbSize = sizeof(icqCustomCap);
 		strncpy(icqCustomCap.name, szSetting, 64);
 		memcpy(icqCustomCap.caps, dbv.pbVal, min(0x10, dbv.cpbVal));
-		CallProtoService(m_szModuleName, PS_ICQ_ADD_CAPABILITY, 0, (LPARAM)&icqCustomCap);
+		CallProtoService(ppro->m_szModuleName, PS_ICQP_ADD_CAPABILITY, 0, (LPARAM)&icqCustomCap);
 	}
-	else if ( dbv.type == DBVT_ASCIIZ )
+	else if ( dbv.type == DBVT_ASCIIZ ) // TODO: Resolve Unicode especially?
 	{
 		ICQ_CUSTOMCAP icqCustomCap;
 		icqCustomCap.cbSize = sizeof(icqCustomCap);
 		strncpy(icqCustomCap.name, szSetting, 64);
 		strncpy(icqCustomCap.caps, dbv.pszVal, 0x10);
-		CallProtoService(m_szModuleName, PS_ICQ_ADD_CAPABILITY, 0, (LPARAM)&icqCustomCap);
+		CallProtoService(ppro->m_szModuleName, PS_ICQP_ADD_CAPABILITY, 0, (LPARAM)&icqCustomCap);
 	}
 	CallService(MS_DB_CONTACT_FREEVARIANT, 0, (LPARAM)&dbv);
 	return 0;

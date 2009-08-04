@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/fam_03buddy.cpp $
-// Revision       : $Revision: 8822 $
-// Last change on : $Date: 2009-01-11 18:17:05 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/fam_03buddy.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -335,7 +335,9 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 				handleAvatarContactHash(dwUIN, szUID, hContact, NULL, 0, wOldStatus);
 
 			// Update the contact's capabilities
-			if (wOldStatus == ID_STATUS_OFFLINE)
+			// if (wOldStatus == ID_STATUS_OFFLINE)
+			// Old status check removed - needed for on-the-fly
+			// capabilities update (for example ClientID faking)
 			{
 				// Delete the capabilities we saved the last time this contact came online
 				ClearAllContactCapabilities(hContact);
@@ -419,6 +421,23 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 						handleXStatusCaps(hContact, capBuf, capLen, moodData, moodSize);
 					}
 
+					setSettingDword(hContact, "dwFT1", dwFT1);
+					setSettingDword(hContact, "dwFT2", dwFT2);
+					setSettingDword(hContact, "dwFT3", dwFT3);
+
+					if (capBuf)
+					{ // store client capabilities
+						DBCONTACTWRITESETTING dbcws = {0};
+						dbcws.value.type = DBVT_BLOB;
+						dbcws.value.cpbVal = capLen;
+						dbcws.value.pbVal = capBuf;
+						dbcws.szModule = m_szModuleName;
+						dbcws.szSetting = DBSETTING_CAPABILITY_BUFFER;
+						CallService(MS_DB_CONTACT_WRITESETTING, (WPARAM)hContact, (LPARAM)&dbcws);
+					}
+					else
+						deleteSetting(hContact, "CapBuf"); // wokaround for detecting clients without caps
+
 					szClient = detectUserClient(hContact, dwUIN, wClass, wVersion, dwFT1, dwFT2, dwFT3, dwOnlineSince, nTCPFlag, dwDirectConnCookie, dwWebPort, capBuf, capLen, &bClientId, (char*)szStrBuf);
 				}
 
@@ -435,24 +454,25 @@ void CIcqProto::handleUserOnline(BYTE* buf, WORD wLen, serverthread_info* info)
 					NetLog_Server("Forcing simple messages due to compability issues");
 				}
 			}
-			else
-			{
-				szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
+			// TODO: Should really everything be gone? Not only removing "else" word? Won't we loose some data?
+			//else
+			//{
+			//	szClient = (char*)-1; // we don't want to client be overwritten if no capabilities received
 
-				// Get Capability Info TLV
-				pTLV = pChain->getTLV(0x0D, 1);
+			//	// Get Capability Info TLV
+			//	pTLV = pChain->getTLV(0x0D, 1);
 
-				if (pTLV && (pTLV->wLen >= 16))
-				{ // handle Xtraz status
-					char* moodData = NULL;
-					WORD moodSize = 0;
+			//	if (pTLV && (pTLV->wLen >= 16))
+			//	{ // handle Xtraz status
+			//		char* moodData = NULL;
+			//		WORD moodSize = 0;
 
-					unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
-					handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
-				}
-			}
-      // Process Status Note
-      parseStatusNote(dwUIN, szUID, hContact, pChain);
+			//		unpackSessionDataItem(pChain, 0x0E, (BYTE**)&moodData, &moodSize, NULL);
+			//		handleXStatusCaps(hContact, pTLV->pData, pTLV->wLen, moodData, moodSize);
+			//	}
+			//}
+			// Process Status Note
+			parseStatusNote(dwUIN, szUID, hContact, pChain);
 		}
 		// Free TLV chain
 		disposeChain(&pChain);

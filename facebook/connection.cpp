@@ -111,7 +111,12 @@ bool FacebookProto::NegotiateConnection( )
 	bool success;
 	{
 		ScopedLock s(facebook_lock_);
-		success = facy.validate_user( user, pass );
+		success = facy.login( user, pass );
+		// TODO: Following functions here, or in the ::SignOn( ) ?
+		success = facy.popout( );
+		success = facy.update( );
+		success = facy.reconnect( );
+		success = facy.settings( );
 	}
 
 	if(!success)
@@ -125,7 +130,7 @@ bool FacebookProto::NegotiateConnection( )
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
 			(HANDLE)old_status,m_iStatus);
 
-		facy.devalidate_user( );
+		facy.logout( );
 
 		return false;
 	}
@@ -143,7 +148,7 @@ bool FacebookProto::NegotiateConnection( )
 
 void FacebookProto::MessageLoop(void *)
 {
-	LOG("***** Entering Facebook::MessageLoop");
+	LOG( ">>>>> Entering Facebook::MessageLoop" );
 
 	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_POLL_RATE );
 
@@ -151,20 +156,13 @@ void FacebookProto::MessageLoop(void *)
 	{
 		if ( m_iStatus != ID_STATUS_ONLINE )
 			goto exit;
-		KeepAlive( );
+		if ( i % 2 == 0 )
+			UpdateFriends( );
 
-		//if ( m_iStatus != ID_STATUS_ONLINE )
-		//	goto exit;
-		//if ( i % 4 == 0 )
-		//	UpdateFriends( );
-
-		//if ( m_iStatus != ID_STATUS_ONLINE )
-		//	goto exit;
-		//UpdateStatuses( new_account,popups );
-
-		//if ( m_iStatus != ID_STATUS_ONLINE )
-		//	goto exit;
-		//UpdateMessages( new_account );
+		if ( m_iStatus != ID_STATUS_ONLINE )
+			goto exit;
+		if ( i % 2 == 1 )
+			UpdateMessages( );
 
 		if ( m_iStatus != ID_STATUS_ONLINE )
 			goto exit;
@@ -177,12 +175,17 @@ void FacebookProto::MessageLoop(void *)
 exit:
 	{
 		ScopedLock s(facebook_lock_);
-		facy.devalidate_user( );
+		facy.logout( );
 	}
-	LOG("***** Exiting Facebook::MessageLoop");
+	LOG( "<<<<< Exiting FacebookProto::MessageLoop" );
 }
 
-void FacebookProto::KeepAlive( )
+void FacebookProto::UpdateFriends( )
 {
-	facy.send_keep_alive( );
+	facy.update( );
+}
+
+void FacebookProto::UpdateMessages( )
+{
+	facy.channel( );
 }

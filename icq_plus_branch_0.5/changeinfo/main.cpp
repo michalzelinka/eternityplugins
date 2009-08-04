@@ -21,10 +21,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/changeinfo/main.cpp $
-// Revision       : $Revision: 7484 $
-// Last change on : $Date: 2008-03-21 10:43:39 +0100 (Fri, 21 Mar 2008) $
-// Last change by : $Author: ghazan $
+// File name      : $URL$
+// Revision       : $Revision$
+// Last change on : $Date$
+// Last change by : $Author$
 //
 // DESCRIPTION:
 //

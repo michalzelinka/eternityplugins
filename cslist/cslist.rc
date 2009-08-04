@@ -88,7 +88,7 @@ BEGIN
     CONTROL         "Confirm deletion of items",IDC_CONFIRM_DELETION,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,20,253,10
     CONTROL         "Delete entries in ICQ Custom status menu after Import",IDC_DELETE_AFTER_IMPORT,
                     "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,24,32,253,10
-    GROUPBOX        "Menu item placement",IDC_STATIC,4,80,292,101
+    GROUPBOX        "Menu item placement",IDC_STATIC,4,80,292,127
     CONTROL         "Main Menu",IDC_PLACEMENT_MAIN,"Button",BS_AUTORADIOBUTTON | WS_GROUP | WS_TABSTOP,24,97,253,10
     CONTROL         "ICQ Status Menu",IDC_PLACEMENT_ICQ,"Button",BS_AUTORADIOBUTTON | WS_TABSTOP,24,108,253,10
     CONTROL         "Hide ""Custom status"" menu",IDC_HIDE_CUSTOM_STATUS_UI,
@@ -102,9 +102,10 @@ BEGIN
                     "Button",BS_AUTOCHECKBOX | WS_DISABLED | WS_TABSTOP,24,44,253,10
     CONTROL         "Remember last window position",IDC_REMEMBER_POSITION,
                     "Button",BS_AUTOCHECKBOX | WS_TABSTOP,24,56,253,10
+    CTEXT           "Note: Menu items are only visible when at least one ICQ account is properly set. Check if you have at least one account with UIN filled in.",IDC_STATIC,24,178,253,22
 END
 
-IDD_RELEASENOTES DIALOGEX 0, 0, 192, 253
+IDD_RELEASENOTES DIALOGEX 0, 0, 192, 241
 STYLE DS_SETFONT | DS_MODALFRAME | DS_FIXEDSYS | DS_CENTER | WS_POPUP | WS_CAPTION | WS_SYSMENU
 CAPTION "Custom Status List Release Notes"
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -119,21 +120,20 @@ BEGIN
     RTEXT           "Author:",IDC_STATIC,4,50,54,8
     LTEXT           "jarvis (original idea by HANAX)",IDC_STATIC,64,50,124,8
     RTEXT           "Copyright:",IDC_STATIC,4,60,54,8
-    LTEXT           "© 2007-9 jarvis [eternity crew]\n© 2006-8 HANAX Software",IDC_STATIC,64,60,124,18
-    GROUPBOX        "Changelog",IDC_STATIC,4,101,184,85
-    CONTROL         """Favourites"" finally :)",IDC_STATIC,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,14,118,167,10
-    CONTROL         "Completely rewritten, brand new code",IDC_STATIC,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,14,128,167,10
-    CONTROL         "C++ object model, templates, management",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,25,138,156,10
-    CONTROL         "Got rid of many Win32 API dependencies :)",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,25,149,156,10
-    GROUPBOX        "Warning",IDC_STATIC,4,189,184,42
-    CONTROL         "Don't show this dialog again",IDC_TOGGLE_SHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,235,122,14
-    DEFPUSHBUTTON   "Close",IDOK,128,235,60,14
-    CONTROL         "Lightened code, reduced resources, reduced consumption",IDC_STATIC,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,25,160,156,18
-    LTEXT           "The 0.1 version branch introduces new way of storing data in the database. Please check carefully if the import was successful.",IDC_STATIC,14,202,167,25
+    LTEXT           "© 2007-9 jarvis [eternity crew]\nAll acclaims go to HANAX",IDC_STATIC,64,60,124,18
+    GROUPBOX        "Changelog",IDC_STATIC,4,101,184,75
+    CONTROL         "Fixed showing menu items when not applicable",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,14,115,167,10
+    CONTROL         "Fixed toggling of controls when list item is removed",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,14,125,167,17
+    GROUPBOX        "Warning",IDC_STATIC,4,177,184,42
+    CONTROL         "Don't show this dialog again",IDC_TOGGLE_SHOW,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,4,223,122,14
+    DEFPUSHBUTTON   "Close",IDOK,128,223,60,14
+    LTEXT           "The 0.1 version branch introduces new way of storing data in the database. Please check carefully if the import was successful.",IDC_STATIC,14,190,167,25
     PUSHBUTTON      "Donate",IDC_DONATE,46,82,99,14
+    CONTROL         "Returned ""Undo"" function",IDC_STATIC,"Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,14,142,167,10
+    CONTROL         "Added item focus selection & focus when added, modified or favourite-toggled",IDC_STATIC,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_DISABLED,14,152,167,17
 END
 
 
@@ -194,7 +194,7 @@ BEGIN
         VERTGUIDE, 64
         VERTGUIDE, 128
         VERTGUIDE, 181
-        BOTTOMMARGIN, 249
+        BOTTOMMARGIN, 237
         HORZGUIDE, 40
         HORZGUIDE, 50
         HORZGUIDE, 60
@@ -210,7 +210,7 @@ END
 
 VS_VERSION_INFO VERSIONINFO
  FILEVERSION 0,1,0,4
- PRODUCTVERSION 0,4,0,3
+ PRODUCTVERSION 0,6,0,0
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -225,14 +225,14 @@ BEGIN
     BEGIN
         BLOCK "040904b0"
         BEGIN
-            VALUE "Comments", "Offers List of your Custom Statuses. All acclaims go to HANAX, original publisher and inventor of this idea."
+            VALUE "Comments", "Offers List of your Custom Statuses. All acclaims go to HANAX, original inventor of this idea."
             VALUE "FileDescription", "Custom Status List"
             VALUE "FileVersion", "0, 1, 0, 4"
             VALUE "InternalName", "cslist"
-            VALUE "LegalCopyright", "© 2007-2009 jarvis, © 2006-2008 HANAX"
+            VALUE "LegalCopyright", "© 2007-2009 jarvis"
             VALUE "OriginalFilename", "cslist.dll"
             VALUE "ProductName", "Custom Status List"
-            VALUE "ProductVersion", "0, 4, 0, 3"
+            VALUE "ProductVersion", "0, 6, 0, 0"
         END
     END
     BLOCK "VarFileInfo"

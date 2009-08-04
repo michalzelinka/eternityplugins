@@ -24,19 +24,20 @@ Last change on : $Date$
 
 */
 
-#include "tinyjson.hpp"
+//#include "tinyjson.hpp"
 #include "common.h"
 
 facebook::facebook( )
 {
 	username_ = password_ = user_id_ = post_form_id_ = "";
+	chat_sequence_num_ = 0;
 }
 
 http::response facebook::flap( const int request_type, char* request_data )
 {
 	NETLIBHTTPREQUEST nlhr = {sizeof( nlhr )};
 	nlhr.requestType = choose_method( request_type );
-	nlhr.szUrl = this->choose_request_url( request_type );
+	nlhr.szUrl = choose_request_url( request_type );
 	nlhr.flags = NLHRF_NODUMP | choose_security_level( request_type ) | NLHRF_GENERATEHOST;
 	nlhr.headers = get_request_headers( request_type, &nlhr.headersCount );
 
@@ -83,10 +84,13 @@ DWORD facebook::choose_security_level( int request_type )
 	case FACEBOOK_REQUEST_LOGIN:
 		return NLHRF_SSL;
 
+	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_UPDATE:
+	case FACEBOOK_REQUEST_RECONNECT:
+	case FACEBOOK_REQUEST_SETTINGS:
 	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
-	case FACEBOOK_REQUEST_POST_FORM_ID_GET:
 	default:
 		return ( DWORD )0;
 	}
@@ -97,12 +101,15 @@ int facebook::choose_method( int request_type )
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
+	case FACEBOOK_REQUEST_UPDATE:
+	case FACEBOOK_REQUEST_SETTINGS:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		return REQUEST_POST;
 
+	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_GET:
-	case FACEBOOK_REQUEST_POST_FORM_ID_GET:
 	default:
 		return REQUEST_GET;
 	}
@@ -113,14 +120,26 @@ char* facebook::choose_server( int request_type )
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
-		return FACEBOOK_SERVER_LOGIN"%s";
+		return FACEBOOK_SERVER_LOGIN;
 
+	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
+	{
+		char* chatServer = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
+		mir_snprintf( chatServer, 64, FACEBOOK_SERVER_CHAT, 0, chat_channel_num_ );
+		return chatServer;
+	}
+
+	case FACEBOOK_REQUEST_SETTINGS:
+		return FACEBOOK_SERVER_APPS;
+
+	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_UPDATE:
+	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
-	case FACEBOOK_REQUEST_POST_FORM_ID_GET:
 	default:
-		return FACEBOOK_SERVER_REGULAR"%s";
+		return FACEBOOK_SERVER_REGULAR;
 	}
 }
 
@@ -131,14 +150,37 @@ char* facebook::choose_action( int request_type )
 	case FACEBOOK_REQUEST_LOGIN:
 		return "login.php?login_attempt=1";
 
+	case FACEBOOK_REQUEST_POPOUT:
+		return "presence/popout.php";
+
+	case FACEBOOK_REQUEST_UPDATE:
+		return "ajax/presence/update.php";
+
+	case FACEBOOK_REQUEST_RECONNECT:
+	{
+		
+		char* reconnAction = ( char* )utils::mem::allocate( 128 * sizeof( char ) );
+		mir_snprintf( reconnAction, 128, "ajax/presence/reconnect.php?reason=%d&post_form_id=%s", 3, post_form_id_.c_str( ) );
+		// TODO: What is reason "3"?
+		return reconnAction;
+	}
+
+	case FACEBOOK_REQUEST_SETTINGS:
+		return "ajax/chat/settings.php";
+
 	case FACEBOOK_REQUEST_STATUS_SET:
 		return "ajax/updatestatus.php";
 
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		return "ajax/chat/send.php";
 
-	case FACEBOOK_REQUEST_POST_FORM_ID_GET:
-		return "presence/popout.php";
+	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
+	{
+		
+		char* chatAction = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
+		mir_snprintf( chatAction, 64, "x/%s/false/p_%s=%d", utils::time::unix_timestamp( ).c_str( ), user_id_.c_str( ), chat_sequence_num_ );
+		return chatAction;
+	}
 
 	default:
 	case FACEBOOK_REQUEST_STATUS_GET:
@@ -148,24 +190,35 @@ char* facebook::choose_action( int request_type )
 
 char* facebook::choose_request_url( int request_type )
 {
-	char* url = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
-	mir_snprintf( url, 64, choose_server( request_type ), choose_action( request_type ) );
+	char* url = ( char* )utils::mem::allocate( 255 * sizeof( char ) );
+	char* server = choose_server( request_type );
+	char* action = choose_action( request_type );
+	mir_snprintf( url, 255, "%s%s", server, action );
+	utils::mem::detract( &server );
+	utils::mem::detract( &action );
 	return url;
 }
 
 
 NETLIBHTTPHEADER* facebook::get_request_headers( int request_type, int* headers_count )
 {
-	// TODO: cookies leak, user-agent leak
+	// TODO: cookies leak, user-agent leak, should be static
 
 	NETLIBHTTPHEADER* headers = NULL;
 
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
+	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_UPDATE:
+	case FACEBOOK_REQUEST_RECONNECT:
+	case FACEBOOK_REQUEST_SETTINGS:
+	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
-	case FACEBOOK_REQUEST_POST_FORM_ID_GET:
+	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
+	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
+	default:
 		*( headers_count ) = 7;
 		headers = ( NETLIBHTTPHEADER* )utils::mem::allocate( sizeof( NETLIBHTTPHEADER )*( *headers_count ) );
 		set_header( &headers[0], "Connection", "close" );
@@ -177,7 +230,7 @@ NETLIBHTTPHEADER* facebook::get_request_headers( int request_type, int* headers_
 		set_header( &headers[6], "Accept-Language", "en, C" );
 		break;
 
-	default:
+	case 0:
 		*( headers_count ) = 0;
 		break;
 	}
@@ -241,7 +294,7 @@ void facebook::clear_cookies( )
 
 //////////////////////////////////////////////////////////////////////////////
 
-bool facebook::validate_user(const std::string &username,const std::string &password,bool test)
+bool facebook::login(const std::string &username,const std::string &password,bool test)
 {
 	username_ = username;
 	password_ = password;
@@ -286,7 +339,7 @@ bool facebook::validate_user(const std::string &username,const std::string &pass
 		return true;
 }
 
-bool facebook::devalidate_user( )
+bool facebook::logout( )
 {
 	username_ = password_ = user_id_ = "";
 
@@ -295,14 +348,9 @@ bool facebook::devalidate_user( )
 	return true;
 }
 
-bool facebook::send_keep_alive( )
+bool facebook::popout( )
 {
-	return true;
-}
-
-bool facebook::get_post_form_id( )
-{
-	http::response resp = flap( FACEBOOK_REQUEST_POST_FORM_ID_GET );
+	http::response resp = flap( FACEBOOK_REQUEST_POPOUT );
 
 	// Process result data
 
@@ -319,27 +367,26 @@ bool facebook::get_post_form_id( )
 		return false;
 
 	}
-
 }
 
-bool facebook::set_status(const std::string &status_text)
+bool facebook::reconnect( )
 {
-	string data = "action=HOME_UPDATE&home_tab_id=1&profile_id=";
-	data += cookies["c_user"];
-	if ( status_text.length( ) )
-	{
-		data += "&status=";
-		data += utils::url::encode( status_text );
-	}
-	else
-	{
-		data += "&clear=1";
-	}
-	data += "&post_form_id=";
-	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
-	data += "&target_id=0&app_id=&post_form_id_source=AsyncRequest";
+	http::response resp = flap( FACEBOOK_REQUEST_RECONNECT );
 
-	switch ( flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str( ) ).code )
+	// Process result data
+
+	int channel_num_begin = resp.data.find( "\"host\":" ) + 8 + 7;
+	int channel_num_length = resp.data.substr( channel_num_begin ).find( "\"" );
+	string channel_num = resp.data.substr( channel_num_begin, channel_num_length );
+
+	int sequence_num_begin = resp.data.find( "\"seq\":" ) + 6;
+	int sequence_num_length = resp.data.substr( sequence_num_begin ).find( "," );
+	string sequence_num = resp.data.substr( sequence_num_begin, sequence_num_length );
+
+	this->chat_channel_num_ = atoi( channel_num.c_str( ) );
+	this->chat_sequence_num_ = atoi( sequence_num.c_str( ) );
+
+	switch ( resp.code )
 	{
 
 	case 200:
@@ -350,6 +397,64 @@ bool facebook::set_status(const std::string &status_text)
 		return false;
 
 	}
+}
+
+bool facebook::settings( )
+{
+	// Prepare settings data
+
+	string data = "visibility=true&post_form_id=" + this->post_form_id_;
+
+	// Send settings
+
+	http::response resp = flap( FACEBOOK_REQUEST_SETTINGS, (char*)data.c_str( ) );
+
+	switch ( resp.code )
+	{
+
+	case 200:
+		return true;
+
+	default:
+		ShowPopup(TranslateT("Something went wrong..."));
+		return false;
+
+	}
+}
+
+bool facebook::update( )
+{
+	// Prepare update data
+
+	string data = "user=" + this->user_id_ + "&popped_out=true&force_render=true&buddy_list=1";
+	// TODO: &notifications=1
+
+	// Get update
+
+	http::response resp = flap( FACEBOOK_REQUEST_UPDATE, (char*)data.c_str( ) );
+
+	// Process result data
+
+	utils::debug::info( ( char* )resp.data.c_str( ) );
+
+	// Return
+
+	switch ( resp.code )
+	{
+
+	case 200:
+		return true;
+
+	default:
+		ShowPopup(TranslateT("Something went wrong..."));
+		return false;
+
+	}
+}
+
+bool facebook::channel( )
+{
+	return true;
 }
 
 bool facebook::send_message( string message_recipient, string message_text )
@@ -377,4 +482,34 @@ bool facebook::send_message( string message_recipient, string message_text )
 
 	}
 
+}
+
+bool facebook::set_status(const std::string &status_text)
+{
+	string data = "action=HOME_UPDATE&home_tab_id=1&profile_id=";
+	data += cookies["c_user"];
+	if ( status_text.length( ) )
+	{
+		data += "&status=";
+		data += utils::url::encode( status_text );
+	}
+	else
+	{
+		data += "&clear=1"; // TODO: Remove "0" length limit in dialog
+	}
+	data += "&post_form_id=";
+	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
+	data += "&target_id=0&app_id=&post_form_id_source=AsyncRequest";
+
+	switch ( flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str( ) ).code )
+	{
+
+	case 200:
+		return true;
+
+	default:
+		ShowPopup(TranslateT("Something went wrong..."));
+		return false;
+
+	}
 }

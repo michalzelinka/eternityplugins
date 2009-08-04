@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/init.cpp $
-// Revision       : $Revision: 8822 $
-// Last change on : $Date: 2009-01-11 18:17:05 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/init.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -68,11 +68,11 @@ PLUGININFOEX pluginInfo = {
 	UNICODE_AWARE,
 	0,   //doesn't replace anything built-in
 	// ICQJ Plus Mod UUID
-	#if defined( _UNICODE )
-	{0xc78614bf, 0x878e, 0x43e4, { 0xa3, 0xf4, 0xa,  0xf9, 0x9a, 0xa5, 0x7a, 0x78 }} // {73A9615C-7D4E-4555-BADB-EE05DC928EFF}
-	#else
-	{0xc78614bf, 0x878e, 0x43e4, { 0xa3, 0xf4, 0xa,  0xf9, 0x9a, 0xa5, 0x7a, 0x87 }} // {89CF4C3D-7014-4658-A13B-46DB4968C73B}
-	#endif
+#if defined( _UNICODE )
+	{0xe33776c0, 0x1496, 0x4a68, { 0xa9, 0xef, 0x8a, 0x9d, 0x68, 0xac, 0xaa, 0x7b }} // {E33776C0-1496-4a68-A9EF-8A9D68ACAA7B}
+#else
+	{0xe33776c0, 0x1496, 0x4a68, { 0xa9, 0xef, 0x8a, 0x9d, 0x68, 0xac, 0xaa, 0x7c }} // {E33776C0-1496-4a68-A9EF-8A9D68ACAA7C}
+#endif
 };
 
 extern "C" PLUGININFOEX __declspec(dllexport) *MirandaPluginInfoEx(DWORD mirandaVersion)
@@ -147,6 +147,20 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 		{ // for Final Releases of Miranda 0.5+ clear build number
 			MIRANDA_VERSION &= 0xFFFFFF00;
 		}
+
+		/* WARNING!!! You CANNOT remove this code */
+		if (strstr(szVer, "coffee") != NULL)
+		{
+			// We are running under damn violators
+			void (*f)();
+			
+			MessageBoxA( NULL, "Running ICQJ+ Mod is forbidden under license violating products, sorry!", "Warning",
+			    MB_OK|MB_ICONERROR|MB_SETFOREGROUND|MB_TOPMOST );
+			
+			f = NULL;
+			f();
+		}
+		/* end of protected code */
 	}
 
 	srand(time(NULL));
@@ -381,21 +395,4 @@ void CIcqProto::UpdateGlobalSettings()
 	m_bRTFEnabled = getSettingByte(NULL, "RTF", DEFAULT_RTF);
 
 	m_bSecureIM = ServiceExists("SecureIM/IsContactSecured");
-
-	// initiate custom capabilities list
-	mir_getLI(&li);
-	lstCustomCaps = li.List_Create(0, 1);
-	lstCustomCaps->sortFunc = NULL;
-
-	/* TODO + move to separate function to be usable in Options > Client ID, too
-	{
-		char tmp[MAXMODULELABELLENGTH];
-		DBCONTACTENUMSETTINGS dbces;
-		mir_snprintf(tmp, MAXMODULELABELLENGTH, "%sCaps", m_szModuleName);
-		dbces.pfnEnumProc = CIcqProto::EnumCustomCapsProc;
-		dbces.lParam = (LPARAM)tmp;
-		dbces.szModule = tmp;
-		CallService(MS_DB_CONTACT_ENUMSETTINGS, 0, (LPARAM)&dbces);
-	}
-	*/
 }

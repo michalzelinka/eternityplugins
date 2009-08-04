@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL$
-// Revision       : $Revision$
-// Last change on : $Date$
-// Last change by : $Author$
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/capabilities.h $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -95,6 +95,7 @@ extern const capstr capAndRQ;
 extern const capstr capRAndQ;
 extern const capstr capmChat;
 extern const capstr capJimm;
+extern const capstr capwJimm;
 extern const capstr capBayan;
 extern const capstr capCorePager;
 extern const capstr capDiChat;

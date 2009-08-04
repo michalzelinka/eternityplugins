@@ -24,9 +24,9 @@
 // -----------------------------------------------------------------------------
 //
 // File name      : $Source: /cvsroot/miranda/miranda/protocols/IcqOscarJ/icq_http.c,v $
-// Revision       : $Revision: 7500 $
-// Last change on : $Date: 2008-03-24 19:07:37 +0100 (Mon, 24 Mar 2008) $
-// Last change by : $Author: jokusoftware $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -46,7 +46,7 @@ int icq_httpGatewayInit(HANDLE hConn, NETLIBOPENCONNECTION *nloc, NETLIBHTTPREQU
 	int responseBytes, recvResult;
 	char szSid[33], szHttpServer[256], szHttpGetUrl[300], szHttpPostUrl[300];
 	NETLIBHTTPPROXYINFO nlhpi = {0};
-
+	
 	for (responseBytes = 0; ; )
 	{
 		recvResult = Netlib_Recv(hConn, (char*)response + responseBytes, sizeof(response) - responseBytes, MSG_DUMPPROXY);

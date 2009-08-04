@@ -57,4 +57,3 @@ Last change on : $Date: 2009 $
 
 // DB event types
 #define FACEBOOK_DB_EVENT_TYPE_MIND 2718
-

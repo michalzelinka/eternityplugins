@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_proto.cpp $
-// Revision       : $Revision: 8827 $
-// Last change on : $Date: 2009-01-11 19:33:00 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: ghazan $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/icq_proto.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -175,12 +175,14 @@ CIcqProto::CIcqProto( const char* aProtoName, const TCHAR* aUserName ) :
 	CreateProtoService(MS_REVOKE_AUTH, &CIcqProto::RevokeAuthorization);
 
 	//
-	CreateProtoService(MS_ISEE_SEND_TZER, &CIcqProto::SendTzerService);
-	CreateProtoService(MS_ISEE_SEND_TZER_DIALOG, &CIcqProto::SendTzerDialog);
-	CreateProtoService(MS_ISEE_INCOGNITO_REQUEST, &CIcqProto::IncognitoAwayRequest);
-	//CreateProtoService(MS_XSTATUS_UPDATE_FOR_ALL_USERS, &CIcqProto::icq_CheckUserStatus);
-	//CreateProtoService(MS_ISEE_SET_ALWAYS_VISIBLE, &CIcqProto::IcqSetVisible);
-	//CreateProtoService(MS_ISEE_SET_NEVER_VISIBLE, &CIcqProto::IcqSetInvisible);
+	CreateProtoService(PS_ICQP_SEND_TZER, &CIcqProto::SendTzerService);
+	CreateProtoService(PS_ICQP_SEND_TZER_DIALOG, &CIcqProto::SendTzerDialog);
+	CreateProtoService(PS_ICQP_INCOGNITO_REQUEST, &CIcqProto::IncognitoAwayRequest);
+	//CreateProtoService(PS_ICQP_XSTATUS_UPDATE_FOR_ALL_USERS, &CIcqProto::icq_CheckUserStatus);
+	//CreateProtoService(PS_ISEE_SET_ALWAYS_VISIBLE, &CIcqProto::IcqSetVisible);
+	//CreateProtoService(PS_ISEE_SET_NEVER_VISIBLE, &CIcqProto::IcqSetInvisible);
+	CreateProtoService(PS_ICQP_ADD_CAPABILITY, &CIcqProto::IcqAddCapability);
+	CreateProtoService(PS_ICQP_CHECK_CAPABILITY, &CIcqProto::IcqCheckCapability);
 	//
 
 	CreateProtoService(MS_XSTATUS_SHOWDETAILS, &CIcqProto::ShowXStatusDetails);
@@ -438,11 +440,11 @@ int CIcqProto::OnModulesLoaded( WPARAM wParam, LPARAM lParam )
 	m_hContactMenuItems[ICMI_AUTH_GRANT] = CListAddContactMenuItem(LPGEN("Grant authorization"), hStaticIcons[ISI_AUTH_GRANT], 1000029999, m_szModuleName, MS_GRANT_AUTH, 0);
 	m_hContactMenuItems[ICMI_AUTH_REVOKE] = CListAddContactMenuItem(LPGEN("Revoke authorization"), hStaticIcons[ISI_AUTH_REVOKE], 1000029998, m_szModuleName, MS_REVOKE_AUTH, 0);
 	// Plus icons
-	m_hContactMenuItems[ICMI_SEND_TZER] = CListAddContactMenuItem(LPGEN("Send tZer"), hStaticIcons[ISI_SEND_TZER], 1000029997, m_szModuleName, MS_ISEE_SEND_TZER_DIALOG, CMIF_NOTOFFLINE);
-	m_hContactMenuItems[ICMI_ALWAYS_VISIBLE] = CListAddContactMenuItem(LPGEN("Always visible"), hStaticIcons[ISI_ALWAYS_VISIBLE], 1000029996, m_szModuleName, MS_ISEE_SET_ALWAYS_VISIBLE, CMIF_NOTOFFLINE);
-	m_hContactMenuItems[ICMI_NEVER_VISIBLE] = CListAddContactMenuItem(LPGEN("Never visible"), hStaticIcons[ISI_NEVER_VISIBLE], 1000029995, m_szModuleName, MS_ISEE_SET_NEVER_VISIBLE, CMIF_NOTOFFLINE);
-	m_hContactMenuItems[ICMI_INCOGNITO_REQUEST] = CListAddContactMenuItem(LPGEN("Incognito Status Message"), hStaticIcons[ISI_INCOGNITO_REQUEST], 1000029994, m_szModuleName, MS_ISEE_INCOGNITO_REQUEST, CMIF_NOTOFFLINE);
-	m_hContactMenuItems[ICMI_SCAN] = CListAddContactMenuItem(LPGEN("Us&er Status"), hStaticIcons[ISI_SCAN], 1000029993, m_szModuleName, MS_ISEE_SCAN_USER_STATUS, CMIF_NOTOFFLINE);
+	m_hContactMenuItems[ICMI_SEND_TZER] = CListAddContactMenuItem(LPGEN("Send tZer"), hStaticIcons[ISI_SEND_TZER], 1000029997, m_szModuleName, PS_ICQP_SEND_TZER_DIALOG, CMIF_NOTOFFLINE);
+	m_hContactMenuItems[ICMI_ALWAYS_VISIBLE] = CListAddContactMenuItem(LPGEN("Always visible"), hStaticIcons[ISI_ALWAYS_VISIBLE], 1000029996, m_szModuleName, PS_ISEE_SET_ALWAYS_VISIBLE, CMIF_NOTOFFLINE);
+	m_hContactMenuItems[ICMI_NEVER_VISIBLE] = CListAddContactMenuItem(LPGEN("Never visible"), hStaticIcons[ISI_NEVER_VISIBLE], 1000029995, m_szModuleName, PS_ISEE_SET_NEVER_VISIBLE, CMIF_NOTOFFLINE);
+	m_hContactMenuItems[ICMI_INCOGNITO_REQUEST] = CListAddContactMenuItem(LPGEN("Incognito Status Message"), hStaticIcons[ISI_INCOGNITO_REQUEST], 1000029994, m_szModuleName, PS_ICQP_INCOGNITO_REQUEST, CMIF_NOTOFFLINE);
+	m_hContactMenuItems[ICMI_SCAN] = CListAddContactMenuItem(LPGEN("Us&er Status"), hStaticIcons[ISI_SCAN], 1000029993, m_szModuleName, PS_ISEE_SCAN_USER_STATUS, CMIF_NOTOFFLINE);
 	//
 	m_hContactMenuItems[ICMI_ADD_TO_SERVLIST] = CListAddContactMenuItem(LPGEN("Add to server list"), hStaticIcons[ISI_ADD_TO_SERVLIST], -2049999999, m_szModuleName, MS_ICQ_ADDSERVCONTACT, 0);
 

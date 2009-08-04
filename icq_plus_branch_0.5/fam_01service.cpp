@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/fam_01service.cpp $
-// Revision       : $Revision: 8822 $
-// Last change on : $Date: 2009-01-11 18:17:05 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/fam_01service.cpp $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -666,26 +666,9 @@ void CIcqProto::setUserInfo()
 	                     0, 0, 0, 0, 1, 3, 2, 2, 1, 1, 8, 0, // 48
 	                     0, 1, 3, 0, 0, 0, 4, 6, 6, 6, 7}; // 58
 
-	/* Don't forget to get it to life =)
-	// force reupdate of custom capabilities
-	{
-		//Custom caps
-		mir_getLI(&listInterface);
-		lstCustomCaps = listInterface.List_Create(0,1);
-		lstCustomCaps->sortFunc = NULL;
-  
-		{
-  			char tmp[MAXMODULELABELLENGTH];
-  			DBCONTACTENUMSETTINGS dbces;
-  			mir_snprintf(tmp, MAXMODULELABELLENGTH, "%sCaps", gpszICQProtoName);
-  			dbces.pfnEnumProc = EnumCustomCapsProc;
-  			dbces.lParam = (LPARAM)tmp;
-  			dbces.szModule = tmp;
-			CallService(MS_DB_CONTACT_ENUMSETTINGS, 0, (LPARAM)&dbces);
-		}
-	}
-	*/
 
+	// force reupdate of custom capabilities
+	updateCustomCapabilities();
 	
 	if (!cID || cID == 11) // || cID == 54)
 	{ // if Miranda, as 'Miranda' or as 'MirandaMobile'
@@ -730,12 +713,10 @@ void CIcqProto::setUserInfo()
 		wAdditionalData += 16; // TODO: DESC
 
 	wAdditionalData += wID[cID]*16; // TODO: Recheck spaces
-/*
-	if (m_bCustomCapEnabled)
-	{
+
+	if (m_bCustomCapsEnabled)
 		wAdditionalData += 16 * lstCustomCaps->realCount;
-	}
-*/
+
 	if (cID == 2 || cID == 23 || cID == 24 || cID == 46) // QIP caps
 	{
 		if (m_bXStatusEnabled)
@@ -1119,14 +1100,9 @@ void CIcqProto::setUserInfo()
 			packBuffer(&packet, capXStatus[bXStatus-1], 0x10);
 	}
   
-  	/*
-	if (m_bCustomCapEnabled)
-	{
-		int i;
-		for (i = 0; i < lstCustomCaps->realCount; ++i)
-			packBuffer(&packet, ((ICQ_CUSTOMCAP *)lstCustomCaps->items[i])->caps, 0x10); 
-	}
-	*/
+	if (m_bCustomCapsEnabled)
+		for (int i = 0; i < lstCustomCaps->realCount; ++i)
+			packBuffer(&packet, (BYTE*)((ICQ_CUSTOMCAP *)lstCustomCaps->items[i])->caps, 0x10);
 
 	{ // All capabilites set, let's store own client capabilities
 		DBCONTACTWRITESETTING dbcws = {0};
@@ -1140,6 +1116,42 @@ void CIcqProto::setUserInfo()
 
 	sendServPacket(&packet);
 }
+
+
+void CIcqProto::updateClientID(void)
+{
+	icq_packet packet;
+	DWORD dwFT1, dwFT2, dwFT3;
+	int nPort = getSettingWord(NULL, "UserPort", 0);
+	DWORD dwDirectCookie = rand() ^ (rand() << 16);
+
+	// Get status
+	WORD wStatus = MirandaStatusToIcq(m_iDesiredStatus);
+	serverPacketInit(&packet, 71);
+	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
+	packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
+	packWord(&packet, GetMyStatusFlags());      // Status flags
+	packWord(&packet, wStatus);                 // Status
+	packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
+	packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
+	packDWord(&packet, getSettingDword(NULL, "RealIP", 0));
+	packDWord(&packet, nPort);
+	packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
+	packWord(&packet, (WORD)GetProtoVersion());
+	packDWord(&packet, dwDirectCookie);         // DC Cookie
+	packDWord(&packet, WEBFRONTPORT);           // Web front port
+	packDWord(&packet, CLIENTFEATURES);         // Client features
+
+	SetTimeStamps(&dwFT1, &dwFT2, &dwFT3);
+
+	packDWord(&packet, dwFT1);
+	packDWord(&packet, dwFT2);
+	packDWord(&packet, dwFT3);
+	packWord(&packet, 0x0000);                  // Unknown
+	packTLVWord(&packet, 0x001F, 0x0000);
+	sendServPacket(&packet);
+}
+
 
 void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 {
@@ -1360,40 +1372,4 @@ void CIcqProto::handleServUINSettings(int nPort, serverthread_info *info)
 		LeaveCriticalSection(&m_modeMsgsMutex);
 	}
 	CheckSelfRemove();
-}
-
-//// PLUS ////////////////////////////////////////////////////////////////////
-
-void CIcqProto::updateClientID(void)
-{
-	icq_packet packet;
-	DWORD dwFT1, dwFT2, dwFT3;
-	int nPort = getSettingWord(NULL, "UserPort", 0);
-	DWORD dwDirectCookie = rand() ^ (rand() << 16);
-
-	// Get status
-	WORD wStatus = MirandaStatusToIcq(m_iDesiredStatus);
-	serverPacketInit(&packet, 71);
-	packFNACHeader(&packet, ICQ_SERVICE_FAMILY, ICQ_CLIENT_SET_STATUS);
-	packDWord(&packet, 0x00060004);             // TLV 6: Status mode and security flags
-	packWord(&packet, GetMyStatusFlags());      // Status flags
-	packWord(&packet, wStatus);                 // Status
-	packTLVWord(&packet, 0x0008, 0x0000);       // TLV 8: Error code
-	packDWord(&packet, 0x000c0025);             // TLV C: Direct connection info
-	packDWord(&packet, getSettingDword(NULL, "RealIP", 0));
-	packDWord(&packet, nPort);
-	packByte(&packet, DC_TYPE);                 // TCP/FLAG firewall settings
-	packWord(&packet, (WORD)GetProtoVersion());
-	packDWord(&packet, dwDirectCookie);         // DC Cookie
-	packDWord(&packet, WEBFRONTPORT);           // Web front port
-	packDWord(&packet, CLIENTFEATURES);         // Client features
-
-	SetTimeStamps(&dwFT1, &dwFT2, &dwFT3);
-
-	packDWord(&packet, dwFT1);
-	packDWord(&packet, dwFT2);
-	packDWord(&packet, dwFT3);
-	packWord(&packet, 0x0000);                  // Unknown
-	packTLVWord(&packet, 0x001F, 0x0000);
-	sendServPacket(&packet);
 }

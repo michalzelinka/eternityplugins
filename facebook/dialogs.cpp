@@ -24,8 +24,6 @@ Last change on : $Date$
 
 */
 
-#pragma once
-
 #include "common.h"
 
 INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
@@ -146,6 +144,8 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			_snprintf(str,sizeof(str),"%d",FACEBOOK_MIND_LIMIT-len);
 			SetDlgItemTextA(hwnd,IDC_CHARACTERS,str);
 
+			EnableWindow( GetDlgItem( hwnd, IDOK ), ( len > 0 ) );
+
 			return TRUE;
 		}
 		break;
@@ -180,6 +180,8 @@ INT_PTR CALLBACK FBDebugDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPAR
 
 		char* debugInfo = reinterpret_cast< char* >(lparam);
 		SetDlgItemTextA( hwnd, IDC_DEBUGINFO, debugInfo );
+
+		SetClipboardData( CF_TEXT, ( HANDLE )debugInfo );
 		} return TRUE;
 
 	case WM_COMMAND:

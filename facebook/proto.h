@@ -130,14 +130,13 @@ public:
 
 	// Message Loop
 	bool    NegotiateConnection( );
-	void    KeepAlive( );
 
+	void    UpdateFriends( );
+	void    UpdateMessages( );
 
 	// User
-
 	facebook    facy;
 	int __cdecl Test( WPARAM, LPARAM );
-	string      error_log;
 
 	// Handles, Locks
 
@@ -153,5 +152,3 @@ public:
 
 	static void CALLBACK APC_callback(ULONG_PTR p);
 };
-
-

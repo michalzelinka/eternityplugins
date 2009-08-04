@@ -24,10 +24,10 @@
 //
 // -----------------------------------------------------------------------------
 //
-// File name      : $URL: https://miranda.svn.sourceforge.net/svnroot/miranda/trunk/miranda/protocols/IcqOscarJ/icq_constants.h $
-// Revision       : $Revision: 8822 $
-// Last change on : $Date: 2009-01-11 18:17:05 +0100 (Sun, 11 Jan 2009) $
-// Last change by : $Author: jokusoftware $
+// File name      : $URL: http://sss.chaoslab.ru:81/svn/icqjplus/branches/0.5_branch/icq_constants.h $
+// Revision       : $Revision: 298 $
+// Last change on : $Date: 2009-06-19 11:03:16 +0200 (Fri, 19 Jun 2009) $
+// Last change by : $Author: persei $
 //
 // DESCRIPTION:
 //
@@ -143,7 +143,6 @@
 #define DEFAULT_RTF                           0
 #define DEFAULT_DC_ICON_SHOW                  1
 #define DEFAULT_XSTATUS_ICON_SHOW             1
-#define DEFAULT_DC_ICON_SHOW                  1
 
 #define DEFAULT_ASD_ENABLED                   0
 #define DEFAULT_PSD_ENABLED                   0
@@ -261,6 +260,7 @@
 
 /* Database setting names */
 #define DBSETTING_CAPABILITIES      "caps"
+#define DBSETTING_CAPABILITY_BUFFER "CapBuf"
 // Contact's server-list items
 #define DBSETTING_SERVLIST_ID       "ServerId"
 #define DBSETTING_SERVLIST_GROUP    "SrvGroupId"
@@ -807,15 +807,15 @@
 #define ICQ_PLUG_VERSION            0x80050101
 //
 #define ICQ_PLUG_NAME               "Plus Mod"
-#define ICQ_JOEWHALE_VERSION        0x80050007 // Actual Joe@Whale
-#define ICQ_BM_VERSION              0x80050005 // Actual BM
+#define ICQ_JOEWHALE_VERSION        0x80050101 // Actual Joe@Whale
+#define ICQ_BM_VERSION              0x80050007 // Actual BM
 #define ICQ_BM_NAME                 "BM Mod"
 #define ICQ_S7SSS_VERSION           0x80030869 // Last S7 & SSS
 #define ICQ_S7SSS_NAME              "S7 & SSS Mod"
-#define ICQ_PLUSPLUS_VERSION        0x8003582B // Actual eternity/PlusPlus++
+#define ICQ_PLUSPLUS_VERSION        0x8003582E // Actual eternity/PlusPlus++
 #define ICQ_PLUSPLUS_NAME           "eternity/PlusPlus++ Mod"
-#define ICQ_SIN_VERSION             0x80050003 // Actual S!N
-#define CIQ_SIN_NAME                "S!N Mod"
+#define ICQ_SIN_VERSION             0x80050006 // Actual S!N
+#define ICQ_SIN_NAME                "S!N Mod"
 #define ICQ_ISEE_VERSION            0x80040020 // Last ISee
 #define ICQ_ISEE_NAME               "ISee" // TODO: Include ISee detection + faking
 //
@@ -837,15 +837,25 @@
 #define OSCAR_PROXY_HOST            "ars.oscar.aol.com"
 #define OSCAR_PROXY_VERSION         0x044A
 
-#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
+#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 7 (Lite alpha)
 #define CLIENT_ID_CODE              0x010a
-#define CLIENT_VERSION_MAJOR        0x0006
-#define CLIENT_VERSION_MINOR        0x0005
+#define CLIENT_VERSION_MAJOR        0x0007
+#define CLIENT_VERSION_MINOR        0x0000
 #define CLIENT_VERSION_LESSER       0x0000
-#define CLIENT_VERSION_BUILD        0x0412
-#define CLIENT_DISTRIBUTION         0x00007537
+#define CLIENT_VERSION_BUILD        0x0410
+#define CLIENT_DISTRIBUTION         0x00007538
 #define CLIENT_LANGUAGE             "en"
 #define CLIENT_COUNTRY              "us"
+
+//#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6.5
+//#define CLIENT_ID_CODE              0x010a
+//#define CLIENT_VERSION_MAJOR        0x0006
+//#define CLIENT_VERSION_MINOR        0x0005
+//#define CLIENT_VERSION_LESSER       0x0000
+//#define CLIENT_VERSION_BUILD        0x0412
+//#define CLIENT_DISTRIBUTION         0x00007537
+//#define CLIENT_LANGUAGE             "en"
+//#define CLIENT_COUNTRY              "us"
 
 //#define CLIENT_ID_STRING            "ICQ Client"  // Client identification, mimic ICQ 6
 //#define CLIENT_ID_CODE              0x010a

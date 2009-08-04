@@ -58,7 +58,8 @@
 #pragma warning( disable: 4996 )
 #pragma comment( lib, "comctl32.lib" )
 
-#include <stdio.h>
+//#include <stdio.h>
+#include <vector>
 #include <windows.h>
 #include <commctrl.h>
 #include <tchar.h>
@@ -101,28 +102,40 @@
 #define MINOR_VERSION                 1
 #define RELEASE_VERSION               0
 #define BUILD_VERSION                 4
-#define TESTING_VERSION               5
+#define ALPHA_BUILD_VERSION           "10"
+#define RELEASE_CANDIDATE_VERSION     "4"
 
+//#define ALPHA_BUILD
+#ifndef ALPHA_BUILD
+#define RELEASE_CANDIDATE
+#ifndef RELEASE_CANDIDATE
 #define FINAL_BUILD
+#endif
+#endif
 
-#define PLUGIN_RELNOTES               ( BUILD_VERSION * 100 + TESTING_VERSION )
+#define PLUGIN_RELNOTES               ( MAJOR_VERSION * 1000 + MINOR_VERSION * 100 + RELEASE_VERSION * 10 + BUILD_VERSION )
 
-#if defined( FINAL_BUILD )
+#if defined( ALPHA_BUILD )
+#define PLUGIN_VERSION_POST           " alpha"
+#define PLUGIN_VER_PRINT              "[alpha build #"ALPHA_BUILD_VERSION" assembled "__DATE__" at "__TIME__"]\r\n"
+#else
+#if defined( RELEASE_CANDIDATE )
+#define PLUGIN_VERSION_POST           " RC"
+#define PLUGIN_VER_PRINT              "[Release Candidate #"RELEASE_CANDIDATE_VERSION" assembled "__DATE__"]\r\n"
+#else
 #define PLUGIN_VERSION_POST           ""
 #define PLUGIN_VER_PRINT              ""
-#else
-#define PLUGIN_VERSION_POST           " (alpha)"
-#define PLUGIN_VER_PRINT              " [alpha build "__DATE__" "__TIME__"]"
+#endif
 #endif
 
 // ====[ PLUGIN INFO ]========================================================
 
-#define PLUGIN_INFO_ABOUT             "Keep your ICQ Custom statuses in an integrated, easy to use manager. " \
-                                      "This plugin offers simple management functions to keep your extra " \
-                                      "statuses on one place."PLUGIN_VER_PRINT
-#define PLUGIN_INFO_AUTHOR            "jarvis, HANAX"
+#define PLUGIN_INFO_ABOUT             PLUGIN_VER_PRINT"Keep your ICQ Custom statuses in an integrated, " \
+                                      "easy to use manager. This plugin offers simple management " \
+									  "functions to keep your extra statuses on one place."
+#define PLUGIN_INFO_AUTHOR            "jarvis"
 #define PLUGIN_INFO_EMAIL             "jarvis@jabber.cz"
-#define PLUGIN_INFO_COPYRIGHT         "© 2007-2009 jarvis, © 2006-2008 HANAX Software"
+#define PLUGIN_INFO_COPYRIGHT         "© 2007-2009 jarvis, all acclaims go to HANAX"
 #define PLUGIN_INFO_HOMEPAGE          "http://dev.miranda.im/~jarvis/"
 // --
 #define PLUGIN_INFO_HOMEPAGE_DONATE   PLUGIN_INFO_HOMEPAGE"#donations"
@@ -254,7 +267,7 @@ static struct CSForm { // icons + buttons
 } forms[] = {
 
 	{ -1, LPGENT( "Main Menu" ), LPGENT( "Main Icon" ), "icon", IDI_CSLIST, NULL },
-	{ -1, LPGENT( "Import statuses from database" ), LPGENT( "Import" ), "import", IDI_IMPORT, NULL },
+//?	{ -1, LPGENT( "Import statuses from database" ), LPGENT( "Import" ), "import", IDI_IMPORT, NULL },
 	{ IDC_ADD, LPGENT( "Add new item" ), LPGENT( "Add" ), "add", IDI_ADD, NULL },
 	{ IDC_MODIFY, LPGENT( "Modify selected item" ), LPGENT( "Modify" ), "modify", IDI_MODIFY, NULL },
 	{ IDC_REMOVE, LPGENT( "Delete selected item" ), LPGENT( "Remove" ), "remove", IDI_REMOVE, NULL },
@@ -332,9 +345,9 @@ template< class T > struct ListItem
 		delete this->item;
 	}
 	
-	ListItem( StatusItem* csi )
+	ListItem( StatusItem* si )
 	{
-		this->item = csi;
+		this->item = si;
 		this->next = NULL;
 	}
 
@@ -378,8 +391,9 @@ public:
 		return count;
 	}
 
-	void add( T* csi )
+	int add( T* csi )
 	{
+		int position = 0;
 		ListItem< T >* item = new ListItem< T >( csi );
 		if ( this->items == NULL )
 			this->items = item;
@@ -395,10 +409,11 @@ public:
 				else if ( cmp == 0 )
 				{
 					delete item;
-					return;
+					return -1;
 				}
 				else
 				    break;
+				position++;
 			}
 			if ( help != item )
 			{
@@ -409,6 +424,7 @@ public:
 			    items = item;
 		}
 		this->count++;
+		return position;
 	}
 
 	void remove( const unsigned int item )
@@ -477,6 +493,7 @@ struct CSListView
 	void    reinitItems( ListItem< StatusItem >* items );
 	void    removeItems( );
 	int     getPositionInList( );
+	void    setFullFocusedSelection( int selection );
 };
 
 
@@ -538,7 +555,7 @@ struct CSWindow
 	static void __cdecl closeWindow( void* arg );
 	void    setForeground( );
 	void    loadWindowPosition( );
-	BOOL    toggleSelection( );
+	BOOL    toggleButtons( );
 	void    toggleEmptyListMessage( );
 	void    toggleFilter( );
 	BOOL    itemPassedFilter( ListItem< StatusItem >* li );
@@ -578,7 +595,7 @@ struct CSList
 
 	// other handlers
 	static HANDLE   hToolbarIcon;
-	static HANDLE   hMainMenuItem;
+	static HANDLE   hAnyMenuItem;
 
 	CSList( );
 	~CSList( );
@@ -619,7 +636,7 @@ DWORD CSList::dwMirandaVersion = 0x00000000;
 BOOL CSList::bUnicodeCore = FALSE;
 BOOL CSList::bAccountsSupported = FALSE;
 HANDLE CSList::hToolbarIcon = NULL;
-HANDLE CSList::hMainMenuItem = NULL;
+HANDLE CSList::hAnyMenuItem = NULL;
 
 
 // ====[ GLOBALS ]============================================================

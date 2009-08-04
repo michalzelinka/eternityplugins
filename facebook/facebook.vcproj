@@ -176,10 +176,6 @@
 				>
 			</File>
 			<File
-				RelativePath=".\tinyjson.hpp"
-				>
-			</File>
-			<File
 				RelativePath=".\utils.h"
 				>
 			</File>
