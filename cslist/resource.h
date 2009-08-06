@@ -49,8 +49,8 @@
 #define IDC_TOGGLE_SHOW                 1111
 #define IDC_ALLOW_EXTRA_ICONS           1204
 #define IDC_DONATE                      1206
-#define IDC_CHECK1                      1207
 #define IDC_REMEMBER_POSITION           1207
+#define IDC_CHANGELOG_TEXT              1208
 
 // Next default values for new objects
 // 
@@ -58,7 +58,7 @@
 #ifndef APSTUDIO_READONLY_SYMBOLS
 #define _APS_NEXT_RESOURCE_VALUE        150
 #define _APS_NEXT_COMMAND_VALUE         40003
-#define _APS_NEXT_CONTROL_VALUE         1208
+#define _APS_NEXT_CONTROL_VALUE         1209
 #define _APS_NEXT_SYMED_VALUE           101
 #endif
 #endif
