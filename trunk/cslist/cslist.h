@@ -59,7 +59,6 @@
 #pragma comment( lib, "comctl32.lib" )
 
 //#include <stdio.h>
-#include <vector>
 #include <windows.h>
 #include <commctrl.h>
 #include <tchar.h>
@@ -103,7 +102,17 @@
 #define RELEASE_VERSION               0
 #define BUILD_VERSION                 4
 #define ALPHA_BUILD_VERSION           "10"
-#define RELEASE_CANDIDATE_VERSION     "4"
+#define RELEASE_CANDIDATE_VERSION     "6"
+
+#define CHANGELOG_TEXT                "- Fixed showing menu items when not applicable\r\n" \
+                                      "- Fixed toggling of controls when list item is removed\r\n" \
+                                      "- Returned ""Undo"" function\r\n" \
+									  "- Returned ""Import"" function\r\n" \
+									  "- Returned multi-account functionality\r\n" \
+                                      "- Added item focus selection & focus when added, modified or favourite-toggled\r\n" \
+									  "- ""Inactive"" focus fix" \
+                                      "- Fixed occasional crash when trying to open multiple dialogs\r\n" \
+                                      "- Fixed showing ""Empty list"" message when list is empty and Undoing something from DB, not showing when undoing something with nothing in DB or showing message after importing into an empty list"
 
 //#define ALPHA_BUILD
 #ifndef ALPHA_BUILD
@@ -427,10 +436,11 @@ public:
 		return position;
 	}
 
-	void remove( const unsigned int item )
+	int remove( const unsigned int item )
 	{
+		int position = 0;
 		if ( item < 0 || item >= this->count )
-			return;
+			return -1;
 
 		ListItem< T >* help = items;
 		ListItem< T >* removed;
@@ -442,12 +452,16 @@ public:
 		else
 		{
 			for ( unsigned int i = 0; i < item - 1; i++ )
+			{
 				help = help->next;
+				position++;
+			}
 			removed = help->next;
 			help->next = help->next->next;
 		}
 		delete removed;
 		this->count--;
+		return position;
 	}
 	
 	T* get( const unsigned int item )

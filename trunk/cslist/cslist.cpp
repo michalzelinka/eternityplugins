@@ -36,149 +36,8 @@
 
   Offers List of your Custom Statuses.
 
-  ============================================================================  
-
-
-  HISTORY:
-
-  TODO
-  ----
-  - more and more code revisioning :)
-  - all TODOs listed in this source x)
-  - feature requests maybe :)
-  ! importing
-  ! undo
-  ! settings changes
-
-  MAYBE-TODO
-  ----------
-  - advanced duplicities detection (between favs/regular)
-  
-  NOT-TODO
-  --------
-  - setting Away/NA/DND/Occ - there are already many status managers :)
-  - watching statuses set by x-status menu
-
-  0.1.0.3 - What's your favourite?
-  -------
-  - Bugfixes
-
-  0.1.0.1 - After storm
-  -------
-  - Favourites
-  - Virtualized structure
-  - Code refactorization
-  - Duplicities detection (partial)
-  - Saving window position
-
-  0.0.0.20 - calm before the storm Ox)
-  --------
-  - some corrections of working with strings (ANSI/Unicode <-> TCHAR)
-  - simplified loading of list items :)
-  - the Options button replaced by the Undo button
-
-  0.0.0.19 - enjoy multi'ing, baby :)
-  --------
-  - status is changing on all ICQ based accounts/protos
-  - when dialog is opened, and user tryes to open another one, forgotten dialog is brought to front instead
-  - menu placement optimalization
-  - removed old nasty GOTO because of double-clicking the list x)
-  - active checking of input data length during editing custom status
-  - optimalizations in translations
-  - support for Variables plugin
-  - other enhancements related to the possibility of using multiple ICQ accounts
-
-  0.0.0.18 - fixing trip :)
-  --------
-  - icon selector shows only icons, that are supported by installed ICQ plugin
-  - fixed memory leak and possible crash when modifying status and then importing 0 DB entries (helpItem not nulled)
-  - merged Add/Modify processes together :)
-  - Unicode build, finally :)
-
-  0.0.0.17 - I become to be useful :)
-  --------
-  - CSList menu item can be placed elsewhere, also instead of Xstatus menu (currently ICQ eternity/PlusPlus++ mod only)
-  - importing statuses from database (ICQ key)
-  - list sorting (Procedure + calls)
-  - dialog openable only once :)
-  - new icons by inducti0n :)
-  - no more infinite width when adding x-message
-  - new Options dialog
-
-  0.0.0.16 - rework
-  --------
-  - code redesigned
-  - fix for Windows Vista crash (free) and ANSI Windows crash (init extended controls)
-  - preimplementation for new features that will come (favourites, ...)
-  
-  0.0.0.15 - make me nice
-  --------
-  - stage 1 of code revision
-  - Options dialog (in development) :)
-  - IcoLib group renamed to CSLIST_MODULE_LONG_NAME
-  - status titles in Add/Modify ComboBox were strangely corrected x)
-  - possibility to turn off "Release Notes" dialog
-
-  0.0.0.14 - will you use me? :)
-  --------
-  - new lines in message input creatable via Enter
-  - NULLED XSTATUS now available :)
-  
-  0.0.0.13 - oooops x))
-  --------
-  - hotfix for Miranda cores < 0.7
-    - CSList appears in Main Menu
-    - fixed icons not loaded when IcoLib is missing
-  
-  0.0.0.12 - goin' my way now x)
-  --------
-  - DB saving method/format slightly modified
-    [+] multi-line messages now working
-    [-] LOST compatibility with HANAX's plugin (but is auto-imported if exists)
-    NOTE: I think "importing-only" of older releases will stay,
-          I have many Feature Requests that would need changing
-          DB format anyway, so this problem looks solved x)
-  - "Release notes" dialog on first run
-  - Updater support
-  
-  0.0.0.11 - will this work? x)
-  --------
-  - some similar procedures merged together :P 
-  - another procedures more generalized 8) 
-  - separated Add/Modify dialog finally in use :)
-    [+] solves some bahaviour problems x)
-  
-  0.0.0.10 - ohhh, basics ]:)
-  --------
-  - icons support - complete xstatus service :) 
-    [+] no more static angry ;) :D
-  - iconized buttons - supporting IcoLib :)
-  - better method for DB entry format - old was little.."dizzy" x) :D
-  - TEMPORARILY DISABLED modifying of items - needs some fixes x))
-  
-  0.0.0.9 - working a little? O:)
-  -------
-  - enhanced List Control behaviour (selecting, deselecting, editation, adding)
-  - LOADING from + SAVING to DB!
-    [+] my parser is also compatible with HANAX plugin's DB entries ;)
-  
-  0.0.0.8 - behaviour testing :o)
-  -------
-  - setting status by double-clicking list item
-  - much better procedures, debugging, better exceptions, dialog behaviour
-  
-  0.0.0.7 - crash testing :o)
-  -------
-  - basic functions coding
-  
-  0.0.0.6 - resource testing
-  -------
-  - basic resources modeling
-
-
 // ======================================================================== */
 
-#include <vector>
 #include "cslist.h"
 #include "strpos.h"
 #include "legacy.h"
@@ -203,8 +62,8 @@ extern "C" __declspec( dllexport ) PLUGININFOEX* MirandaPluginInfoEx( DWORD mira
 
 extern "C" __declspec( dllexport ) PLUGININFO* MirandaPluginInfo( DWORD mirandaVersion )
 {
-	// check if core is equal or newer than 0.4.0.3
-	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 4, 0, 3 ) )
+	// check if core is equal or newer than 0.6.0.0
+	if ( mirandaVersion < PLUGIN_MAKE_VERSION( 0, 6, 0, 0 ) )
 		return NULL;
 
 	CSList::dwMirandaVersion = mirandaVersion;
@@ -236,7 +95,7 @@ extern "C" __declspec( dllexport ) int Load( PLUGINLINK *link )
 	}
 
 	// set global variables
-	// weneed 0.8.0.9 core which introduced accounts support for protocols
+	// we need 0.8.0.9 core which introduced accounts support for protocols
 	CSList::bAccountsSupported = ( CSList::dwMirandaVersion >= PLUGIN_MAKE_VERSION( 0, 8, 0, 9 ) );
 
 	// are we running under Unicode core?
@@ -1116,7 +975,7 @@ CSListView::CSListView( HWND hwnd, CSWindow* parent )
 	lvc.cx = 0xa8;
 	SendMessage( this->handle, LVM_INSERTCOLUMN, 2, ( LPARAM )&lvc );
 
-	//ListView_SetExtendedListViewStyle( this->handle, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP );
+//	ListView_SetExtendedListViewStyle( this->handle, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP );
 #if (_WIN32_IE >= 0x0400)
 	ListView_SetExtendedListViewStyleEx( this->handle, 0, LVS_EX_FULLROWSELECT | LVS_EX_GRIDLINES | LVS_EX_HEADERDRAGDROP | LVS_EX_INFOTIP );
 #endif
@@ -1190,9 +1049,11 @@ int CSListView::getPositionInList( )
 
 void CSListView::setFullFocusedSelection( int selection )
 {
+	ListView_SetItemState(  this->handle, -1, 0,     LVIS_SELECTED );
 	ListView_EnsureVisible( this->handle, selection, FALSE );
-	ListView_SetItemState( this->handle, selection, LVIS_SELECTED, LVIS_SELECTED );
-	ListView_SetItemState( this->handle, selection, LVIS_FOCUSED , LVIS_FOCUSED  );
+	ListView_SetItemState(  this->handle, selection, LVIS_SELECTED, LVIS_SELECTED );
+	ListView_SetItemState(  this->handle, selection, LVIS_FOCUSED , LVIS_FOCUSED  );
+	SetFocus( this->handle );
 }
 
 
@@ -1395,6 +1256,7 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 			csw->bSomethingChanged = FALSE;
 			csw->listview->reinitItems( csw->itemslist->list->getListHead( ) );
 			csw->toggleButtons( );
+			csw->toggleEmptyListMessage( );
 			break;
 
 		case IDC_IMPORT:
@@ -1412,6 +1274,7 @@ INT_PTR CALLBACK CSWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 				CSList::ForAllProtocols( CSList::importCustomStatusUIStatusesFromAllProtos, ( void* )&result );
 				csw->bSomethingChanged = TRUE;
 				csw->toggleButtons( );
+				csw->toggleEmptyListMessage( );
 			}
 			break;
 
@@ -1642,6 +1505,8 @@ INT_PTR CALLBACK CSRNWindowProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM 
 			GetObject( hfnt, sizeof( lf ), &lf );
 			lf.lfWeight = FW_BOLD;
 			SendDlgItemMessage( hwnd, IDC_PLUGIN_NAME, WM_SETFONT, ( WPARAM )CreateFontIndirect( &lf ), TRUE );
+
+			SetDlgItemTextA( hwnd, IDC_CHANGELOG_TEXT, CHANGELOG_TEXT );
 
 			translateDialog( hwnd );
 		}

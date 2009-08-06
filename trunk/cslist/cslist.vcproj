@@ -535,6 +535,14 @@
 				>
 			</File>
 		</Filter>
+		<Filter
+			Name="Other"
+			>
+			<File
+				RelativePath=".\changelog.txt"
+				>
+			</File>
+		</Filter>
 	</Files>
 	<Globals>
 	</Globals>
