@@ -5,7 +5,7 @@
  * Synchronizing friends // UP
  * Getting/setting own "What's on my mind" status // UP/DONE
  * Viewing friends' statuses // UP
- * Sending/receiving instant messages (not regular inbox/sent messages) // DONE/UP
+ * Sending/receiving instant messages (not regular inbox/sent messages) // DONE/DONE
  * Popup events // TBD
  * Updater support // TBD
  * Friends' avatars // TBD
@@ -23,11 +23,10 @@ _^DONE — Already Done^_
 
  * Getting contacts and their statuses
  * Getting notifications
- * Receiving instant messages from friends
 
 = Already done =
 
  * Login sequence
- * Cookies/Session handling
+ * Handling of cookies, session, chat and other misc data
  * Setting own status (What's on my mind?)
- * Sending instant messages to friends
+ * Sending and receiving instant messages
