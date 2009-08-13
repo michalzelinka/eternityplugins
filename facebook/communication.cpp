@@ -194,8 +194,8 @@ char* facebook::choose_request_url( int request_type )
 	char* server = choose_server( request_type );
 	char* action = choose_action( request_type );
 	mir_snprintf( url, 255, "%s%s", server, action );
-	utils::mem::detract( &server );
-	utils::mem::detract( &action );
+//	utils::mem::detract( &server );
+//	utils::mem::detract( &action );
 	return url;
 }
 
@@ -204,34 +204,47 @@ NETLIBHTTPHEADER* facebook::get_request_headers( int request_type, int* headers_
 {
 	// TODO: cookies leak, user-agent leak, should be static
 
-	NETLIBHTTPHEADER* headers = NULL;
-
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
-	case FACEBOOK_REQUEST_POPOUT:
 	case FACEBOOK_REQUEST_UPDATE:
-	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_SETTINGS:
 	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
+		*( headers_count ) = 7;
+		break;
+	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
 	default:
-		*( headers_count ) = 7;
-		headers = ( NETLIBHTTPHEADER* )utils::mem::allocate( sizeof( NETLIBHTTPHEADER )*( *headers_count ) );
+		*( headers_count ) = 6;
+		break;
+	}
+
+	NETLIBHTTPHEADER* headers = ( NETLIBHTTPHEADER* )utils::mem::allocate( sizeof( NETLIBHTTPHEADER )*( *headers_count ) );
+
+	switch ( request_type )
+	{
+	case FACEBOOK_REQUEST_LOGIN:
+	case FACEBOOK_REQUEST_UPDATE:
+	case FACEBOOK_REQUEST_SETTINGS:
+	case FACEBOOK_REQUEST_STATUS_GET:
+	case FACEBOOK_REQUEST_STATUS_SET:
+	case FACEBOOK_REQUEST_MESSAGE_SEND:
+		set_header( &headers[6], "Content-Type", "application/x-www-form-urlencoded" );
+	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_RECONNECT:
+	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
+	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
+	default:
 		set_header( &headers[0], "Connection", "close" );
 		set_header( &headers[1], "User-Agent", get_user_agent( ) );
-		set_header( &headers[2], "Content-Type", "application/x-www-form-urlencoded" );
-		set_header( &headers[3], "Accept", "*/*" );
-		set_header( &headers[4], "Cookie", load_cookies( ) );
-		set_header( &headers[5], "Accept-Encoding", "gzip" );
-		set_header( &headers[6], "Accept-Language", "en, C" );
-		break;
-
-	case 0:
-		*( headers_count ) = 0;
+		set_header( &headers[2], "Accept", "*/*" );
+		set_header( &headers[3], "Cookie", load_cookies( ) );
+		set_header( &headers[4], "Accept-Encoding", "gzip" );
+		set_header( &headers[5], "Accept-Language", "en, C" );
 		break;
 	}
 
@@ -263,7 +276,7 @@ char* facebook::get_user_agent( )
 
 char* facebook::load_cookies( )
 { // TODO: rewrite to use input string pointer (partially/fully avoid leak?)
-	string cookieString = "";
+	string cookieString = "isfbe=false;";
 
 	for ( map< string, string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter )
 		cookieString += ( *iter ).first + "=" + ( *iter ).second + ";";
@@ -435,7 +448,7 @@ bool facebook::update( )
 
 	// Process result data
 
-	utils::debug::info( ( char* )resp.data.c_str( ) );
+	//utils::debug::info( ( char* )resp.data.c_str( ) );
 
 	// Return
 
@@ -454,7 +467,34 @@ bool facebook::update( )
 
 bool facebook::channel( )
 {
-	return true;
+	// Get update
+
+	http::response resp = flap( FACEBOOK_REQUEST_MESSAGES_RECEIVE );
+
+	// Process result data
+
+	if ( resp.data.find( "\"t\":\"continue\"" ) == string::npos )
+	{
+		this->chat_sequence_num_++;
+		FILE* f = fopen( "msg.log", "a" );
+		resp.data += "\r\n";
+		fprintf( f, "%s", resp.data.c_str( ) );
+		fclose( f );
+	}
+
+	// Return
+
+	switch ( resp.code )
+	{
+
+	case 200:
+		return true;
+
+	default:
+		ShowPopup(TranslateT("Something went wrong..."));
+		return false;
+
+	}
 }
 
 bool facebook::send_message( string message_recipient, string message_text )
