@@ -1,10 +1,11 @@
 #summary Facebook protocol development progress info
+#labels Featured,Phase-Implementation
 
 = Planned features =
 
- * Synchronizing friends // UP
- * Getting/setting own "What's on my mind" status // UP/DONE
- * Viewing friends' statuses // UP
+ * Synchronizing friends // DONE
+ * Getting/setting own "What's on my mind" status // DONE/DONE
+ * Viewing friends' statuses // DONE
  * Sending/receiving instant messages (not regular inbox/sent messages) // DONE/DONE
  * Popup events // TBD
  * Updater support // TBD
@@ -21,7 +22,12 @@ _^DONE — Already Done^_
 
 = Currently working on =
 
- * Getting contacts and their statuses
+ * Finishing implementation
+ * Connecting with Miranda API
+ * Prepairing first very early pre-alpha-release :)
+
+= To Do Later =
+
  * Getting notifications
 
 = Already done =
@@ -29,4 +35,5 @@ _^DONE — Already Done^_
  * Login sequence
  * Handling of cookies, session, chat and other misc data
  * Setting own status (What's on my mind?)
+ * Getting contacts and their statuses
  * Sending and receiving instant messages
