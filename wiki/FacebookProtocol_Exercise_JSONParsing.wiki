@@ -1,5 +1,5 @@
 #summary JSON Parsing exercise specification
-#labels Featured,Phase-Requirements
+#labels Phase-QA,Phase-Support
 
 = Exercise: JSON Parsing =
 
