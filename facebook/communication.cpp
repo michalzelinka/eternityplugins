@@ -18,6 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
+File name      : $URL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -194,6 +195,7 @@ char* facebook::choose_request_url( int request_type )
 	char* server = choose_server( request_type );
 	char* action = choose_action( request_type );
 	mir_snprintf( url, 255, "%s%s", server, action );
+	// TODO: server + action leaks
 //	utils::mem::detract( &server );
 //	utils::mem::detract( &action );
 	return url;
@@ -448,7 +450,7 @@ bool facebook::update( )
 
 	// Process result data
 
-	//utils::debug::info( ( char* )resp.data.c_str( ) );
+//	ForkThreadEx( &FacebookProto::ProcessUpdates, this );
 
 	// Return
 
@@ -473,13 +475,25 @@ bool facebook::channel( )
 
 	// Process result data
 
-	if ( resp.data.find( "\"t\":\"continue\"" ) == string::npos )
+	if ( resp.data.find( "\"t\":\"continue\"" ) != string::npos )
 	{
+		// Everything is OK, no new message received
+	}
+	else if ( resp.data.find( "\"t\":\"refresh\"" ) != string::npos )
+	{
+		// Something went wrong with the session, refresh it
+
+		//this->reconnect( );
+	}
+	else
+	{
+		// Something has been received, throw to new thread to process >>
+
+//		ForkThreadEx( &FacebookProto::ProcessMessages, this );
+
+		// Increment sequence number
+
 		this->chat_sequence_num_++;
-		FILE* f = fopen( "msg.log", "a" );
-		resp.data += "\r\n";
-		fprintf( f, "%s", resp.data.c_str( ) );
-		fclose( f );
 	}
 
 	// Return
