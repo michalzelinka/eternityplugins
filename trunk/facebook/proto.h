@@ -123,6 +123,7 @@ public:
 	void __cdecl SignOn(void *);
 	void __cdecl SignOff(void *);
 	void __cdecl MessageLoop(void *);
+	void __cdecl UpdateLoop(void *);
 	void __cdecl SendMindWorker(void *);
 	void __cdecl GetAwayMsgWorker(void *);
 	void __cdecl UpdateAvatarWorker(void *);
@@ -149,6 +150,7 @@ public:
 	HANDLE  m_hNetlibUser;
 	HANDLE  m_hNetlibAvatar;
 	HANDLE  m_hMsgLoop;
+	HANDLE  m_hUpdLoop;
 
 	static void CALLBACK APC_callback(ULONG_PTR p);
 };

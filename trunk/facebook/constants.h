@@ -68,7 +68,7 @@ Opera/9.80 (Windows NT 5.1; U; en) Presto/2.2.15 Version/10.00
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
 
 // Defaults
-#define FACEBOOK_POLL_RATE          8 // in seconds
+#define FACEBOOK_DEFAULT_POLL_RATE              8 // in seconds
 
 // Facebook request types // TODO: Convert to MS_ and release in FB plugin SDK?
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically

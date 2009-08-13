@@ -53,7 +53,7 @@ void FacebookProto::SignOn(void*)
 	LOG("***** Beginning SignOn process");
 	WaitForSingleObject(&signon_lock_,INFINITE);
 
-	// Kill the old thread if it's still around
+	// Kill the old threads if they are still around
 	if(m_hMsgLoop)
 	{
 		LOG("***** Requesting MessageLoop to exit");
@@ -62,8 +62,17 @@ void FacebookProto::SignOn(void*)
 		WaitForSingleObject(m_hMsgLoop,INFINITE);
 		CloseHandle(m_hMsgLoop);
 	}
+	if(m_hUpdLoop)
+	{
+		LOG("***** Requesting UpdateLoop to exit");
+		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
+		LOG("***** Waiting for old UpdateLoop to exit");
+		WaitForSingleObject(m_hUpdLoop,INFINITE);
+		CloseHandle(m_hUpdLoop);
+	}
 	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
 	{
+		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );
 		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this );
 	}
 
@@ -146,11 +155,11 @@ bool FacebookProto::NegotiateConnection( )
 	}
 }
 
-void FacebookProto::MessageLoop(void *)
+void FacebookProto::UpdateLoop(void *)
 {
-	LOG( ">>>>> Entering Facebook::MessageLoop" );
+	LOG( ">>>>> Entering Facebook::UpdateLoop" );
 
-	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_POLL_RATE );
+	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_DEFAULT_POLL_RATE );
 
 	for ( WORD i = 0; ; i++ )
 	{
@@ -161,15 +170,31 @@ void FacebookProto::MessageLoop(void *)
 
 		if ( m_iStatus != ID_STATUS_ONLINE )
 			goto exit;
-		if ( i % 2 == 1 )
-			UpdateMessages( );
-
-		if ( m_iStatus != ID_STATUS_ONLINE )
-			goto exit;
-		LOG( "***** FacebookProto::MessageLoop going to sleep..." );
+		LOG( "***** FacebookProto::UpdateLoop going to sleep..." );
 		if ( SleepEx( poll_rate * 1000, true ) == WAIT_IO_COMPLETION )
 			goto exit;
-		LOG( "***** FacebookProto::MessageLoop waking up..." );
+		LOG( "***** FacebookProto::UpdateLoop waking up..." );
+	}
+
+exit:
+	{
+		ScopedLock s(facebook_lock_);
+		facy.logout( );
+	}
+	LOG( "<<<<< Exiting FacebookProto::UpdateLoop" );
+}
+
+void FacebookProto::MessageLoop(void *)
+{
+	LOG( ">>>>> Entering Facebook::MessageLoop" );
+
+	for ( WORD i = 0; ; i++ )
+	{
+		if ( m_iStatus != ID_STATUS_ONLINE )
+			goto exit;
+		UpdateMessages( );
+
+		LOG( "***** FacebookProto::MessageLoop refreshing..." );
 	}
 
 exit:
