@@ -33,28 +33,31 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	m_szModuleName = mir_strdup( proto_name );
 	m_tszUserName  = mir_tstrdup( username );
 
-	CreateProtoService(m_szModuleName,PS_CREATEACCMGRUI,
-		&FacebookProto::SvcCreateAccMgrUI,this);
-	CreateProtoService(m_szModuleName,PS_GETNAME,  &FacebookProto::GetName,   this);
-	CreateProtoService(m_szModuleName,PS_GETSTATUS,&FacebookProto::GetStatus, this);
+	this->facy.parent = this;
+
+	CreateProtoService(m_szModuleName, PS_CREATEACCMGRUI, &FacebookProto::SvcCreateAccMgrUI, this);
+	CreateProtoService(m_szModuleName, PS_GETNAME,        &FacebookProto::GetName,           this);
+	CreateProtoService(m_szModuleName, PS_GETSTATUS,      &FacebookProto::GetStatus,         this);
 
 //	HookProtoEvent(ME_DB_CONTACT_DELETED,       &FacebookProto::OnContactDeleted,     this);
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &FacebookProto::OnBuildStatusMenu,    this);
 	HookProtoEvent(ME_OPT_INITIALISE,           &FacebookProto::OnOptionsInit,        this);
 
-	CreateProtoService("Facebook","/Test",
-		&FacebookProto::Test,this);
+	// Set all contacts offline -- in case we crashed
+	SetAllContactStatuses( ID_STATUS_OFFLINE );
 
-	CLISTMENUITEM mi = {0};
-	mi.cbSize = sizeof(CLISTMENUITEM);
-	mi.flags = 0;
-	mi.hIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FACEBOOK), IMAGE_ICON, 0, 0, 0);
-	mi.pszContactOwner = NULL;
-	mi.position = 1000000000;
-	mi.pszName = Translate("Test Facebook");
-	mi.pszService = "Facebook/Test";
+	//CreateProtoService("Facebook", "/Test", &FacebookProto::Test, this);
 
-	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+	//CLISTMENUITEM mi = {0};
+	//mi.cbSize = sizeof(CLISTMENUITEM);
+	//mi.flags = 0;
+	//mi.hIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FACEBOOK), IMAGE_ICON, 0, 0, 0);
+	//mi.pszContactOwner = NULL;
+	//mi.position = 1000000000;
+	//mi.pszName = Translate("Test Facebook");
+	//mi.pszService = "Facebook/Test";
+
+	//CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 }
 
 FacebookProto::~FacebookProto( )
@@ -78,17 +81,17 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 	case PFLAGNUM_1:
 		return PF1_IM | PF1_MODEMSGRECV; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL;
 	case PFLAGNUM_2:
-		return PF2_ONLINE;
+		return PF2_ONLINE | PF2_SHORTAWAY;
 	case PFLAGNUM_3:
-		return PF2_ONLINE;
+		return PF2_ONLINE | PF2_SHORTAWAY;
 	case PFLAGNUM_4:
 		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE;
 	case PFLAG_MAXLENOFMESSAGE:
 		return FACEBOOK_MESSAGE_LIMIT;
 	case PFLAG_UNIQUEIDTEXT:
-		return (int) "Email";
+		return (int) "Real name";
 	case PFLAG_UNIQUEIDSETTING:
-		return (int) FACEBOOK_KEY_ID;
+		return (int) FACEBOOK_KEY_NAME;
 	}
 	return 0;
 }
@@ -125,7 +128,10 @@ int FacebookProto::SetStatus( int new_status )
 
 		ForkThread( &FacebookProto::SignOn, this );
 	}
-	// TODO: Idle/Away?
+	if ( new_status == ID_STATUS_AWAY )
+	{
+		// TODO: Idle/Away?
+	}
 	else if ( new_status == ID_STATUS_OFFLINE )
 	{
 		if ( old_status == ID_STATUS_OFFLINE )
@@ -135,11 +141,17 @@ int FacebookProto::SetStatus( int new_status )
 		ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 			( HANDLE ) old_status, m_iStatus );
 
-		//SetAllContactStatuses( ID_STATUS_OFFLINE ); // TODO: Implement as a checking tool
+		SetAllContactStatuses( ID_STATUS_OFFLINE );
 		ForkThread( &FacebookProto::SignOff, this );
 	}
 
 	return 0;
+}
+
+void FacebookProto::SendMindWorker(void * data)
+{
+	const std::string new_status = ( char* )data;
+	facy.set_status( new_status );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -201,8 +213,6 @@ int FacebookProto::OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 		MessageBoxA(0,"Unable to get avatar Netlib connection for Facebook","",0);
 
 	facy.set_handle(m_hNetlibUser);
-
-	// TODO: History events OR DB events
 
 	return 0;
 }

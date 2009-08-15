@@ -27,18 +27,21 @@ Last change on : $Date$
 
 #pragma once
 
-struct facebook_status // TODO: Needed?
-{
-	std::string text;
-	time_t time;
-};
+class FacebookProto;
 
 struct facebook_user
 {
 	std::string user_id;
 	std::string real_name;
+	bool is_idle;
+	std::string status;
 	std::string profile_image_url;
-	facebook_status status;
+
+	facebook_user( )
+	{
+		this->user_id = this->real_name = this->status = this->profile_image_url = "";
+		this->is_idle = false;
+	}
 };
 
 struct facebook_message
@@ -46,13 +49,30 @@ struct facebook_message
 	std::string user_id;
 	std::string message_text;
 	time_t time;
+
+	facebook_message( )
+	{
+		this->user_id = this->message_text = "";
+		this->time = 0;
+	}
+
+	facebook_message( const facebook_message& msg )
+	{
+		this->user_id = msg.user_id;
+		this->message_text = msg.message_text;
+		this->time = msg.time;
+	}
 };
 
-class facebook
+class facebook_communication
 {
 public:
 
-	facebook( );
+	facebook_communication( );
+
+	// Parent handle
+
+	FacebookProto* parent;
 
 	// User data
 
@@ -95,15 +115,15 @@ public:
 	//facebook_user add_friend(const std::string &name);
 	//void remove_friend(const std::string &name);
 
-	// Status handling
-
-	bool set_status(const std::string &text);
-	//std::vector<facebook_user> get_statuses(int count=20,int id=0);
-
 	// Messages handling
 
 	bool send_message( string message_recipient, string message_text );
 	bool channel( );
+
+	// Status handling
+
+	bool set_status(const std::string &text);
+	//std::vector<facebook_user> get_statuses(int count=20,int id=0);
 
 	////////////////////////////////////////////////////////////
 

@@ -41,7 +41,7 @@ INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		SetWindowLong(hwnd,GWL_USERDATA,lparam);
 
 		DBVARIANT dbv;
-		if( !DBGetContactSettingString(0,proto->ModuleName(),FACEBOOK_KEY_ID,&dbv) )
+		if( !DBGetContactSettingString(0,proto->ModuleName(),FACEBOOK_KEY_LOGIN,&dbv) )
 		{
 			SetDlgItemTextA(hwnd,IDC_UN,dbv.pszVal);
 			DBFreeVariant(&dbv);
@@ -83,7 +83,7 @@ INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			char str[128];
 
 			GetDlgItemTextA(hwnd,IDC_UN,str,sizeof(str));
-			DBWriteContactSettingString(0,proto->ModuleName(),FACEBOOK_KEY_ID,str);
+			DBWriteContactSettingString(0,proto->ModuleName(),FACEBOOK_KEY_LOGIN,str);
 
 			GetDlgItemTextA(hwnd,IDC_PW,str,sizeof(str));
 			CallService(MS_DB_CRYPT_ENCODESTRING,sizeof(str),reinterpret_cast<LPARAM>(str));
@@ -112,23 +112,26 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 		SetWindowLong(hwnd,GWL_USERDATA,lparam);
 		SendDlgItemMessage(hwnd,IDC_MINDMSG,EM_LIMITTEXT,FACEBOOK_MIND_LIMIT,0);
 		SetDlgItemText(hwnd,IDC_CHARACTERS,_T(FACEBOOK_MIND_LIMIT_TEXT));
-		SetDlgItemText(hwnd,IDC_NAME,_T("<User's real name>")); // TODO
+		{
+			DBVARIANT dbv = { DBVT_TCHAR };
+			DBGetContactSettingTString(NULL,proto->m_szModuleName,FACEBOOK_KEY_NAME,&dbv);
+			SetDlgItemText(hwnd,IDC_NAME,dbv.ptszVal);
+			DBFreeVariant( &dbv );
+		}
 
 		return TRUE;
 
 	case WM_COMMAND:
 		if ( LOWORD( wparam ) == IDOK )
 		{
-			char mindMessage[FACEBOOK_MIND_LIMIT+1];
+			TCHAR mindMessage[FACEBOOK_MIND_LIMIT+1];
 			proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
 
-			GetDlgItemTextA(hwnd,IDC_MINDMSG,mindMessage,SIZEOF(mindMessage));
+			GetDlgItemText(hwnd,IDC_MINDMSG,mindMessage,SIZEOF(mindMessage));
 			ShowWindow(hwnd,SW_HIDE);
 
-//			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8); // TODO: Unicodization example
-//			ForkThread(&TwitterProto::SendMindWorker, proto,narrow);
-
-			proto->facy.set_status( mindMessage );
+			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8); // TODO: narrow leak
+			ForkThread(&FacebookProto::SendMindWorker, proto,narrow);
 
 			EndDialog(hwnd, wparam); 
 			return TRUE;
@@ -141,9 +144,9 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 		else if ( LOWORD( wparam ) == IDC_MINDMSG && HIWORD( wparam ) == EN_CHANGE )
 		{
 			size_t len = SendDlgItemMessage(hwnd,IDC_MINDMSG,WM_GETTEXTLENGTH,0,0);
-			char str[4];
-			_snprintf(str,sizeof(str),"%d",FACEBOOK_MIND_LIMIT-len);
-			SetDlgItemTextA(hwnd,IDC_CHARACTERS,str);
+			TCHAR str[4];
+			_sntprintf( str, 4, TEXT( "%d" ), FACEBOOK_MIND_LIMIT-len );
+			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
 
 			EnableWindow( GetDlgItem( hwnd, IDOK ), ( len > 0 ) );
 

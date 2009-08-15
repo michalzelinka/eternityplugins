@@ -112,11 +112,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\contacts.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\dialogs.cpp"
 				>
 			</File>
 			<File
 				RelativePath=".\http.cpp"
+				>
+			</File>
+			<File
+				RelativePath=".\json.cpp"
 				>
 			</File>
 			<File
@@ -139,6 +147,18 @@
 				RelativePath=".\utils.cpp"
 				>
 			</File>
+			<Filter
+				Name="JSON_parser"
+				>
+				<File
+					RelativePath=".\JSON_parser\JSON_parser.c"
+					>
+				</File>
+				<File
+					RelativePath=".\JSON_parser\JSON_parser.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -167,6 +187,10 @@
 			</File>
 			<File
 				RelativePath=".\http.h"
+				>
+			</File>
+			<File
+				RelativePath=".\json.h"
 				>
 			</File>
 			<File
