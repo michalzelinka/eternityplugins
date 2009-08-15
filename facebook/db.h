@@ -39,7 +39,9 @@ Last change on : $Date$
 #define deleteSetting( setting )            DBDeleteContactSetting( NULL, m_szModuleName, setting )
 
 // DB keys
-#define FACEBOOK_KEY_ID             "Email"
+#define FACEBOOK_KEY_LOGIN          "Email"
+#define FACEBOOK_KEY_ID             "ID"
+#define FACEBOOK_KEY_NAME           "RealName"
 #define FACEBOOK_KEY_PASS           "Password"
 
 #define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"

@@ -25,16 +25,16 @@ Last change on : $Date$
 
 */
 
-//#include "tinyjson.hpp"
 #include "common.h"
+extern DWORD g_mirandaVersion;
 
-facebook::facebook( )
+facebook_communication::facebook_communication( )
 {
 	username_ = password_ = user_id_ = post_form_id_ = "";
 	chat_sequence_num_ = 0;
 }
 
-http::response facebook::flap( const int request_type, char* request_data )
+http::response facebook_communication::flap( const int request_type, char* request_data )
 {
 	NETLIBHTTPREQUEST nlhr = {sizeof( nlhr )};
 	nlhr.requestType = choose_method( request_type );
@@ -78,7 +78,7 @@ http::response facebook::flap( const int request_type, char* request_data )
 	return resp;
 }
 
-DWORD facebook::choose_security_level( int request_type )
+DWORD facebook_communication::choose_security_level( int request_type )
 {
 	switch ( request_type )
 	{
@@ -97,7 +97,7 @@ DWORD facebook::choose_security_level( int request_type )
 	}
 }
 
-int facebook::choose_method( int request_type )
+int facebook_communication::choose_method( int request_type )
 {
 	switch ( request_type )
 	{
@@ -116,7 +116,7 @@ int facebook::choose_method( int request_type )
 	}
 }
 
-char* facebook::choose_server( int request_type )
+char* facebook_communication::choose_server( int request_type )
 {
 	switch ( request_type )
 	{
@@ -144,7 +144,7 @@ char* facebook::choose_server( int request_type )
 	}
 }
 
-char* facebook::choose_action( int request_type )
+char* facebook_communication::choose_action( int request_type )
 {
 	switch ( request_type )
 	{
@@ -189,7 +189,7 @@ char* facebook::choose_action( int request_type )
 	}
 }
 
-char* facebook::choose_request_url( int request_type )
+char* facebook_communication::choose_request_url( int request_type )
 {
 	char* url = ( char* )utils::mem::allocate( 255 * sizeof( char ) );
 	char* server = choose_server( request_type );
@@ -202,7 +202,7 @@ char* facebook::choose_request_url( int request_type )
 }
 
 
-NETLIBHTTPHEADER* facebook::get_request_headers( int request_type, int* headers_count )
+NETLIBHTTPHEADER* facebook_communication::get_request_headers( int request_type, int* headers_count )
 {
 	// TODO: cookies leak, user-agent leak, should be static
 
@@ -253,18 +253,19 @@ NETLIBHTTPHEADER* facebook::get_request_headers( int request_type, int* headers_
 	return headers;
 }
 
-void facebook::set_header( NETLIBHTTPHEADER* header, char* header_name, char* header_value )
+void facebook_communication::set_header( NETLIBHTTPHEADER* header, char* header_name, char* header_value )
 {
 	header->szName  = header_name;
 	header->szValue = header_value;
 }
 
 
-char* facebook::get_user_agent( )
+char* facebook_communication::get_user_agent( )
 {
 	string user_agent = "Miranda IM/";
 
-	DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
+	//DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
+	DWORD mir_ver = g_mirandaVersion; // TODO: Remove special variable
 
 	user_agent += ( char )((( mir_ver >> 24 ) & 0xFF ) + 0x30);
 	user_agent += ".";
@@ -276,7 +277,7 @@ char* facebook::get_user_agent( )
 	return user_agent_c;
 }
 
-char* facebook::load_cookies( )
+char* facebook_communication::load_cookies( )
 { // TODO: rewrite to use input string pointer (partially/fully avoid leak?)
 	string cookieString = "isfbe=false;";
 
@@ -288,7 +289,7 @@ char* facebook::load_cookies( )
 	return cookieCharString;
 }
 
-void facebook::store_cookies( NETLIBHTTPHEADER* headers, int headersCount )
+void facebook_communication::store_cookies( NETLIBHTTPHEADER* headers, int headersCount )
 {
 	for ( int i = 0; i < headersCount; i++ )
 	{
@@ -302,14 +303,14 @@ void facebook::store_cookies( NETLIBHTTPHEADER* headers, int headersCount )
 	}
 }
 
-void facebook::clear_cookies( )
+void facebook_communication::clear_cookies( )
 {
 	cookies.clear( );
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-bool facebook::login(const std::string &username,const std::string &password,bool test)
+bool facebook_communication::login(const std::string &username,const std::string &password,bool test)
 {
 	username_ = username;
 	password_ = password;
@@ -354,7 +355,7 @@ bool facebook::login(const std::string &username,const std::string &password,boo
 		return true;
 }
 
-bool facebook::logout( )
+bool facebook_communication::logout( )
 {
 	username_ = password_ = user_id_ = "";
 
@@ -363,7 +364,7 @@ bool facebook::logout( )
 	return true;
 }
 
-bool facebook::popout( )
+bool facebook_communication::popout( )
 {
 	http::response resp = flap( FACEBOOK_REQUEST_POPOUT );
 
@@ -384,7 +385,7 @@ bool facebook::popout( )
 	}
 }
 
-bool facebook::reconnect( )
+bool facebook_communication::reconnect( )
 {
 	http::response resp = flap( FACEBOOK_REQUEST_RECONNECT );
 
@@ -414,7 +415,7 @@ bool facebook::reconnect( )
 	}
 }
 
-bool facebook::settings( )
+bool facebook_communication::settings( )
 {
 	// Prepare settings data
 
@@ -437,7 +438,7 @@ bool facebook::settings( )
 	}
 }
 
-bool facebook::update( )
+bool facebook_communication::update( )
 {
 	// Prepare update data
 
@@ -450,7 +451,7 @@ bool facebook::update( )
 
 	// Process result data
 
-//	ForkThreadEx( &FacebookProto::ProcessUpdates, this );
+	ForkThreadEx( &FacebookProto::ProcessUpdates, this->parent, ( void* )&resp );
 
 	// Return
 
@@ -467,7 +468,7 @@ bool facebook::update( )
 	}
 }
 
-bool facebook::channel( )
+bool facebook_communication::channel( )
 {
 	// Get update
 
@@ -483,13 +484,13 @@ bool facebook::channel( )
 	{
 		// Something went wrong with the session, refresh it
 
-		//this->reconnect( );
+		this->reconnect( );
 	}
 	else
 	{
-		// Something has been received, throw to new thread to process >>
+		// Something has been received, throw to new thread to process
 
-//		ForkThreadEx( &FacebookProto::ProcessMessages, this );
+		ForkThreadEx( &FacebookProto::ProcessMessages, this->parent, ( void* )&resp );
 
 		// Increment sequence number
 
@@ -511,7 +512,7 @@ bool facebook::channel( )
 	}
 }
 
-bool facebook::send_message( string message_recipient, string message_text )
+bool facebook_communication::send_message( string message_recipient, string message_text )
 {
 	string data = "msg_text=";
 	data += utils::url::encode( message_text );
@@ -538,7 +539,7 @@ bool facebook::send_message( string message_recipient, string message_text )
 
 }
 
-bool facebook::set_status(const std::string &status_text)
+bool facebook_communication::set_status(const std::string &status_text)
 {
 	string data = "action=HOME_UPDATE&home_tab_id=1&profile_id=";
 	data += cookies["c_user"];

@@ -42,6 +42,7 @@ Last change on : $Date$
 #include <time.h>
 #include <cstring>
 #include <ctime>
+#include <assert.h>
 using namespace std;
 
 #include <windows.h>
@@ -83,14 +84,17 @@ using namespace std;
 #include <m_hotkeys.h>
 #include <m_updater.h>
 
-#include "db.h"
+#include "JSON_parser/JSON_parser.h"
+
 #include "http.h"
 #include "communication.h"
+#include "utils.h"
 #include "proto.h"
+#include "json.h"
+#include "db.h"
 #include "constants.h"
 #include "dialogs.h"
 #include "theme.h"
-#include "utils.h"
 #include "resource.h"
 
 //#pragma warning(pop)

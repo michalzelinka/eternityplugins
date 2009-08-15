@@ -107,7 +107,7 @@ HANDLE GetIconHandle(const char* name)
 HANDLE g_hMenuItems[2];
 
 //// Helper functions
-//static TwitterProto * GetInstanceByHContact(HANDLE hContact)
+//static FacebookProto * GetInstanceByHContact(HANDLE hContact)
 //{
 //	char *proto = reinterpret_cast<char*>( CallService(MS_PROTO_GETCONTACTBASEPROTO,
 //		reinterpret_cast<WPARAM>(hContact),0) );
@@ -121,10 +121,10 @@ HANDLE g_hMenuItems[2];
 //	return 0;
 //}
 //
-//template<int (__cdecl TwitterProto::*Fcn)(WPARAM,LPARAM)>
+//template<int (__cdecl FacebookProto::*Fcn)(WPARAM,LPARAM)>
 //int GlobalService(WPARAM wParam,LPARAM lParam)
 //{
-//	TwitterProto *proto = GetInstanceByHContact(reinterpret_cast<HANDLE>(wParam));
+//	FacebookProto *proto = GetInstanceByHContact(reinterpret_cast<HANDLE>(wParam));
 //	return proto ? (proto->*Fcn)(wParam,lParam) : 0;
 //}
 //
@@ -132,7 +132,7 @@ HANDLE g_hMenuItems[2];
 //{
 //	ShowContactMenus(false);
 //
-//	TwitterProto *proto = GetInstanceByHContact(reinterpret_cast<HANDLE>(wParam));
+//	FacebookProto *proto = GetInstanceByHContact(reinterpret_cast<HANDLE>(wParam));
 //	return proto ? proto->OnPrebuildContactMenu(wParam,lParam) : 0;
 //}
 //
@@ -146,16 +146,16 @@ HANDLE g_hMenuItems[2];
 //	mi.position=-2000006000;
 //	mi.icolibItem = GetIconHandle("reply");
 //	mi.pszName = LPGEN("Reply...");
-//	mi.pszService = "Twitter/ReplyToTweet";
-//	CreateServiceFunction(mi.pszService,GlobalService<&TwitterProto::ReplyToTweet>);
+//	mi.pszService = "FacebookProto/ReplyToMind";
+//	CreateServiceFunction(mi.pszService,GlobalService<&FacebookProto::ReplyToMind>);
 //	g_hMenuItems[0] = reinterpret_cast<HANDLE>(
 //		CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi) );
 //
 //	mi.position=-2000006000;
 //	mi.icolibItem = GetIconHandle("homepage");
 //	mi.pszName = LPGEN("Visit Homepage");
-//	mi.pszService = "Twitter/VisitHomepage";
-//	CreateServiceFunction(mi.pszService,GlobalService<&TwitterProto::VisitHomepage>);
+//	mi.pszService = "FacebookProto/VisitHomepage";
+//	CreateServiceFunction(mi.pszService,GlobalService<&FacebookProto::VisitHomepage>);
 //	g_hMenuItems[1] = reinterpret_cast<HANDLE>(
 //		CallService(MS_CLIST_ADDCONTACTMENUITEM,0,(LPARAM)&mi) );
 //}

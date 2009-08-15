@@ -113,4 +113,5 @@ void DebugInfo( const char* debugInfo );
 void NOTIFY( char* title, char* message );
 void LOG( char* message );
 void MB( char* m );
+void MBI( int a );
 void ShowPopup( TCHAR* message );

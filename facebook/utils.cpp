@@ -199,16 +199,33 @@ void NOTIFY( char* title, char* message )
 	// Log
 	string log_message = title;
 	log_message += message;
-	LOG( ( char* )log_message.c_str( ) );
+	//LOG( ( char* )log_message.c_str( ) );
 }
 
-void LOG( char* message )
+int FacebookProto::LOG(const char *fmt,...)
 {
+	va_list va;
+	char text[1024];
+	if (this->m_hNetlibUser)
+		return 0;
+
+	va_start(va,fmt);
+	mir_vsnprintf(text,sizeof(text),fmt,va);
+	va_end(va);
+
+	return CallService(MS_NETLIB_LOG,(WPARAM)m_hNetlibUser,(LPARAM)text);
 }
 
 void MB( char* m )
 {
 	MessageBoxA( NULL, m, NULL, MB_OK );
+}
+
+void MBI( int a )
+{
+	char b[32];
+	itoa( a, b, 10 );
+	MB( b );
 }
 
 void ShowPopup( TCHAR* message )

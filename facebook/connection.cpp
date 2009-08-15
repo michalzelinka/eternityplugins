@@ -46,7 +46,7 @@ Last change on : $Date$
 
 void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
 {
-	LOG("***** Executing APC");
+//	LOG("***** Executing APC");
 }
 
 void FacebookProto::SignOn(void*)
@@ -88,13 +88,13 @@ void FacebookProto::SignOff(void*)
 
 bool FacebookProto::NegotiateConnection( )
 {
-	LOG("***** Negotiating connection with Twitter");
+	LOG("***** Negotiating connection with Facebook");
 
 	int old_status = m_iStatus;
 	std::string user, pass;
 	DBVARIANT dbv = {0};
 
-	if( !DBGetContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_ID,&dbv) )
+	if( !DBGetContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_LOGIN,&dbv) )
 	{
 		user = dbv.pszVal;
 		DBFreeVariant(&dbv);
@@ -137,6 +137,8 @@ bool FacebookProto::NegotiateConnection( )
 		// Set to offline
 		old_status = m_iStatus;
 		m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
+
+		SetAllContactStatuses(ID_STATUS_OFFLINE);
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
 			(HANDLE)old_status,m_iStatus);
 
@@ -147,7 +149,6 @@ bool FacebookProto::NegotiateConnection( )
 	else
 	{
 		m_iStatus = m_iDesiredStatus;
-		// SetAllContactStatuses(ID_STATUS_ONLINE); // TODO: Implement as a useful tool
 
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
 			(HANDLE)old_status,m_iStatus);
@@ -166,8 +167,8 @@ void FacebookProto::UpdateLoop(void *)
 	{
 		if ( m_iStatus != ID_STATUS_ONLINE )
 			goto exit;
-		if ( i % 2 == 0 )
-			UpdateFriends( );
+//		if ( i % 2 == 0 )
+			facy.update( );
 
 		if ( m_iStatus != ID_STATUS_ONLINE )
 			goto exit;
@@ -193,7 +194,7 @@ void FacebookProto::MessageLoop(void *)
 	{
 		if ( m_iStatus != ID_STATUS_ONLINE )
 			goto exit;
-		UpdateMessages( );
+		facy.channel( );
 
 		LOG( "***** FacebookProto::MessageLoop refreshing..." );
 	}
@@ -206,12 +207,86 @@ exit:
 	LOG( "<<<<< Exiting FacebookProto::MessageLoop" );
 }
 
-void FacebookProto::UpdateFriends( )
+void FacebookProto::ProcessUpdates( void* data )
 {
-	facy.update( );
+	try
+	{
+		LOG("***** Starting processing updates");
+		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_UPDATES, this );
+		std::map< std::string, facebook_user* > friends;
+		fbjp->parseFriends( &friends, data );
+		delete fbjp;
+
+		for(std::map<std::string, facebook_user*>::iterator i=friends.begin(); i!=friends.end(); ++i)
+		{
+			if(i->first == this->facy.user_id_)
+			{
+				DBWriteContactSettingUTF8String(NULL,m_szModuleName,FACEBOOK_KEY_NAME,i->second->real_name.c_str());
+				DBWriteContactSettingUTF8String(NULL,"CList","StatusMsg",i->second->status.c_str());
+				continue;
+			}
+
+			HANDLE hContact = AddToClientList(i->second);
+			//UpdateAvatar(hContact,i->second->profile_image_url); // TODO
+		}
+
+		SetAllContactUpdates( friends );
+		LOG("***** Updates processed");
+	}
+	catch(const std::exception &e)
+	{
+		LOG("***** Error processing updates: %s", e.what());
+	}
 }
 
-void FacebookProto::UpdateMessages( )
+void FacebookProto::ProcessMessages( void* data )
 {
-	facy.channel( );
+	try
+	{
+		LOG("***** Starting processing messages");
+		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_MESSAGES, this );
+		std::vector< facebook_message* > messages;
+		fbjp->parseMessages( &messages, data );
+		delete fbjp;
+
+/*		facebook_message* msg = new facebook_message( );
+		msg->message_text = "TESTING";
+		msg->time = 1250289476;
+		msg->user_id = "573295254";
+		messages.push_back( msg );
+*/
+		for(unsigned int i = 0; i < messages.size( ); i++)
+		{
+			if ( messages[i]->user_id == this->facy.user_id_ )
+				continue;
+
+			facebook_user fbu;
+			fbu.user_id = messages[i]->user_id;
+
+			HANDLE hContact = AddToClientList(&fbu);
+
+			PROTORECVEVENT recv = {};
+			CCSDATA ccs = {};
+
+			recv.flags = PREF_UTF;
+			//if(pre_read)
+			//	recv.flags |= PREF_CREATEREAD;
+			recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
+			recv.timestamp = static_cast<DWORD>(messages[i]->time);
+
+			ccs.hContact = hContact;
+			ccs.szProtoService = PSR_MESSAGE;
+			ccs.wParam = ID_STATUS_ONLINE;
+			ccs.lParam = reinterpret_cast<LPARAM>(&recv);
+			CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
+
+
+		}
+
+		LOG("***** Messages processed");
+	}
+	catch(const std::exception &e)
+	{
+		LOG("***** Error processing messages: %s", e.what());
+	}
 }

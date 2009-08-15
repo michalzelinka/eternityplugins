@@ -81,21 +81,21 @@ public:
 
 	virtual	int       __cdecl RecvContacts( HANDLE hContact, PROTORECVEVENT* );
 	virtual	int       __cdecl RecvFile( HANDLE hContact, PROTORECVFILE* );
-	virtual	int       __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* ) { return NULL; };
+	virtual	int       __cdecl RecvMsg( HANDLE hContact, PROTORECVEVENT* );
 	virtual	int       __cdecl RecvUrl( HANDLE hContact, PROTORECVEVENT* );
 
 	virtual	int       __cdecl SendContacts( HANDLE hContact, int flags, int nContacts, HANDLE* hContactsList );
 	virtual	HANDLE    __cdecl SendFile( HANDLE hContact, const char* szDescription, char** ppszFiles );
-	virtual	int       __cdecl SendMsg( HANDLE hContact, int flags, const char* msg ) { return NULL; };
+	virtual	int       __cdecl SendMsg( HANDLE hContact, int flags, const char* msg );
 	virtual	int       __cdecl SendUrl( HANDLE hContact, int flags, const char* url );
 
 	virtual	int       __cdecl SetApparentMode( HANDLE hContact, int mode );
 	virtual	int       __cdecl SetStatus( int new_status );
 
-	virtual	HANDLE    __cdecl GetAwayMsg( HANDLE hContact ) { return NULL; };
+	virtual	HANDLE    __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int       __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int       __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
-	virtual	int       __cdecl SetAwayMsg( int iStatus, const char* msg );
+	virtual	int       __cdecl SetAwayMsg( int iStatus, const char* msg ); // TODO: Implement?
 
 	virtual	int       __cdecl UserIsTyping( HANDLE hContact, int type );
 
@@ -123,21 +123,29 @@ public:
 	void __cdecl DoSearch(void *);
 	void __cdecl SignOn(void *);
 	void __cdecl SignOff(void *);
-	void __cdecl MessageLoop(void *);
-	void __cdecl UpdateLoop(void *);
 	void __cdecl SendMindWorker(void *);
 	void __cdecl GetAwayMsgWorker(void *);
 	void __cdecl UpdateAvatarWorker(void *);
 	void __cdecl UpdateInfoWorker(void *);
 
+	// Processing threads
+	void __cdecl ProcessUpdates( void* );
+	void __cdecl ProcessMessages( void* );
+
 	// Message Loop
 	bool    NegotiateConnection( );
+	void __cdecl MessageLoop(void *);
+	void __cdecl UpdateLoop(void *);
 
-	void    UpdateFriends( );
-	void    UpdateMessages( );
+	// Users handling
+	bool IsMyContact(HANDLE);
+	HANDLE UserIDToHContact(std::string);
+	HANDLE AddToClientList(facebook_user*);
+	void SetAllContactStatuses(int);
+	void SetAllContactUpdates(std::map<std::string, facebook_user*>);
 
 	// User
-	facebook    facy;
+	facebook_communication  facy;
 	int __cdecl Test( WPARAM, LPARAM );
 
 	// Handles, Locks
@@ -154,4 +162,6 @@ public:
 	HANDLE  m_hUpdLoop;
 
 	static void CALLBACK APC_callback(ULONG_PTR p);
+
+	int LOG(const char *fmt,...);
 };

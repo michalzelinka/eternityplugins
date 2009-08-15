@@ -47,7 +47,7 @@ Last change on : $Date$
 
 // User-Agents (stored only)
 /*
-Miranda/0.9
+Miranda (default)
 Lynx/2.8.4rel.1 libwww-FM/2.14
 Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)
 Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)
@@ -60,6 +60,15 @@ Opera/8.01 (J2ME/MIDP; Opera Mini/3.0.6306/1528; nb; U; ssr)
 Opera/9.27 (Windows NT 5.1; U; en)
 Opera/9.54 (Windows NT 5.1; U; en)
 Opera/9.80 (Windows NT 5.1; U; en) Presto/2.2.15 Version/10.00
+Opera/9.80 (Macintosh; Intel Mac OS X; U; en) Presto/2.2.15 Version/10.00
+Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-us) AppleWebKit/525.28.3 (KHTML, like Gecko) Version/3.2.3 Safari/525.28.3
+Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-US) AppleWebKit/531.0 (KHTML, like Gecko) Chrome/3.0.183 Safari/531.0
+Mozilla/5.0 (iPod; U; CPU iPhone OS 2_2_1 like Mac OS X; en-us) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5H11a Safari/525.20
+HTC-8900/1.2 Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; IEMobile 7.6) UP.Link/6.3.0.0.0
+BlackBerry8320/4.3.1 Profile/MIDP-2.0 Configuration/CLDC-1.1
+Opera/9.60 (J2ME/MIDP; Opera Mini/4.2.13337/504; U; en) Presto/2.2.0
+Nokia6230/2.0+(04.43)+Profile/MIDP-2.0+Configuration/CLDC-1.1+UP.Link/6.3.0.0.0
+Mozilla/5.0 (webOS/1.0; U; en-US) AppleWebKit/525.27.1 (KHTML, like Gecko) Version/1.0 Safari/525.27.1 Pre/1.0 // palmOne
 */
 
 // Input constants
