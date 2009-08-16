@@ -1,7 +1,7 @@
 #summary Facebook protocol development progress info
 #labels Featured,Phase-QA
 
-<img src="http://aaunews.org/news/wp-content/uploads/2009/06/facebook-small-logo-300x300.png"></img> <br><font size="30px"><font color="#3b5899">Facebook</font> protocol base is <font color="green">finished</font>!</font>
+<img src="http://aaunews.org/news/wp-content/uploads/2009/06/facebook-small-logo-300x300.png"></img> <br><font size="30px"><font color="#3b5899">Facebook</font> protocol</font>
 
 = Planned features =
 
@@ -11,13 +11,18 @@
  * <font color="green">Sending/receiving instant messages (not regular inbox/sent messages) // DONE/DONE</font>
  * <font color="red">Getting notifications // TBD</font>
  * <font color="red">Popup plugin support // TBD</font>
- * <font color="red">Updater plugin support // TBD</font>
+ * <font color="green">Updater plugin support // DONE</font>
  * <font color="green">Avatars // DONE</font>
- * <font color="red">Users info // TBD</font>
+ * <font color="red">Users' info // TBD</font>
  * <font color="red">Setting avatar/info // Maybe TBD</font>
  * <font color="red">Authorizations (processing Friend requests) // Maybe TBD</font>
 
-<font color="gray">
-_^TBD — To Be Done^_<br>
-_^UP — Under Progress^_<br>
-_^DONE — Already Done^_
+ * _^TBD — To Be Done^_<br>
+ * _^UP — Under Progress^_<br>
+ * _^DONE — Already Done^_
+
+= Known issues =
+ * May be unstable a little (invoking Crash Dumper, rare crashes, memory leaks, ...)
+ * Friends' names are loaded only when added to CL - optional synchronization TBD
+ * Avatars may flicker sometimes
+ * Away status not working at all
