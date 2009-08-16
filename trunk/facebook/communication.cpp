@@ -55,7 +55,7 @@ http::response facebook_communication::flap( const int request_type, char* reque
 	// free data
 	utils::mem::detract( &nlhr.szUrl );
 
-	// TODO: free headers
+	// TODO: headers leak
 	//for ( int i = 0; i < nlhr.headersCount; i++ )
 	//{
 	//	if ( !nlhr.headers[i].szName && !nlhr.headers[i].szValue )
@@ -204,7 +204,9 @@ char* facebook_communication::choose_request_url( int request_type )
 
 NETLIBHTTPHEADER* facebook_communication::get_request_headers( int request_type, int* headers_count )
 {
-	// TODO: cookies leak, user-agent leak, should be static
+	// TODO: cookies leak
+	// TODO: user-agent leak
+	// TODO: headers could be static
 
 	switch ( request_type )
 	{
@@ -264,12 +266,11 @@ char* facebook_communication::get_user_agent( )
 {
 	string user_agent = "Miranda IM/";
 
-	//DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
-	DWORD mir_ver = g_mirandaVersion; // TODO: Remove special variable
+//	DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
 
-	user_agent += ( char )((( mir_ver >> 24 ) & 0xFF ) + 0x30);
+	user_agent += ( char )((( g_mirandaVersion >> 24 ) & 0xFF ) + 0x30);
 	user_agent += ".";
-	user_agent += ( char )((( mir_ver >> 16 ) & 0xFF ) + 0x30);
+	user_agent += ( char )((( g_mirandaVersion >> 16 ) & 0xFF ) + 0x30);
 
 	char* user_agent_c = ( char* )utils::mem::allocate( user_agent.length( ) * sizeof( char ) );
 	strcpy( user_agent_c, user_agent.c_str( ) );
@@ -278,7 +279,9 @@ char* facebook_communication::get_user_agent( )
 }
 
 char* facebook_communication::load_cookies( )
-{ // TODO: rewrite to use input string pointer (partially/fully avoid leak?)
+{
+	// TODO: rewrite to use input string pointer (partially/fully avoid leak?)
+
 	string cookieString = "isfbe=false;";
 
 	for ( map< string, string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter )
@@ -359,7 +362,7 @@ bool facebook_communication::logout( )
 {
 	username_ = password_ = user_id_ = "";
 
-	// TODO: Logout process
+	// TODO: Logout process if applicable
 
 	return true;
 }
@@ -442,8 +445,8 @@ bool facebook_communication::update( )
 {
 	// Prepare update data
 
+	// TODO: Request & process notifications by adding &notifications=1
 	string data = "user=" + this->user_id_ + "&popped_out=true&force_render=true&buddy_list=1";
-	// TODO: &notifications=1
 
 	// Get update
 
@@ -451,7 +454,8 @@ bool facebook_communication::update( )
 
 	// Process result data
 
-	ForkThreadEx( &FacebookProto::ProcessUpdates, this->parent, ( void* )&resp );
+	std::string* response_data = new std::string( resp.data );
+	ForkThreadEx( &FacebookProto::ProcessUpdates, this->parent, ( void* )response_data );
 
 	// Return
 
@@ -490,10 +494,17 @@ bool facebook_communication::channel( )
 	{
 		// Something has been received, throw to new thread to process
 
-		ForkThreadEx( &FacebookProto::ProcessMessages, this->parent, ( void* )&resp );
+		string* response_data = new std::string( resp.data );
+		ForkThreadEx( &FacebookProto::ProcessMessages, this->parent, ( void* )response_data );
 
 		// Increment sequence number
 
+		// TODO: This should be incremented elsewhere, in order of the received
+		//       messages count, but not possible right now when we know the
+		//       messages count mouch later (in thread) than we need as we need
+		//       this number for a following MessageLoop instantly
+		// TODO:RE:
+		//       Maybe via recursive find() :)
 		this->chat_sequence_num_++;
 	}
 
@@ -551,6 +562,7 @@ bool facebook_communication::set_status(const std::string &status_text)
 	else
 	{
 		data += "&clear=1"; // TODO: Remove "0" length limit in dialog
+		                    // TODO:RE: Or add Clear button inside dialog
 	}
 	data += "&post_form_id=";
 	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";

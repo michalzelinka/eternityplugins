@@ -29,8 +29,10 @@ Last change on : $Date$
 
 int facebook_json_parser::parseFriends( std::map< std::string, facebook_user* >* friends, void* data )
 {
+	parent->LOG("===== parseFriends started");
 	this->friends = friends;
-	std::string json_data = (( http::response* )data)->data.substr( 9 );
+	std::string json_data = (*( std::string* )data).substr( 9 );
+	std::string parsed = "";
 
 	JSON_config config;
 
@@ -44,102 +46,115 @@ int facebook_json_parser::parseFriends( std::map< std::string, facebook_user* >*
 
 	JSON_parser_struct* jc = new_JSON_parser(&config);
 
-	for (unsigned int i = 0; i < json_data.length( ); i++ )
+	parent->LOG("===== parseFriends starts walking thru the data...");
+
+	for (size_t i = 0; i < json_data.length( ); i++ )
 	{
-        unsigned int next_char = ( unsigned int )json_data[i];
+		int next_char = json_data.at( i );
+		parsed += json_data.at( i );
         if (!JSON_parser_char(jc, next_char)) {
             delete_JSON_parser(jc);
-			parent->LOG( "***** facebook_json_parser::parseFriends JSON_parser_char: Syntax error" );
+			parent->LOG( "===== parseFriends JSON_parser_char: Syntax error at %d", i );
             return EXIT_FAILURE;
         }
     }
-    if (!JSON_parser_done(jc)) {
-        delete_JSON_parser(jc);
-		parent->LOG( "***** facebook_json_parser::parseFriends JSON_parser_end: Syntax error" );
-        return EXIT_FAILURE;
-    }
+	parent->LOG("===== parseFriends: parsed data:\r\n%s\r\n", parsed.c_str());
+	// TODO: jc leak?
+//	if (!JSON_parser_done(jc)) {
+//		delete_JSON_parser(jc);
+//		parent->LOG( "===== parseFriends JSON_parser_end: Syntax error" );
+//		return EXIT_FAILURE;
+//	}
+	parent->LOG("===== parseFriends finished, got items: %d", (*this->friends).size());
 
 	return EXIT_SUCCESS;
 }
 
 int facebook_json_parser::parseMessages( std::vector< facebook_message* >* messages, void* data )
 {
+	parent->LOG("===== parseMessages started");
 	this->messages = messages;
-	std::string json_data = (( http::response* )data)->data.substr( 9 );
+	std::string json_data = (*( std::string* )data).substr( 9 );
+	std::string parsed = "";
 
 	JSON_config config;
 
 	init_JSON_config(&config);
 
-    config.depth                  = 20;
-    config.callback               = &facebook_json_parser::parse;
-    config.callback_ctx           = ( void* )this;
-    config.allow_comments         = 1;
-    config.handle_floats_manually = 0;
+	config.depth                  = 20;
+	config.callback               = &facebook_json_parser::parse;
+	config.callback_ctx           = ( void* )this;
+	config.allow_comments         = 1;
+	config.handle_floats_manually = 0;
 
 	JSON_parser_struct* jc = new_JSON_parser(&config);
 
-	for (unsigned int i = 0; i < json_data.length( ); i++ )
+	parent->LOG("===== parseMessages starts walking thru the data...");
+
+	for (size_t i = 0; i < json_data.length( ); i++ )
 	{
-        unsigned int next_char = ( unsigned int )json_data[i];
-        if (!JSON_parser_char(jc, next_char)) {
-            delete_JSON_parser(jc);
-			parent->LOG( "***** facebook_json_parser::parseMessages JSON_parser_char: Syntax error" );
-            return EXIT_FAILURE;
-        }
-    }
-    if (!JSON_parser_done(jc)) {
-        delete_JSON_parser(jc);
-		parent->LOG( "***** facebook_json_parser::parseMessages JSON_parser_end: Syntax error" );
-        return EXIT_FAILURE;
-    }
+		int next_char = json_data.at( i );
+		parsed += json_data.at( i );
+		if (!JSON_parser_char(jc, next_char)) {
+			delete_JSON_parser(jc);
+			parent->LOG( "===== parseMessages JSON_parser_char: Syntax error at %d", i );
+			return EXIT_FAILURE;
+		}
+	}
+	parent->LOG("===== parseMessages: parsed data:\r\n%s\r\n", parsed.c_str());
+	// TODO: jc leak?
+//	if (!JSON_parser_done(jc)) {
+//		delete_JSON_parser(jc);
+//		parent->LOG( "===== parseMessages JSON_parser_end: Syntax error" );
+//		return EXIT_FAILURE;
+//	}
+	parent->LOG("===== parseMessages finished, got items: %d", (*this->messages).size());
 
 	return EXIT_SUCCESS;
 }
 
 int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 {
-    facebook_json_parser* fbjp = ( facebook_json_parser* )ctx;
+	facebook_json_parser* fbjp = ( facebook_json_parser* )ctx;
 
-    switch(type) {
+	switch(type) {
 
-    case JSON_T_ARRAY_BEGIN:
-        fbjp->isKey = false;
-        ++fbjp->level;
-        break;
-        
-    case JSON_T_ARRAY_END:
-        assert(!fbjp->isKey);
-        if (fbjp->level > 0) --fbjp->level;
-        break;
-        
-   case JSON_T_OBJECT_BEGIN:
-        fbjp->isKey = false;
-        ++fbjp->level;
-        break;
-        
-    case JSON_T_OBJECT_END:
-        assert(!fbjp->isKey);
-        if (fbjp->level > 0) --fbjp->level;
-        if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 4 )
+	case JSON_T_ARRAY_BEGIN:
+		fbjp->isKey = false;
+		++fbjp->level;
+		break;
+
+	case JSON_T_ARRAY_END:
+		assert(!fbjp->isKey);
+		if (fbjp->level > 0) --fbjp->level;
+		break;
+
+	case JSON_T_OBJECT_BEGIN:
+		fbjp->isKey = false;
+		++fbjp->level;
+		break;
+
+	case JSON_T_OBJECT_END:
+		assert(!fbjp->isKey);
+		if (fbjp->level > 0) --fbjp->level;
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 4 )
 		{
 			(*fbjp->friends)[ fbjp->currentFriend->user_id ] = fbjp->currentFriend;
 			fbjp->currentFriend = NULL;
 		}
-        if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 4 )
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 4 )
 		{
 			fbjp->currentFriendStr = "";
 		}
-        else if ( fbjp->parserType == FB_PARSE_MESSAGES && fbjp->level == 2 )
-        {
+		else if ( fbjp->parserType == FB_PARSE_MESSAGES && fbjp->level == 2 )
+		{
 			(*fbjp->messages).push_back( new facebook_message( *fbjp->currentMessage ) );
-			//fbjp->messages->push_back( fbjp->currentMessage );
 			fbjp->currentMessage = NULL;
 		}
-        break;
-        
-    case JSON_T_INTEGER:
-        fbjp->isKey = false;
+		break;
+
+	case JSON_T_INTEGER:
+		fbjp->isKey = false;
 		if ( fbjp->parserType == FB_PARSE_MESSAGES )
 		{
 			if ( fbjp->valueType == FB_PARSE_MESSAGE_FROM )
@@ -147,50 +162,50 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 				char time[32];
 				lltoa( value->vu.integer_value, time, 10 );
 				fbjp->currentMessage->user_id = time;
-				fbjp->valueType = 0;
 			}
 			else if ( fbjp->valueType == FB_PARSE_MESSAGE_TIME )
 			{
 				fbjp->currentMessage->time = value->vu.integer_value / 1000; // microtimestamp to timestamp
-				fbjp->valueType = 0;
 			}
-
 		}
-        break;
-        
-    case JSON_T_FLOAT:
-        fbjp->isKey = false;
-        break;
-        
-    case JSON_T_NULL:
-        fbjp->isKey = false;
-        break;
-        
-    case JSON_T_TRUE:
-        fbjp->isKey = false;
-        if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
-            if ( fbjp->valueType == FB_PARSE_UPDATE_IDLE )
+		fbjp->valueType = 0;
+		break;
+
+	case JSON_T_FLOAT:
+		fbjp->isKey = false;
+		break;
+
+	case JSON_T_NULL:
+		fbjp->isKey = false;
+		break;
+
+	case JSON_T_TRUE:
+		fbjp->isKey = false;
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
+			if ( fbjp->valueType == FB_PARSE_UPDATE_IDLE )
 				fbjp->currentFriend->is_idle = true;
-        break;
-        
-    case JSON_T_FALSE:
-        fbjp->isKey = false;
-        if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
-            if ( fbjp->valueType == FB_PARSE_UPDATE_IDLE )
+		fbjp->valueType = 0;
+		break;
+
+	case JSON_T_FALSE:
+		fbjp->isKey = false;
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
+			if ( fbjp->valueType == FB_PARSE_UPDATE_IDLE )
 				fbjp->currentFriend->is_idle = false;
-        break;
-        
-    case JSON_T_KEY:
-        fbjp->isKey = true;
-        {
-            const char* val = value->vu.str.value;
+		fbjp->valueType = 0;
+		break;
+
+	case JSON_T_KEY:
+		fbjp->isKey = true;
+		{
+			const char* val = value->vu.str.value;
 			if ( fbjp->parserType == FB_PARSE_UPDATES )
-    	    {
+			{
 				if ( strsame( val, "nowAvailableList" ) )
 					fbjp->updatesSection = FB_PARSE_UPDATE_NOWAVAILABLE;
-                else if ( strsame( val, "userInfos" ) )
+				else if ( strsame( val, "userInfos" ) )
 				{
-                    fbjp->updatesSection = FB_PARSE_UPDATE_USERINFOS;
+					fbjp->updatesSection = FB_PARSE_UPDATE_USERINFOS;
 					(*fbjp->friends)[ fbjp->local_user_id ] = new facebook_user( );
 				}
 				else if ( fbjp->level == 4 && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE )
@@ -198,7 +213,7 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 					fbjp->currentFriend = new facebook_user( );
 					fbjp->currentFriend->user_id = val;
 				}
-                else if ( fbjp->level == 4 && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS )
+				else if ( fbjp->level == 4 && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS )
 				{
 					fbjp->currentFriendStr = val;
 				}
@@ -209,32 +224,29 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 			}
 			else if ( fbjp->parserType == FB_PARSE_MESSAGES )
 			{
-                if      ( strsame( val, "msg" ) )        fbjp->currentMessage = new facebook_message( );
+				if      ( strsame( val, "msg" ) )        fbjp->currentMessage = new facebook_message( );
 				else if ( strsame( val, "text" ) )       fbjp->valueType = FB_PARSE_MESSAGE_TEXT;
 				else if ( strsame( val, "clientTime" ) ) fbjp->valueType = FB_PARSE_MESSAGE_TIME;
 				else if ( strsame( val, "from" ) )       fbjp->valueType = FB_PARSE_MESSAGE_FROM;
 			}
 		}
-        break;   
-        
-    case JSON_T_STRING:
-        fbjp->isKey = false;
-        if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 5 )
-        {
-            if      ( fbjp->valueType == FB_PARSE_UPDATE_NAME )
+		break;
+
+	case JSON_T_STRING:
+		fbjp->isKey = false;
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 5 )
+		{
+			if      ( fbjp->valueType == FB_PARSE_UPDATE_NAME )
 			{
-				if ( !(*fbjp->friends)[ fbjp->currentFriendStr ]->real_name.length( ) )
-					(*fbjp->friends)[ fbjp->currentFriendStr ]->real_name = value->vu.str.value;
+				(*fbjp->friends)[ fbjp->currentFriendStr ]->real_name = value->vu.str.value;
 			}
-            else if ( fbjp->valueType == FB_PARSE_UPDATE_THMB )
+			else if ( fbjp->valueType == FB_PARSE_UPDATE_THMB )
 			{
-				if ( !(*fbjp->friends)[ fbjp->currentFriendStr ]->profile_image_url.length( ) )
-					(*fbjp->friends)[ fbjp->currentFriendStr ]->profile_image_url = value->vu.str.value;
+				(*fbjp->friends)[ fbjp->currentFriendStr ]->profile_image_url = value->vu.str.value;
 			}
-            else if ( fbjp->valueType == FB_PARSE_UPDATE_STAT )
+			else if ( fbjp->valueType == FB_PARSE_UPDATE_STAT )
 			{
-				if ( !(*fbjp->friends)[ fbjp->currentFriendStr ]->status.length( ) )
-                	(*fbjp->friends)[ fbjp->currentFriendStr ]->status = value->vu.str.value;
+			   	(*fbjp->friends)[ fbjp->currentFriendStr ]->status = value->vu.str.value;
 			}
 		}
 		else if ( fbjp->parserType == FB_PARSE_MESSAGES )
@@ -242,16 +254,16 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 			if ( fbjp->valueType == FB_PARSE_MESSAGE_TEXT )
 			{
 				fbjp->currentMessage->message_text = value->vu.str.value;
-                fbjp->valueType = 0;
 			}
 		}
-        break;
+		fbjp->valueType = 0;
+		break;
 
-    default:
-        assert(0);
-        break;
+	default:
+		assert(0);
+		break;
 
-    }
-    
-    return 1;
+	}
+
+	return 1;
 }

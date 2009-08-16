@@ -131,6 +131,7 @@ public:
 	// Processing threads
 	void __cdecl ProcessUpdates( void* );
 	void __cdecl ProcessMessages( void* );
+	void         ProcessAvatar(HANDLE,const std::string &,bool force=false);
 
 	// Message Loop
 	bool    NegotiateConnection( );
@@ -148,6 +149,9 @@ public:
 	facebook_communication  facy;
 	int __cdecl Test( WPARAM, LPARAM );
 
+	// Helpers
+	std::string GetAvatarFolder();
+
 	// Handles, Locks
 
 	HANDLE  m_hStatusMind;
@@ -155,11 +159,15 @@ public:
 	HANDLE  signon_lock_;
 	HANDLE  avatar_lock_;
 	HANDLE  facebook_lock_;
+	HANDLE  log_lock_;
 
 	HANDLE  m_hNetlibUser;
 	HANDLE  m_hNetlibAvatar;
 	HANDLE  m_hMsgLoop;
 	HANDLE  m_hUpdLoop;
+
+	std::string def_avatar_folder_;
+	HANDLE hAvatarFolder_;
 
 	static void CALLBACK APC_callback(ULONG_PTR p);
 

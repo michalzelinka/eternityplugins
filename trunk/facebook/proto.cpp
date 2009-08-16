@@ -43,21 +43,28 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &FacebookProto::OnBuildStatusMenu,    this);
 	HookProtoEvent(ME_OPT_INITIALISE,           &FacebookProto::OnOptionsInit,        this);
 
+	char *profile = Utils_ReplaceVars("%miranda_avatarcache%");
+	def_avatar_folder_ = std::string(profile)+"\\"+m_szModuleName;
+	mir_free(profile);
+	hAvatarFolder_ = FoldersRegisterCustomPath(m_szModuleName,"Avatars",
+		def_avatar_folder_.c_str());
+
 	// Set all contacts offline -- in case we crashed
 	SetAllContactStatuses( ID_STATUS_OFFLINE );
 
-	//CreateProtoService("Facebook", "/Test", &FacebookProto::Test, this);
-
-	//CLISTMENUITEM mi = {0};
-	//mi.cbSize = sizeof(CLISTMENUITEM);
-	//mi.flags = 0;
-	//mi.hIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FACEBOOK), IMAGE_ICON, 0, 0, 0);
-	//mi.pszContactOwner = NULL;
-	//mi.position = 1000000000;
-	//mi.pszName = Translate("Test Facebook");
-	//mi.pszService = "Facebook/Test";
-
-	//CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
+//// TODO: Will this be needed for something?
+//	CreateProtoService("Facebook", "/Test", &FacebookProto::Test, this);
+//
+//	CLISTMENUITEM mi = {0};
+//	mi.cbSize = sizeof(CLISTMENUITEM);
+//	mi.flags = 0;
+//	mi.hIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FACEBOOK), IMAGE_ICON, 0, 0, 0);
+//	mi.pszContactOwner = NULL;
+//	mi.position = 1000000000;
+//	mi.pszName = Translate("Test Facebook");
+//	mi.pszService = "Facebook/Test";
+//
+//	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 }
 
 FacebookProto::~FacebookProto( )
@@ -79,13 +86,13 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 	switch(type)
 	{
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_MODEMSGRECV; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL;
+		return PF1_IM | PF1_MODEMSGRECV; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL; // TODO
 	case PFLAGNUM_2:
 		return PF2_ONLINE | PF2_SHORTAWAY;
 	case PFLAGNUM_3:
 		return PF2_ONLINE | PF2_SHORTAWAY;
 	case PFLAGNUM_4:
-		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE;
+		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE; // TODO
 	case PFLAG_MAXLENOFMESSAGE:
 		return FACEBOOK_MESSAGE_LIMIT;
 	case PFLAG_UNIQUEIDTEXT:
@@ -130,6 +137,7 @@ int FacebookProto::SetStatus( int new_status )
 	}
 	if ( new_status == ID_STATUS_AWAY )
 	{
+		SetStatus( ID_STATUS_ONLINE ); // Temporarily
 		// TODO: Idle/Away?
 	}
 	else if ( new_status == ID_STATUS_OFFLINE )
@@ -152,6 +160,7 @@ void FacebookProto::SendMindWorker(void * data)
 {
 	const std::string new_status = ( char* )data;
 	facy.set_status( new_status );
+	// TODO: data leak?
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -232,13 +241,14 @@ int FacebookProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.pfnDlgProc  = FBOptionsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-	if(ServiceExists(MS_POPUP_ADDPOPUPT))
-	{
-		odp.ptszTab     = LPGENT("Popups");
-		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_POPUPS);
-		odp.pfnDlgProc  = FBPopupsProc;
-		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
-	}
+//// TODO: Uncommend when popups working
+//	if(ServiceExists(MS_POPUP_ADDPOPUPT))
+//	{
+//		odp.ptszTab     = LPGENT("Popups");
+//		odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_POPUPS);
+//		odp.pfnDlgProc  = FBPopupsProc;
+//		CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
+//	}
 
 	return 0;
 }
@@ -276,7 +286,7 @@ int FacebookProto::OnBuildStatusMenu(WPARAM wParam,LPARAM lParam)
 
 int FacebookProto::OnMind(WPARAM,LPARAM)
 {
-	if ( !isOnline( ) ) // TODO: remove this, toggle icon in status menu
+	if ( !isOnline( ) ) // TODO: remove this, toggle status menu item inside server negotiation proc
 		return TRUE;
 
 	HWND hDlg = CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_MIND ),
@@ -296,8 +306,6 @@ int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 
 int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 {
-	//facy.get_post_form_id( ); // TODO: Move to "connection"
-	//facy.send_message( "1627557216", "Ahoj... x)" );
 	utils::debug::info( facy.choose_request_url( FACEBOOK_REQUEST_MESSAGES_RECEIVE ) );
 
 	return FALSE;

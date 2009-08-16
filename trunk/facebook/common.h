@@ -43,6 +43,7 @@ Last change on : $Date$
 #include <cstring>
 #include <ctime>
 #include <assert.h>
+#include <io.h>
 using namespace std;
 
 #include <windows.h>
@@ -61,7 +62,6 @@ using namespace std;
 #include <m_clist.h>
 #include <m_clistint.h>
 #include <m_clui.h>
-//#include <m_cluiframes.h>
 #include <m_database.h>
 #include <m_history.h>
 #include <m_idle.h>
@@ -83,6 +83,7 @@ using namespace std;
 #include <m_xml.h>
 #include <m_hotkeys.h>
 #include <m_updater.h>
+#include <m_folders.h>
 
 #include "JSON_parser/JSON_parser.h"
 

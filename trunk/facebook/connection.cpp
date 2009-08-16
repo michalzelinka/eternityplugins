@@ -27,23 +27,6 @@ Last change on : $Date$
 
 #include "common.h"
 
-/*
-
-	void __cdecl AddToListWorker(void *p);
-	void __cdecl SendSuccess(void *);
-	void __cdecl DoSearch(void *);
-	void __cdecl SignOn(void *);
-	void __cdecl MessageLoop(void *);
-	void __cdecl SendMindWorker(void *);
-	void __cdecl GetAwayMsgWorker(void *);
-	void __cdecl UpdateAvatarWorker(void *);
-	void __cdecl UpdateInfoWorker(void *);
-
-*/
-
-//int FacebookProto::SetAwayMsg( int iStatus, const char* msg )
-//	HttpGetPost( FACEBOOK_REQUEST_STATUS_SET, szPostData );
-
 void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
 {
 //	LOG("***** Executing APC");
@@ -73,8 +56,8 @@ void FacebookProto::SignOn(void*)
 	}
 	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
 	{
-		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );
-		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this );
+		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );  // TODO:
+		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this ); // uncomment
 	}
 
 	ReleaseMutex(signon_lock_);
@@ -123,6 +106,7 @@ bool FacebookProto::NegotiateConnection( )
 		ScopedLock s(facebook_lock_);
 		success = facy.login( user, pass );
 		// TODO: Following functions here, or in the ::SignOn( ) ?
+		// TODO:RE: Probably here, lots of data to process, better mask them as 'connecting' :))
 		success = facy.popout( );
 		success = facy.update( );
 		success = facy.reconnect( );
@@ -216,18 +200,24 @@ void FacebookProto::ProcessUpdates( void* data )
 		std::map< std::string, facebook_user* > friends;
 		fbjp->parseFriends( &friends, data );
 		delete fbjp;
+		delete ( std::string* )data;
 
 		for(std::map<std::string, facebook_user*>::iterator i=friends.begin(); i!=friends.end(); ++i)
 		{
+			LOG("      Online friend: %s", i->second->real_name.c_str());
+			// TODO: Merge this with AddToClientList() below as it does the same for already added contacts
 			if(i->first == this->facy.user_id_)
 			{
+				DBWriteContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_ID,i->first.c_str());
 				DBWriteContactSettingUTF8String(NULL,m_szModuleName,FACEBOOK_KEY_NAME,i->second->real_name.c_str());
 				DBWriteContactSettingUTF8String(NULL,"CList","StatusMsg",i->second->status.c_str());
-				continue;
+				ProcessAvatar(NULL,i->second->profile_image_url);
 			}
-
-			HANDLE hContact = AddToClientList(i->second);
-			//UpdateAvatar(hContact,i->second->profile_image_url); // TODO
+			else
+			{
+				HANDLE hContact = AddToClientList(i->second);
+				ProcessAvatar(hContact,i->second->profile_image_url);
+			}			
 		}
 
 		SetAllContactUpdates( friends );
@@ -248,18 +238,14 @@ void FacebookProto::ProcessMessages( void* data )
 		std::vector< facebook_message* > messages;
 		fbjp->parseMessages( &messages, data );
 		delete fbjp;
+		delete ( std::string* )data;
 
-/*		facebook_message* msg = new facebook_message( );
-		msg->message_text = "TESTING";
-		msg->time = 1250289476;
-		msg->user_id = "573295254";
-		messages.push_back( msg );
-*/
-		for(unsigned int i = 0; i < messages.size( ); i++)
+		for(size_t i = 0; i < messages.size( ); i++)
 		{
 			if ( messages[i]->user_id == this->facy.user_id_ )
 				continue;
 
+			LOG("      Got message: %s", messages[i]->message_text.c_str());
 			facebook_user fbu;
 			fbu.user_id = messages[i]->user_id;
 
@@ -269,8 +255,6 @@ void FacebookProto::ProcessMessages( void* data )
 			CCSDATA ccs = {};
 
 			recv.flags = PREF_UTF;
-			//if(pre_read)
-			//	recv.flags |= PREF_CREATEREAD;
 			recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
 			recv.timestamp = static_cast<DWORD>(messages[i]->time);
 
@@ -279,8 +263,6 @@ void FacebookProto::ProcessMessages( void* data )
 			ccs.wParam = ID_STATUS_ONLINE;
 			ccs.lParam = reinterpret_cast<LPARAM>(&recv);
 			CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
-
-
 		}
 
 		LOG("***** Messages processed");

@@ -43,6 +43,9 @@ Last change on : $Date$
 #define FACEBOOK_KEY_ID             "ID"
 #define FACEBOOK_KEY_NAME           "RealName"
 #define FACEBOOK_KEY_PASS           "Password"
+#define FACEBOOK_KEY_DEF_GROUP      "DefaultGroup"
+#define FACEBOOK_KEY_AV_URL         "AvatarURL"
+#define FACEBOOK_KEY_POLL_RATE      "PollRate"
 
 #define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"
 #define FACEBOOK_KEY_POPUP_SIGNON   "Popup/Signon"
@@ -53,10 +56,6 @@ Last change on : $Date$
 #define FACEBOOK_KEY_SINCEID        "SinceID"
 #define FACEBOOK_KEY_DMSINCEID      "DMSinceID"
 #define FACEBOOK_KEY_NEW            "NewAcc"
-
-#define FACEBOOK_KEY_AV_URL         "AvatarURL"
-
-#define FACEBOOK_KEY_POLL_RATE      "PollRate"
 
 // DB event types
 #define FACEBOOK_DB_EVENT_TYPE_MIND 2718

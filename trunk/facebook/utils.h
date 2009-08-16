@@ -109,6 +109,23 @@ private:
 	HANDLE handle_;
 };
 
+bool save_url(HANDLE hNetlib,const std::string &url,const std::string &filename);
+
+static const struct
+{
+	char *ext;
+	int fmt;
+} formats[] = {
+	{ ".png",  PA_FORMAT_PNG  },
+	{ ".jpg",  PA_FORMAT_JPEG },
+	{ ".jpeg", PA_FORMAT_JPEG },
+	{ ".ico",  PA_FORMAT_ICON },
+	{ ".bmp",  PA_FORMAT_BMP  },
+	{ ".gif",  PA_FORMAT_GIF  },
+};
+
+int ext_to_format(const std::string &ext);
+
 void DebugInfo( const char* debugInfo );
 void NOTIFY( char* title, char* message );
 void LOG( char* message );
