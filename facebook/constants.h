@@ -28,13 +28,13 @@ Last change on : $Date$
 #pragma once
 
 // Version management
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 1)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 2)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.0.0.1"
+#define __VERSION_STRING            "0.0.0.2"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,0,0,1
+#define __VERSION_VS_FILE           0,0,0,2
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 0, 0, 1"
+#define __VERSION_VS_FILE_STRING    "0, 0, 0, 2"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
 
 // Product management
@@ -56,7 +56,9 @@ Last change on : $Date$
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
 
 // Defaults
+#define FACEBOOK_MINIMAL_POLL_RATE              5  // 10?
 #define FACEBOOK_DEFAULT_POLL_RATE              15 // in seconds
+#define FACEBOOK_MAXIMAL_POLL_RATE              60 // 45?
 
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically
