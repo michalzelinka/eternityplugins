@@ -129,16 +129,29 @@ int FacebookProto::SetStatus( int new_status )
 		if ( old_status == ID_STATUS_CONNECTING || old_status == ID_STATUS_ONLINE )
 			return 0;
 
+		if ( old_status == ID_STATUS_AWAY )
+		{
+			m_iStatus = m_iDesiredStatus;
+			ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
+				( HANDLE ) old_status, m_iStatus );
+			return 0;
+		}
+
 		m_iStatus = ID_STATUS_CONNECTING;
 		ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 			( HANDLE )old_status, m_iStatus );
 
 		ForkThread( &FacebookProto::SignOn, this );
 	}
-	if ( new_status == ID_STATUS_AWAY )
+	else if ( new_status == ID_STATUS_AWAY )
 	{
-		SetStatus( ID_STATUS_ONLINE ); // Temporarily
-		// TODO: Idle/Away?
+		if ( old_status == ID_STATUS_ONLINE )
+		{
+			m_iStatus = m_iDesiredStatus;
+			ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
+				( HANDLE ) old_status, m_iStatus );
+			return 0;
+		}
 	}
 	else if ( new_status == ID_STATUS_OFFLINE )
 	{
@@ -267,10 +280,10 @@ int FacebookProto::OnBuildStatusMenu(WPARAM wParam,LPARAM lParam)
 	mi.pszService = text;
 
 	mi.hParentMenu = hRoot;
-	mi.flags = CMIF_ICONFROMICOLIB|CMIF_ROOTHANDLE;
+	mi.flags = CMIF_ICONFROMICOLIB|CMIF_ROOTHANDLE|CMIF_HIDDEN; // TODO: CMIF_TCHAR
 	mi.position = 1001;
 
-	HANDLE m_hMenuRoot = reinterpret_cast<HGENMENU>( CallService(
+	m_hMenuRoot = reinterpret_cast<HGENMENU>( CallService(
 		MS_CLIST_ADDSTATUSMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) );
 
 	CreateProtoService(m_szModuleName,"/Mind",&FacebookProto::OnMind,this);
@@ -282,6 +295,16 @@ int FacebookProto::OnBuildStatusMenu(WPARAM wParam,LPARAM lParam)
 		MS_CLIST_ADDSTATUSMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) );
 
 	return 0;
+}
+
+void FacebookProto::ToggleStatusMenuItems( BOOL bEnable )
+{
+	CLISTMENUITEM clmi = { 0 };
+	clmi.cbSize = sizeof( CLISTMENUITEM );
+	clmi.flags = CMIM_FLAGS | (( bEnable ) ? 0 : CMIF_HIDDEN);
+
+	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hMenuRoot,   ( LPARAM )&clmi );
+	CallService( MS_CLIST_MODIFYMENUITEM, ( WPARAM )m_hStatusMind, ( LPARAM )&clmi );
 }
 
 int FacebookProto::OnMind(WPARAM,LPARAM)

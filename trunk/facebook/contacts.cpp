@@ -198,7 +198,7 @@ void FacebookProto::SendSuccess(void *p)
 
 int FacebookProto::SendMsg(HANDLE hContact,int flags,const char *msg)
 {
-	if(m_iStatus != ID_STATUS_ONLINE)
+	if ( !isOnline( ) )
 		return 0;
 
 	ForkThread(&FacebookProto::SendSuccess, this,new send_direct(hContact,msg));

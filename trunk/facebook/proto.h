@@ -137,6 +137,7 @@ public:
 	bool    NegotiateConnection( );
 	void __cdecl MessageLoop(void *);
 	void __cdecl UpdateLoop(void *);
+	BYTE    GetPollRate( );
 
 	// Users handling
 	bool IsMyContact(HANDLE);
@@ -151,9 +152,11 @@ public:
 
 	// Helpers
 	std::string GetAvatarFolder();
+	void ToggleStatusMenuItems( BOOL bEnable );
 
 	// Handles, Locks
 
+	HANDLE  m_hMenuRoot;
 	HANDLE  m_hStatusMind;
 
 	HANDLE  signon_lock_;

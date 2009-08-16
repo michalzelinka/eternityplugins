@@ -40,7 +40,7 @@ void FacebookProto::SignOn(void*)
 	// Kill the old threads if they are still around
 	if(m_hMsgLoop)
 	{
-		LOG("***** Requesting MessageLoop to exit");
+		LOG("..... Requesting MessageLoop to exit");
 		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
 		LOG("***** Waiting for old MessageLoop to exit");
 		WaitForSingleObject(m_hMsgLoop,INFINITE);
@@ -56,17 +56,40 @@ void FacebookProto::SignOn(void*)
 	}
 	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
 	{
-		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );  // TODO:
-		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this ); // uncomment
+		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );
+		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this );
 	}
+	ToggleStatusMenuItems(isOnline());
 
 	ReleaseMutex(signon_lock_);
-	LOG("***** SignOn complete");
+	LOG("..... SignOn complete");
 }
 
 void FacebookProto::SignOff(void*)
 {
+	LOG("xxxxx Beginning SignOff process");
+
+	// Kill the old threads if they are still around
+	if(m_hMsgLoop)
+	{
+		LOG("***** Requesting MessageLoop to exit");
+		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
+		LOG("***** Waiting for old MessageLoop to exit");
+		WaitForSingleObject(m_hMsgLoop,INFINITE);
+		CloseHandle(m_hMsgLoop);
+	}
+	if(m_hUpdLoop)
+	{
+		LOG("***** Requesting UpdateLoop to exit");
+		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
+		LOG("***** Waiting for old UpdateLoop to exit");
+		WaitForSingleObject(m_hUpdLoop,INFINITE);
+		CloseHandle(m_hUpdLoop);
+	}
+	ToggleStatusMenuItems(isOnline());
+
 	facy.clear_cookies( );
+	LOG("xxxxx SignOff complete");
 }
 
 bool FacebookProto::NegotiateConnection( )
@@ -145,19 +168,20 @@ void FacebookProto::UpdateLoop(void *)
 {
 	LOG( ">>>>> Entering Facebook::UpdateLoop" );
 
-	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_DEFAULT_POLL_RATE );
-
 	for ( WORD i = 0; ; i++ )
 	{
-		if ( m_iStatus != ID_STATUS_ONLINE )
+		if ( !isOnline( ) )
 			goto exit;
-//		if ( i % 2 == 0 )
-			facy.update( );
+		facy.update( );
 
-		if ( m_iStatus != ID_STATUS_ONLINE )
+// TODO: Dummy for notifications
+//		if ( i % 2 == 0 )
+//			facy.update( );
+
+		if ( !isOnline( ) )
 			goto exit;
 		LOG( "***** FacebookProto::UpdateLoop going to sleep..." );
-		if ( SleepEx( poll_rate * 1000, true ) == WAIT_IO_COMPLETION )
+		if ( SleepEx( GetPollRate( ) * 1000, true ) == WAIT_IO_COMPLETION )
 			goto exit;
 		LOG( "***** FacebookProto::UpdateLoop waking up..." );
 	}
@@ -176,7 +200,7 @@ void FacebookProto::MessageLoop(void *)
 
 	for ( WORD i = 0; ; i++ )
 	{
-		if ( m_iStatus != ID_STATUS_ONLINE )
+		if ( !isOnline( ) )
 			goto exit;
 		facy.channel( );
 
@@ -191,6 +215,13 @@ exit:
 	LOG( "<<<<< Exiting FacebookProto::MessageLoop" );
 }
 
+BYTE FacebookProto::GetPollRate( )
+{
+	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_DEFAULT_POLL_RATE );
+
+	return ( ( poll_rate >= FACEBOOK_MINIMAL_POLL_RATE && poll_rate <= FACEBOOK_MAXIMAL_POLL_RATE ) ? poll_rate : FACEBOOK_DEFAULT_POLL_RATE );
+}
+
 void FacebookProto::ProcessUpdates( void* data )
 {
 	try
@@ -198,16 +229,17 @@ void FacebookProto::ProcessUpdates( void* data )
 		LOG("***** Starting processing updates");
 		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_UPDATES, this );
 		std::map< std::string, facebook_user* > friends;
+		friends.insert( make_pair( this->facy.user_id_, new facebook_user( ) ) );
+		friends[this->facy.user_id_]->user_id = this->facy.user_id_;
 		fbjp->parseFriends( &friends, data );
 		delete fbjp;
 		delete ( std::string* )data;
 
 		for(std::map<std::string, facebook_user*>::iterator i=friends.begin(); i!=friends.end(); ++i)
 		{
-			LOG("      Online friend: %s", i->second->real_name.c_str());
-			// TODO: Merge this with AddToClientList() below as it does the same for already added contacts
 			if(i->first == this->facy.user_id_)
 			{
+				// TODO: Merge this with AddToClientList() below as it does the same for already added contacts
 				DBWriteContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_ID,i->first.c_str());
 				DBWriteContactSettingUTF8String(NULL,m_szModuleName,FACEBOOK_KEY_NAME,i->second->real_name.c_str());
 				DBWriteContactSettingUTF8String(NULL,"CList","StatusMsg",i->second->status.c_str());
@@ -215,6 +247,7 @@ void FacebookProto::ProcessUpdates( void* data )
 			}
 			else
 			{
+				LOG("      Online friend: %s", i->second->user_id.c_str());
 				HANDLE hContact = AddToClientList(i->second);
 				ProcessAvatar(hContact,i->second->profile_image_url);
 			}			

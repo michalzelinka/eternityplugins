@@ -126,7 +126,7 @@ char* facebook_communication::choose_server( int request_type )
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	{
 		char* chatServer = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
-		mir_snprintf( chatServer, 64, FACEBOOK_SERVER_CHAT, 0, chat_channel_num_ );
+		mir_snprintf( chatServer, 64, FACEBOOK_SERVER_CHAT, 1, chat_channel_num_ );
 		return chatServer;
 	}
 
@@ -159,11 +159,10 @@ char* facebook_communication::choose_action( int request_type )
 
 	case FACEBOOK_REQUEST_RECONNECT:
 	{
-		
-		char* reconnAction = ( char* )utils::mem::allocate( 128 * sizeof( char ) );
-		mir_snprintf( reconnAction, 128, "ajax/presence/reconnect.php?reason=%d&post_form_id=%s", 3, post_form_id_.c_str( ) );
+		char* reconn_action = ( char* )utils::mem::allocate( 128 * sizeof( char ) );
+		mir_snprintf( reconn_action, 128, "ajax/presence/reconnect.php?reason=%d&post_form_id=%s", 3, post_form_id_.c_str( ) );
 		// TODO: What is reason "3"?
-		return reconnAction;
+		return reconn_action;
 	}
 
 	case FACEBOOK_REQUEST_SETTINGS:
@@ -177,10 +176,10 @@ char* facebook_communication::choose_action( int request_type )
 
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	{
-		
-		char* chatAction = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
-		mir_snprintf( chatAction, 64, "x/%s/false/p_%s=%d", utils::time::unix_timestamp( ).c_str( ), user_id_.c_str( ), chat_sequence_num_ );
-		return chatAction;
+		char* chat_action = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
+		std::string is_idle = ( this->parent->m_iStatus == ID_STATUS_AWAY ) ? "false" : "true";
+		mir_snprintf( chat_action, 64, "x/%s/%s/p_%s=%d", utils::time::unix_timestamp().c_str(), is_idle.c_str(), user_id_.c_str(), chat_sequence_num_ );
+		return chat_action;
 	}
 
 	default:
@@ -195,7 +194,7 @@ char* facebook_communication::choose_request_url( int request_type )
 	char* server = choose_server( request_type );
 	char* action = choose_action( request_type );
 	mir_snprintf( url, 255, "%s%s", server, action );
-	// TODO: server + action leaks
+//// TODO: server + action leaks
 //	utils::mem::detract( &server );
 //	utils::mem::detract( &action );
 	return url;
@@ -301,7 +300,8 @@ void facebook_communication::store_cookies( NETLIBHTTPHEADER* headers, int heade
 			string cookieString = headers[i].szValue;
 			string cookieName = cookieString.substr( 0, cookieString.find( "=" ) );
 			string cookieValue = cookieString.substr( cookieString.find( "=" ) + 1, cookieString.find( ";" ) - cookieString.find( "=" ) - 1 );
-			cookies[cookieName] = cookieValue;
+//			cookies[cookieName] = cookieValue;
+			cookies.insert( make_pair( cookieName, cookieValue ) );
 		}
 	}
 }
@@ -320,8 +320,10 @@ bool facebook_communication::login(const std::string &username,const std::string
 
 	// Prepare validation data
 	clear_cookies( );
-	cookies["isfbe"] = "false";
-	cookies["test_cookie"] = "1";
+//	cookies["isfbe"] = "false";
+	cookies.insert( make_pair( "isfbe", "false" ) );
+//	cookies["test_cookie"] = "1";
+	cookies.insert( make_pair( "test_cookie", "1" ) );
 
 	string data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&email=";
 	data += utils::url::encode( username );
@@ -334,8 +336,6 @@ bool facebook_communication::login(const std::string &username,const std::string
 	http::response resp = flap( FACEBOOK_REQUEST_LOGIN, (char*)data.c_str( ) );
 
 	// Process response data
-
-	user_id_ = cookies["c_user"];
 
 	if ( test )
 	{
@@ -350,6 +350,7 @@ bool facebook_communication::login(const std::string &username,const std::string
 			return false;
 
 		case 302: // Found and redirected to Home, Logged in, everything is OK
+			user_id_ = cookies["c_user"]; // TODO: Buffer overrun fix?
 			return true;
 
 		}
@@ -373,12 +374,11 @@ bool facebook_communication::popout( )
 
 	// Process result data
 
-	post_form_id_ = resp.data.substr( resp.data.find( "post_form_id" ) + 14, 32 );
-
 	switch ( resp.code )
 	{
 
 	case 200:
+		post_form_id_ = resp.data.substr( resp.data.find( "post_form_id" ) + 14, 32 );
 		return true;
 
 	default:
@@ -394,21 +394,22 @@ bool facebook_communication::reconnect( )
 
 	// Process result data
 
-	int channel_num_begin = resp.data.find( "\"host\":" ) + 8 + 7;
-	int channel_num_length = resp.data.substr( channel_num_begin ).find( "\"" );
-	string channel_num = resp.data.substr( channel_num_begin, channel_num_length );
-
-	int sequence_num_begin = resp.data.find( "\"seq\":" ) + 6;
-	int sequence_num_length = resp.data.substr( sequence_num_begin ).find( "," );
-	string sequence_num = resp.data.substr( sequence_num_begin, sequence_num_length );
-
-	this->chat_channel_num_ = atoi( channel_num.c_str( ) );
-	this->chat_sequence_num_ = atoi( sequence_num.c_str( ) );
-
 	switch ( resp.code )
 	{
 
-	case 200:
+	case 200: {
+		// TODO: Optimize to use std::string constructor instead of C-like conversations?
+		int channel_num_begin = resp.data.find( "\"host\":" ) + 8 + 7;
+		int channel_num_length = resp.data.substr( channel_num_begin ).find( "\"" );
+		string channel_num = resp.data.substr( channel_num_begin, channel_num_length );
+
+		int sequence_num_begin = resp.data.find( "\"seq\":" ) + 6;
+		int sequence_num_length = resp.data.substr( sequence_num_begin ).find( "," );
+		string sequence_num = resp.data.substr( sequence_num_begin, sequence_num_length );
+
+		this->chat_channel_num_ = atoi( channel_num.c_str( ) );
+		this->chat_sequence_num_ = atoi( sequence_num.c_str( ) ); }
+
 		return true;
 
 	default:
@@ -446,7 +447,7 @@ bool facebook_communication::update( )
 	// Prepare update data
 
 	// TODO: Request & process notifications by adding &notifications=1
-	string data = "user=" + this->user_id_ + "&popped_out=true&force_render=true&buddy_list=1";
+	string data = "user=" + this->user_id_ + "&popped_out=true&force_render=true&buddy_list=1&notifications=0";
 
 	// Get update
 
@@ -454,15 +455,12 @@ bool facebook_communication::update( )
 
 	// Process result data
 
-	std::string* response_data = new std::string( resp.data );
-	ForkThreadEx( &FacebookProto::ProcessUpdates, this->parent, ( void* )response_data );
-
-	// Return
-
 	switch ( resp.code )
 	{
 
-	case 200:
+	case 200: {
+		std::string* response_data = new std::string( resp.data );
+		ForkThreadEx( &FacebookProto::ProcessUpdates, this->parent, ( void* )response_data ); }
 		return true;
 
 	default:
@@ -480,7 +478,10 @@ bool facebook_communication::channel( )
 
 	// Process result data
 
-	if ( resp.data.find( "\"t\":\"continue\"" ) != string::npos )
+	if ( resp.code != 200 )
+	{
+	}
+	else if ( resp.data.find( "\"t\":\"continue\"" ) != string::npos )
 	{
 		// Everything is OK, no new message received
 	}
@@ -532,7 +533,7 @@ bool facebook_communication::send_message( string message_recipient, string mess
 	data += "&to=";
 	data += message_recipient;
 	data += "&client_time=";
-	data += utils::time::unix_timestamp( );
+	data += utils::time::unix_timestamp( ) + "000"; // TODO: Vary
 	data += "&post_form_id=";
 	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
 
@@ -553,7 +554,7 @@ bool facebook_communication::send_message( string message_recipient, string mess
 bool facebook_communication::set_status(const std::string &status_text)
 {
 	string data = "action=HOME_UPDATE&home_tab_id=1&profile_id=";
-	data += cookies["c_user"];
+	data += this->user_id_;
 	if ( status_text.length( ) )
 	{
 		data += "&status=";
@@ -561,8 +562,7 @@ bool facebook_communication::set_status(const std::string &status_text)
 	}
 	else
 	{
-		data += "&clear=1"; // TODO: Remove "0" length limit in dialog
-		                    // TODO:RE: Or add Clear button inside dialog
+		data += "&clear=1";
 	}
 	data += "&post_form_id=";
 	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";

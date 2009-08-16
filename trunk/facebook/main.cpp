@@ -33,7 +33,6 @@ MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
 UTF8_INTERFACE utfi;
 LIST_INTERFACE li;
-XML_API xi;
 
 HINSTANCE g_hInstance;
 
@@ -41,9 +40,9 @@ DWORD g_mirandaVersion;
 
 PLUGININFOEX pluginInfo={
 	sizeof(PLUGININFOEX),
-	"Facebook Plugin",
+	"Facebook Protocol",
 	__VERSION_DWORD,
-	"Provides basic support for Facebook protocol. [Built: "__DATE__" "__TIME__"]",
+	"Provides basic support for Facebook Chat protocol. [Built: "__DATE__" "__TIME__"]",
 	"Michal Zelinka",
 	"jarvis@jabber.cz",
 	"© 2009 Michal Zelinka",
@@ -72,6 +71,7 @@ DWORD WINAPI DllMain(HINSTANCE hInstance,DWORD,LPVOID)
 
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
+	// TODO: Make product version controlled via definitions
 	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,8,0,34))
 	{
 		MessageBox(0,_T("The Facebook protocol plugin cannot be loaded. ")
@@ -89,6 +89,7 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 
 extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVersion)
 {
+	// TODO: Make product version controlled via definitions
 	MessageBox(0,_T("The Facebook protocol plugin cannot be loaded. ")
 		_T("It requires Miranda IM 0.8.0.34 or later."),_T("Miranda"),
 		MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
@@ -131,7 +132,7 @@ int OnModulesLoaded(WPARAM,LPARAM)
 		upd.szUpdateURL = UPDATER_AUTOREGISTER;
 		upd.szBetaVersionURL     = "http://dev.miranda.im/~jarvis/";
 		upd.szBetaChangelogURL   = "http://dev.miranda.im/~jarvis/";
-		upd.pbBetaVersionPrefix  = reinterpret_cast<BYTE*>("Facebook ");
+		upd.pbBetaVersionPrefix  = reinterpret_cast<BYTE*>("Facebook</a> ");
 		upd.cpbBetaVersionPrefix = strlen(reinterpret_cast<char*>(upd.pbBetaVersionPrefix));
 		upd.szBetaUpdateURL      = "http://dev.miranda.im/~jarvis/";
 		upd.pbVersion = reinterpret_cast<BYTE*>( CreateVersionStringPlugin(
@@ -150,7 +151,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getMD5I(&md5i);
 	mir_getUTFI(&utfi);
 	mir_getLI(&li);
-	mir_getXI(&xi);
 
 	pcli = reinterpret_cast<CLIST_INTERFACE*>( CallService(
 		MS_CLIST_RETRIEVE_INTERFACE,0,reinterpret_cast<LPARAM>(g_hInstance)) );

@@ -148,7 +148,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			_sntprintf( str, 4, TEXT( "%d" ), FACEBOOK_MIND_LIMIT-len );
 			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
 
-			EnableWindow( GetDlgItem( hwnd, IDOK ), ( len > 0 ) );
+			SetDlgItemText(hwnd,IDOK, (len > 0) ? TEXT("Share") : TEXT("Clear"));
 
 			return TRUE;
 		}
