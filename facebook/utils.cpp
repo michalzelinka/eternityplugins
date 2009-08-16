@@ -183,6 +183,46 @@ void* __fastcall utils::mem::allocate(size_t size)
 	return p;
 }
 
+bool save_url(HANDLE hNetlib,const std::string &url,const std::string &filename)
+{
+	NETLIBHTTPREQUEST req = {sizeof(req)};
+	NETLIBHTTPREQUEST *resp;
+	req.requestType = REQUEST_GET;
+	req.szUrl = const_cast<char*>(url.c_str());
+
+	resp = reinterpret_cast<NETLIBHTTPREQUEST*>(CallService( MS_NETLIB_HTTPTRANSACTION,
+		reinterpret_cast<WPARAM>(hNetlib), reinterpret_cast<LPARAM>(&req) ));
+
+	if(resp)
+	{
+		// Create folder if necessary
+		std::string dir = filename.substr(0,filename.rfind('\\'));
+		if(_access(dir.c_str(),0))
+			CallService(MS_UTILS_CREATEDIRTREE, 0, (LPARAM)dir.c_str());
+
+		// Write to file
+		FILE *f = fopen(filename.c_str(),"wb");
+		fwrite(resp->pData,1,resp->dataLength,f);
+		fclose(f);
+
+		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT,0,(LPARAM)resp);
+		return true;
+	}
+	else
+		return false;
+}
+
+int ext_to_format(const std::string &ext)
+{
+	for(size_t i=0; i<SIZEOF(formats); i++)
+	{
+		if(ext == formats[i].ext)
+			return formats[i].fmt;
+	}
+	
+	return PA_FORMAT_UNKNOWN;
+}
+
 
 // OBSOLETE
 
@@ -204,16 +244,24 @@ void NOTIFY( char* title, char* message )
 
 int FacebookProto::LOG(const char *fmt,...)
 {
-	va_list va;
-	char text[1024];
-	if (this->m_hNetlibUser)
+	if ( getByte( "DisableLogging", 0 ) )
 		return 0;
+
+	va_list va;
+	char text[65535];
+	//if (!this->m_hNetlibUser) return;
+	ScopedLock s(log_lock_);
 
 	va_start(va,fmt);
 	mir_vsnprintf(text,sizeof(text),fmt,va);
 	va_end(va);
 
-	return CallService(MS_NETLIB_LOG,(WPARAM)m_hNetlibUser,(LPARAM)text);
+	// TODO: Route to NetLib when the proper time will come
+	//return CallService(MS_NETLIB_LOG,(WPARAM)m_hNetlibUser,(LPARAM)text);
+	FILE* f = fopen( "facebook.log", "a" );
+	fprintf( f, "%s\r\n", text );
+	fclose( f );
+	return EXIT_SUCCESS;
 }
 
 void MB( char* m )

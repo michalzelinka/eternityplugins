@@ -78,6 +78,12 @@ HANDLE FacebookProto::AddToClientList(facebook_user* fbu)
 		{
 			DBWriteContactSettingString    (hContact,m_szModuleName,FACEBOOK_KEY_ID,fbu->user_id.c_str());
 			DBWriteContactSettingUTF8String(hContact,"CList","MyHandle",fbu->real_name.c_str());
+			DBVARIANT dbv;
+			if( !DBGetContactSettingTString(NULL,m_szModuleName,FACEBOOK_KEY_DEF_GROUP,&dbv) )
+			{
+				DBWriteContactSettingTString(hContact,"CList","Group",dbv.ptszVal);
+				DBFreeVariant(&dbv);
+			}
 
 			return hContact;
 		}

@@ -29,7 +29,7 @@ Last change on : $Date$
 
 // Parser controllers
 
-#define strsame( a, b ) !strcmp( a, b )
+#define strsame( a, b ) !lstrcmpA( a, b )
 #define lltoa _i64toa
 
 #define FB_PARSE_UPDATES   1
@@ -83,5 +83,7 @@ public:
 		this->parent = fbp;
 		this->currentFriendStr = "";
 		this->local_user_id = fbp->facy.user_id_;
+		if ( this->parserType != pType || this->valueType != 0 || this->updatesSection != 0 )
+			throw std::exception( std::string(("error creating facebook_json_parser")).c_str() );
 	};
 };
