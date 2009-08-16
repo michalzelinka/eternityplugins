@@ -12,10 +12,10 @@
  * <font color="red">Getting notifications // TBD</font>
  * <font color="red">Popup plugin support // TBD</font>
  * <font color="red">Updater plugin support // TBD</font>
- * <font color="red">Avatars // TBD</font>
+ * <font color="green">Avatars // DONE</font>
  * <font color="red">Users info // TBD</font>
- * <font color="red">Setting avatar/info // TBD</font>
- * <font color="red">Authorizations (processing Friend requests) // TBD</font>
+ * <font color="red">Setting avatar/info // Maybe TBD</font>
+ * <font color="red">Authorizations (processing Friend requests) // Maybe TBD</font>
 
 <font color="gray">
 _^TBD — To Be Done^_<br>
