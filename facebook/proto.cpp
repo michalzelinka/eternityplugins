@@ -88,9 +88,9 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 	case PFLAGNUM_1:
 		return PF1_IM | PF1_MODEMSGRECV; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL; // TODO
 	case PFLAGNUM_2:
-		return PF2_ONLINE | PF2_SHORTAWAY;
+		return PF2_ONLINE;
 	case PFLAGNUM_3:
-		return PF2_ONLINE | PF2_SHORTAWAY;
+		return PF2_ONLINE;
 	case PFLAGNUM_4:
 		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE; // TODO
 	case PFLAG_MAXLENOFMESSAGE:
@@ -126,16 +126,8 @@ int FacebookProto::SetStatus( int new_status )
 
 	if ( new_status == ID_STATUS_ONLINE )
 	{
-		if ( old_status == ID_STATUS_CONNECTING || old_status == ID_STATUS_ONLINE )
+		if ( old_status == ID_STATUS_CONNECTING )
 			return 0;
-
-		if ( old_status == ID_STATUS_AWAY )
-		{
-			m_iStatus = m_iDesiredStatus;
-			ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-				( HANDLE ) old_status, m_iStatus );
-			return 0;
-		}
 
 		m_iStatus = ID_STATUS_CONNECTING;
 		ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
@@ -143,21 +135,8 @@ int FacebookProto::SetStatus( int new_status )
 
 		ForkThread( &FacebookProto::SignOn, this );
 	}
-	else if ( new_status == ID_STATUS_AWAY )
-	{
-		if ( old_status == ID_STATUS_ONLINE )
-		{
-			m_iStatus = m_iDesiredStatus;
-			ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
-				( HANDLE ) old_status, m_iStatus );
-			return 0;
-		}
-	}
 	else if ( new_status == ID_STATUS_OFFLINE )
 	{
-		if ( old_status == ID_STATUS_OFFLINE )
-			return 0;
-
 		m_iStatus = m_iDesiredStatus;
 		ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 			( HANDLE ) old_status, m_iStatus );

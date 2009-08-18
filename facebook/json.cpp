@@ -135,26 +135,27 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 	case JSON_T_OBJECT_END:
 		assert(!fbjp->isKey);
 		if (fbjp->level > 0) --fbjp->level;
-		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 4 )
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->section == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 4 )
 		{
 			fbjp->parent->LOG("      Got user '%s'", fbjp->currentFriend->user_id.c_str() );
 			(*fbjp->friends).insert( make_pair( fbjp->currentFriend->user_id, fbjp->currentFriend ) );
 			fbjp->currentFriend = NULL;
 		}
-		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 4 )
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->section == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 4 )
 		{
 			fbjp->currentFriendStr = "";
 		}
-		else if ( fbjp->parserType == FB_PARSE_MESSAGES && fbjp->level == 2 )
+		else if ( fbjp->parserType == FB_PARSE_MESSAGES && fbjp->level == 2 && fbjp->section == FB_PARSE_MESSAGE_BODY )
 		{
 			(*fbjp->messages).push_back( new facebook_message( *fbjp->currentMessage ) );
 			fbjp->currentMessage = NULL;
+			fbjp->section = 0;
 		}
 		break;
 
 	case JSON_T_INTEGER:
 		fbjp->isKey = false;
-		if ( fbjp->parserType == FB_PARSE_MESSAGES )
+		if ( fbjp->parserType == FB_PARSE_MESSAGES  && fbjp->section == FB_PARSE_MESSAGE_BODY )
 		{
 			if ( fbjp->valueType == FB_PARSE_MESSAGE_FROM )
 			{
@@ -180,7 +181,7 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 
 	case JSON_T_TRUE:
 		fbjp->isKey = false;
-		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->section == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
 			if ( fbjp->valueType == FB_PARSE_UPDATE_IDLE )
 				fbjp->currentFriend->is_idle = true;
 		fbjp->valueType = 0;
@@ -188,7 +189,7 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 
 	case JSON_T_FALSE:
 		fbjp->isKey = false;
-		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->section == FB_PARSE_UPDATE_NOWAVAILABLE && fbjp->level == 5 )
 			if ( fbjp->valueType == FB_PARSE_UPDATE_IDLE )
 				fbjp->currentFriend->is_idle = false;
 		fbjp->valueType = 0;
@@ -201,15 +202,15 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 			if ( fbjp->parserType == FB_PARSE_UPDATES )
 			{
 				if ( strsame( val, "nowAvailableList" ) )
-					fbjp->updatesSection = FB_PARSE_UPDATE_NOWAVAILABLE;
+					fbjp->section = FB_PARSE_UPDATE_NOWAVAILABLE;
 				else if ( strsame( val, "userInfos" ) )
-					fbjp->updatesSection = FB_PARSE_UPDATE_USERINFOS;
-				else if ( fbjp->level == 4 && fbjp->updatesSection == FB_PARSE_UPDATE_NOWAVAILABLE )
+					fbjp->section = FB_PARSE_UPDATE_USERINFOS;
+				else if ( fbjp->level == 4 && fbjp->section == FB_PARSE_UPDATE_NOWAVAILABLE )
 				{
 					fbjp->currentFriend = new facebook_user( );
 					fbjp->currentFriend->user_id = fbjp->currentFriend->real_name = val;
 				}
-				else if ( fbjp->level == 4 && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS )
+				else if ( fbjp->level == 4 && fbjp->section == FB_PARSE_UPDATE_USERINFOS )
 				{
 					fbjp->currentFriendStr = val;
 				}
@@ -220,7 +221,8 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 			}
 			else if ( fbjp->parserType == FB_PARSE_MESSAGES )
 			{
-				if      ( strsame( val, "msg" ) )        fbjp->currentMessage = new facebook_message( );
+				if      ( strsame( val, "type" ) )       fbjp->valueType = FB_PARSE_MESSAGE_TYPE;
+				else if ( strsame( val, "msg" ) )        fbjp->valueType = FB_PARSE_MESSAGE_BODY;
 				else if ( strsame( val, "text" ) )       fbjp->valueType = FB_PARSE_MESSAGE_TEXT;
 				else if ( strsame( val, "clientTime" ) ) fbjp->valueType = FB_PARSE_MESSAGE_TIME;
 				else if ( strsame( val, "from" ) )       fbjp->valueType = FB_PARSE_MESSAGE_FROM;
@@ -230,7 +232,7 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 
 	case JSON_T_STRING:
 		fbjp->isKey = false;
-		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->updatesSection == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 5 )
+		if ( fbjp->parserType == FB_PARSE_UPDATES && fbjp->section == FB_PARSE_UPDATE_USERINFOS && fbjp->level == 5 )
 		{
 			std::map<std::string,facebook_user*>::iterator iter = fbjp->friends->find(fbjp->currentFriendStr);
 			if( iter != fbjp->friends->end() )
@@ -245,7 +247,12 @@ int facebook_json_parser::parse(void* ctx, int type, const JSON_value* value)
 		}
 		else if ( fbjp->parserType == FB_PARSE_MESSAGES )
 		{
-			if      ( fbjp->valueType == FB_PARSE_MESSAGE_TEXT )
+			if      ( fbjp->valueType == FB_PARSE_MESSAGE_TYPE && strsame(value->vu.str.value, "msg" ) )
+			{
+				fbjp->currentMessage = new facebook_message( );
+				fbjp->section = FB_PARSE_MESSAGE_BODY;
+			}
+			else if ( fbjp->valueType == FB_PARSE_MESSAGE_TEXT && fbjp->section == FB_PARSE_MESSAGE_BODY )
 				fbjp->currentMessage->message_text = value->vu.str.value;
 		}
 		fbjp->valueType = 0;

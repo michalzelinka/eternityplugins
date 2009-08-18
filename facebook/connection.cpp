@@ -38,14 +38,6 @@ void FacebookProto::SignOn(void*)
 	WaitForSingleObject(&signon_lock_,INFINITE);
 
 	// Kill the old threads if they are still around
-	if(m_hMsgLoop)
-	{
-		LOG("..... Requesting MessageLoop to exit");
-		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old MessageLoop to exit");
-		WaitForSingleObject(m_hMsgLoop,INFINITE);
-		CloseHandle(m_hMsgLoop);
-	}
 	if(m_hUpdLoop)
 	{
 		LOG("***** Requesting UpdateLoop to exit");
@@ -53,6 +45,14 @@ void FacebookProto::SignOn(void*)
 		LOG("***** Waiting for old UpdateLoop to exit");
 		WaitForSingleObject(m_hUpdLoop,INFINITE);
 		CloseHandle(m_hUpdLoop);
+	}
+	if(m_hMsgLoop)
+	{
+		LOG("..... Requesting MessageLoop to exit");
+		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
+		LOG("***** Waiting for old MessageLoop to exit");
+		WaitForSingleObject(m_hMsgLoop,INFINITE);
+		CloseHandle(m_hMsgLoop);
 	}
 	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
 	{
@@ -70,14 +70,6 @@ void FacebookProto::SignOff(void*)
 	LOG("xxxxx Beginning SignOff process");
 
 	// Kill the old threads if they are still around
-	if(m_hMsgLoop)
-	{
-		LOG("***** Requesting MessageLoop to exit");
-		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old MessageLoop to exit");
-		WaitForSingleObject(m_hMsgLoop,INFINITE);
-		CloseHandle(m_hMsgLoop);
-	}
 	if(m_hUpdLoop)
 	{
 		LOG("***** Requesting UpdateLoop to exit");
@@ -86,9 +78,22 @@ void FacebookProto::SignOff(void*)
 		WaitForSingleObject(m_hUpdLoop,INFINITE);
 		CloseHandle(m_hUpdLoop);
 	}
+	if(m_hMsgLoop)
+	{
+		LOG("***** Requesting MessageLoop to exit");
+		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
+		LOG("***** Waiting for old MessageLoop to exit");
+		WaitForSingleObject(m_hMsgLoop,INFINITE);
+		CloseHandle(m_hMsgLoop);
+	}
 	ToggleStatusMenuItems(isOnline());
 
-	facy.clear_cookies( );
+	{
+		ScopedLock s(facebook_lock_);
+		facy.logout( );
+		facy.clear_cookies( );
+	}
+
 	LOG("xxxxx SignOff complete");
 }
 
@@ -127,13 +132,14 @@ bool FacebookProto::NegotiateConnection( )
 	bool success;
 	{
 		ScopedLock s(facebook_lock_);
+		facy.first_touch_ = true; // DAMN
 		success = facy.login( user, pass );
 		// TODO: Following functions here, or in the ::SignOn( ) ?
 		// TODO:RE: Probably here, lots of data to process, better mask them as 'connecting' :))
-		success = facy.popout( );
-		success = facy.update( );
-		success = facy.reconnect( );
-		success = facy.settings( );
+		if (success) success = facy.popout( );
+		if (success) success = facy.update( );
+		if (success) success = facy.reconnect( );
+		if (success) success = facy.settings( );
 	}
 
 	if(!success)
@@ -187,10 +193,6 @@ void FacebookProto::UpdateLoop(void *)
 	}
 
 exit:
-	{
-		ScopedLock s(facebook_lock_);
-		facy.logout( );
-	}
 	LOG( "<<<<< Exiting FacebookProto::UpdateLoop" );
 }
 
@@ -208,10 +210,6 @@ void FacebookProto::MessageLoop(void *)
 	}
 
 exit:
-	{
-		ScopedLock s(facebook_lock_);
-		facy.logout( );
-	}
 	LOG( "<<<<< Exiting FacebookProto::MessageLoop" );
 }
 
@@ -240,6 +238,9 @@ void FacebookProto::ProcessUpdates( void* data )
 			if(i->first == this->facy.user_id_)
 			{
 				// TODO: Merge this with AddToClientList() below as it does the same for already added contacts
+				// TODO: Optionally allow self contact in a contact list
+				//       for ( ) { if () { ..... if ( !allow_self ) continue; } add_to_cl( ); }
+				// TODO:RE: Better inside AddToClientList, fine construction :)
 				DBWriteContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_ID,i->first.c_str());
 				DBWriteContactSettingUTF8String(NULL,m_szModuleName,FACEBOOK_KEY_NAME,i->second->real_name.c_str());
 				DBWriteContactSettingUTF8String(NULL,"CList","StatusMsg",i->second->status.c_str());

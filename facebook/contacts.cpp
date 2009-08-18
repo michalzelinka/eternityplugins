@@ -127,10 +127,9 @@ void FacebookProto::SetAllContactUpdates(std::map<std::string, facebook_user*> f
 				facebook_user* fbu = friends[ dbv.pszVal ];
 				DBWriteContactSettingUTF8String(hContact,m_szModuleName,FACEBOOK_KEY_NAME,fbu->real_name.c_str());
 				DBWriteContactSettingUTF8String(hContact,"CList","StatusMsg",fbu->status.c_str());
-				if ( fbu->is_idle )
-					DBWriteContactSettingWord(hContact,m_szModuleName,"Status",ID_STATUS_AWAY);
-				else
-					DBWriteContactSettingWord(hContact,m_szModuleName,"Status",ID_STATUS_ONLINE);
+				DBWriteContactSettingDword(hContact,m_szModuleName,"IdleTS",(fbu->is_idle)?(DWORD)time(NULL):0);
+				DBWriteContactSettingWord(hContact,m_szModuleName,"Status",ID_STATUS_ONLINE);
+				// TODO: Watch if this position of idle than status_type works
 			}
 			else
 				DBWriteContactSettingWord(hContact,m_szModuleName,"Status",ID_STATUS_OFFLINE);
@@ -161,46 +160,4 @@ HANDLE FacebookProto::GetAwayMsg(HANDLE hContact)
 {
 	ForkThread(&FacebookProto::GetAwayMsgWorker, this,hContact);
 	return (HANDLE)1;
-}
-
-int FacebookProto::RecvMsg(HANDLE hContact,PROTORECVEVENT *pre)
-{
-	CCSDATA ccs = { hContact,PSR_MESSAGE,0,reinterpret_cast<LPARAM>(pre) };
-	return CallService(MS_PROTO_RECVMSG,0,reinterpret_cast<LPARAM>(&ccs));
-}
-
-struct send_direct
-{
-	send_direct(HANDLE hContact,const std::string &msg) : hContact(hContact),msg(msg) {}
-	HANDLE hContact;
-	std::string msg;
-};
-
-void FacebookProto::SendSuccess(void *p)
-{
-	if(p == 0)
-		return;
-	send_direct *data = static_cast<send_direct*>(p);
-
-	DBVARIANT dbv;
-	if( !DBGetContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv) )
-	{
-		ScopedLock s(facebook_lock_);
-		facy.send_message(dbv.pszVal, data->msg);
-
-		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_MESSAGE,ACKRESULT_SUCCESS,
-			(HANDLE)1,0);
-		DBFreeVariant(&dbv);
-	}
-
-	delete data;
-}
-
-int FacebookProto::SendMsg(HANDLE hContact,int flags,const char *msg)
-{
-	if ( !isOnline( ) )
-		return 0;
-
-	ForkThread(&FacebookProto::SendSuccess, this,new send_direct(hContact,msg));
-	return 1;
 }

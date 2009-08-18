@@ -32,6 +32,7 @@ facebook_communication::facebook_communication( )
 {
 	username_ = password_ = user_id_ = post_form_id_ = "";
 	chat_sequence_num_ = 0;
+	first_touch_ = false;
 }
 
 http::response facebook_communication::flap( const int request_type, char* request_data )
@@ -50,33 +51,51 @@ http::response facebook_communication::flap( const int request_type, char* reque
 
 	NETLIBHTTPREQUEST* pnlhr = ( NETLIBHTTPREQUEST* )CallService( MS_NETLIB_HTTPTRANSACTION, (WPARAM)handle_, (LPARAM)&nlhr );
 
-	store_cookies( pnlhr->headers, pnlhr->headersCount );
-
-	// free data
-	utils::mem::detract( &nlhr.szUrl );
-
-	// TODO: headers leak
-	//for ( int i = 0; i < nlhr.headersCount; i++ )
-	//{
-	//	if ( !nlhr.headers[i].szName && !nlhr.headers[i].szValue )
-	//		break;
-
-	//	utils::mem::detract( &nlhr.headers[i].szName );
-	//	utils::mem::detract( &nlhr.headers[i].szValue );
-	//}
-
 	http::response resp;
 
 	if ( pnlhr )
 	{
+		store_cookies( pnlhr->headers, pnlhr->headersCount );
 		resp.code = pnlhr->resultCode;
 		resp.data = pnlhr->pData ? pnlhr->pData : "";
 
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)pnlhr);
 	}
+	else
+		resp.code = 0; // Better have something set explicitely as this value
+	                   // is compaired in all communication requests
+
+	// free data
+	utils::mem::detract( &nlhr.szUrl );
+
+//// TODO: headers leak
+//	for ( int i = 0; i < nlhr.headersCount; i++ )
+//	{
+//		if ( !nlhr.headers[i].szName && !nlhr.headers[i].szValue )
+//			break;
+//
+//		utils::mem::detract( &nlhr.headers[i].szName );
+//		utils::mem::detract( &nlhr.headers[i].szValue );
+//	}
 
 	return resp;
 }
+
+bool facebook_communication::validate_response( http::response* resp )
+{
+	if ( resp->code == 0 )
+		return false;
+	
+	if ( resp->data.find( "\"errorSummary\":\"Not Logged In\"" ) != string::npos )
+	{
+		resp->code = 0;
+		return false;
+	}
+
+	return false;
+}
+
+//////////////////////////////////////////////////////////////////////////////
 
 DWORD facebook_communication::choose_security_level( int request_type )
 {
@@ -177,8 +196,16 @@ char* facebook_communication::choose_action( int request_type )
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	{
 		char* chat_action = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
-		std::string is_idle = ( this->parent->m_iStatus == ID_STATUS_AWAY ) ? "false" : "true";
-		mir_snprintf( chat_action, 64, "x/%s/%s/p_%s=%d", utils::time::unix_timestamp().c_str(), is_idle.c_str(), user_id_.c_str(), chat_sequence_num_ );
+//		std::string is_idle = ( this->parent->m_iStatus == ID_STATUS_AWAY ) ? "false" : "true";
+		std::string first_time; // DAMN
+		if ( this->first_touch_ )
+		{
+			first_time = "true";
+			this->first_touch_ = false;
+		}
+		else
+			first_time = "false";
+		mir_snprintf( chat_action, 64, "x/%s/%s/p_%s=%d", utils::time::unix_timestamp().c_str(), first_time.c_str(), user_id_.c_str(), chat_sequence_num_ );
 		return chat_action;
 	}
 
@@ -260,21 +287,30 @@ void facebook_communication::set_header( NETLIBHTTPHEADER* header, char* header_
 	header->szValue = header_value;
 }
 
-
+// TODO: Make default user-agent string global (avoid periodical leak), move generation elsewhere (Load() +
+//       Unload()), maybe add additional info
 char* facebook_communication::get_user_agent( )
 {
-	string user_agent = "Miranda IM/";
+	BYTE user_agent = DBGetContactSettingByte(NULL, parent->m_szModuleName, FACEBOOK_KEY_USER_AGENT, 0);
+	if (user_agent)
+	{
+		return user_agents[user_agent];
+	}
+	else
+	{
+		string user_agent = "Miranda IM/";
 
-//	DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
+//		DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
 
-	user_agent += ( char )((( g_mirandaVersion >> 24 ) & 0xFF ) + 0x30);
-	user_agent += ".";
-	user_agent += ( char )((( g_mirandaVersion >> 16 ) & 0xFF ) + 0x30);
+		user_agent += ( char )((( g_mirandaVersion >> 24 ) & 0xFF ) + 0x30);
+		user_agent += ".";
+		user_agent += ( char )((( g_mirandaVersion >> 16 ) & 0xFF ) + 0x30);
 
-	char* user_agent_c = ( char* )utils::mem::allocate( user_agent.length( ) * sizeof( char ) );
-	strcpy( user_agent_c, user_agent.c_str( ) );
+		char* user_agent_c = ( char* )utils::mem::allocate( user_agent.length( ) * sizeof( char ) );
+		strcpy( user_agent_c, user_agent.c_str( ) );
 
-	return user_agent_c;
+		return user_agent_c;
+	}
 }
 
 char* facebook_communication::load_cookies( )
@@ -313,7 +349,7 @@ void facebook_communication::clear_cookies( )
 
 //////////////////////////////////////////////////////////////////////////////
 
-bool facebook_communication::login(const std::string &username,const std::string &password,bool test)
+bool facebook_communication::login(const std::string &username,const std::string &password)
 {
 	username_ = username;
 	password_ = password;
@@ -335,28 +371,26 @@ bool facebook_communication::login(const std::string &username,const std::string
 
 	http::response resp = flap( FACEBOOK_REQUEST_LOGIN, (char*)data.c_str( ) );
 
-	// Process response data
+	// Process result data
 
-	if ( test )
+	validate_response(&resp);
+
+	switch ( resp.code )
 	{
-		switch ( resp.code )
-		{
 
-		case 200: // OK page returned, but that is regular login page we don't want in fact
-		case 403: // Forbidden
-		case 404: // Not Found
-		default:
-			ShowPopup(TranslateT("Something went wrong..."));
-			return false;
+	case 200: // OK page returned, but that is regular login page we don't want in fact
+	case 403: // Forbidden
+	case 404: // Not Found
+	default:
+		parent->LOG("!!!!! login: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
+		return false;
 
-		case 302: // Found and redirected to Home, Logged in, everything is OK
-			user_id_ = cookies["c_user"]; // TODO: Buffer overrun fix?
-			return true;
-
-		}
-	}
-	else
+	case 302: // Found and redirected to Home, Logged in, everything is OK
+		user_id_ = cookies["c_user"]; // TODO: Buffer overrun fix?
 		return true;
+
+	}
 }
 
 bool facebook_communication::logout( )
@@ -364,6 +398,7 @@ bool facebook_communication::logout( )
 	username_ = password_ = user_id_ = "";
 
 	// TODO: Logout process if applicable
+	// TODO:RE: Yeah, applicable, sniffed
 
 	return true;
 }
@@ -374,6 +409,8 @@ bool facebook_communication::popout( )
 
 	// Process result data
 
+	validate_response(&resp);
+
 	switch ( resp.code )
 	{
 
@@ -382,7 +419,8 @@ bool facebook_communication::popout( )
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! popout: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}
@@ -393,6 +431,8 @@ bool facebook_communication::reconnect( )
 	http::response resp = flap( FACEBOOK_REQUEST_RECONNECT );
 
 	// Process result data
+
+	validate_response(&resp);
 
 	switch ( resp.code )
 	{
@@ -413,7 +453,8 @@ bool facebook_communication::reconnect( )
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! reconnect: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}
@@ -429,6 +470,10 @@ bool facebook_communication::settings( )
 
 	http::response resp = flap( FACEBOOK_REQUEST_SETTINGS, (char*)data.c_str( ) );
 
+	// Process result data
+
+	validate_response(&resp);
+
 	switch ( resp.code )
 	{
 
@@ -436,7 +481,8 @@ bool facebook_communication::settings( )
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! settings: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}
@@ -455,6 +501,8 @@ bool facebook_communication::update( )
 
 	// Process result data
 
+	validate_response(&resp);
+
 	switch ( resp.code )
 	{
 
@@ -464,7 +512,8 @@ bool facebook_communication::update( )
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! update: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}
@@ -478,8 +527,11 @@ bool facebook_communication::channel( )
 
 	// Process result data
 
+	validate_response(&resp);
+
 	if ( resp.code != 200 )
 	{
+		// Something went wrong
 	}
 	else if ( resp.data.find( "\"t\":\"continue\"" ) != string::npos )
 	{
@@ -518,7 +570,8 @@ bool facebook_communication::channel( )
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! channel: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}
@@ -537,14 +590,19 @@ bool facebook_communication::send_message( string message_recipient, string mess
 	data += "&post_form_id=";
 	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
 
-	switch ( flap( FACEBOOK_REQUEST_MESSAGE_SEND, (char*)data.c_str( ) ).code )
+	http::response resp = flap( FACEBOOK_REQUEST_MESSAGE_SEND, (char*)data.c_str( ) );
+
+	validate_response(&resp);
+
+	switch ( resp.code )
 	{
 
 	case 200:
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! send_message: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}
@@ -568,14 +626,19 @@ bool facebook_communication::set_status(const std::string &status_text)
 	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
 	data += "&target_id=0&app_id=&post_form_id_source=AsyncRequest";
 
-	switch ( flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str( ) ).code )
+	http::response resp = flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str( ) );
+
+	validate_response(&resp);
+
+	switch ( resp.code )
 	{
 
 	case 200:
 		return true;
 
 	default:
-		ShowPopup(TranslateT("Something went wrong..."));
+		parent->LOG("!!!!! set_status: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
 	}

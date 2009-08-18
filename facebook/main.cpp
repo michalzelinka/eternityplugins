@@ -153,7 +153,7 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	mir_getLI(&li);
 
 	pcli = reinterpret_cast<CLIST_INTERFACE*>( CallService(
-		MS_CLIST_RETRIEVE_INTERFACE,0,reinterpret_cast<LPARAM>(g_hInstance)) );
+	    MS_CLIST_RETRIEVE_INTERFACE,0,reinterpret_cast<LPARAM>(g_hInstance)) );
 
 	PROTOCOLDESCRIPTOR pd = {sizeof(pd)};
 	pd.szName = "Facebook";
