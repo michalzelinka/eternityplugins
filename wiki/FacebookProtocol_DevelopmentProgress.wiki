@@ -22,7 +22,10 @@
  * _^DONE — Already Done^_
 
 = Known issues =
- * May be unstable a little (invoking Crash Dumper, rare crashes, memory leaks, ...)
  * Friends' names are loaded only when added to CL - optional synchronization TBD
  * Avatars may flicker sometimes
- * Away status not working at all
+
+= Not-Issues =
+ * Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
+ * Being often disconnected - server fault, trying to find a work-around, but that's not easy - pidgin-facebookchat reports same thing
+ * Away status as is not applicable, FB doesn't support any active/controllable Away status, only server-driven Idle.
