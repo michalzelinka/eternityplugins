@@ -25,6 +25,7 @@
 			>
 			<Tool
 				Name="VCPreBuildEventTool"
+				CommandLine="$(SolutionDir)incrementbuild.exe"
 			/>
 			<Tool
 				Name="VCCustomBuildTool"
@@ -136,6 +137,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\messages.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\proto.cpp"
 				>
 			</File>
@@ -169,6 +174,10 @@
 			Filter="h;hpp;hxx;hm;inl;inc;xsd"
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
+			<File
+				RelativePath=".\build.h"
+				>
+			</File>
 			<File
 				RelativePath=".\common.h"
 				>

@@ -1,0 +1,73 @@
+
+0.0.0.3
+-------
+
+- Isolated response processings (avoiding crashes)
+- Fixed crashes caused by illegal processing of foreign typing notifications
+- Added a response validation & logout mechanism which safely closes connection and threads on disconnection/logout
+- Removed Away status, inactivity is controlled by server as Idle
+- Raised minimal poll rate to 10 seconds (interval of updating contact list)
+- Removed some unneeded code
+- Added an option to change user-agent (if FB would ever like to block us, hahah xD)
+- Fixed message server URL "virginity" flag :))
+
+Known issues:
+
+- Loggin session gets down after some time (should be more than 1 hour), the reason or a way to avoid this is not known to me, yet
+
+0.0.0.2
+-------
+
+- Fixed JSON parsing issues, now data change should be OK
+- Repaired timestamps for outgoing messages
+- Added "Clear" option in Mind dialog (when no Mind status filled in)
+- Added Mind status item toggling (hidden when offline, shown otherwise)
+- Added safer logout
+- Fixed Updater support (I hope :))
+- Poll rate customization
+- Implemented idle/away, but not working on the server :/
+- Improvements in a logging system
+- Some code reorganization, mainly making some processing safe
+- More pretty code management
+
+Known issues:
+
+- Crash is invoked when receiving typing notification from FB with no message followed in a "packet" (both events use similar format => bad exception for non-message content leading to buffer overrun) [FIXED]
+- Plugin doesn't detect when the connection is closed/logged out remotely (rarely, but may happen, may bring some crash) [FIXED]
+- Avatars may flicker, their updating process hasn't been optimized, yet
+
+0.0.0.1
+-------
+
+- Working avatars
+- Improvements to JSON parsing, still needs pretty enhancements
+- Introducing smart-like logging
+- Many code management changes
+- Checked all dialogs validity
+- Bringing some basic options to work
+- Marked probably almost all memory leaks which should be solved
+- Marked some things to take a look on + solution options somewhere
+- Managed all TODOs
+- Removed some unneeded, deprecated and testing code
+
+Known issues:
+
+- Frequent crashes caused by saving cookies on login and when obtaining updates/messages periodically (parse error) [FIXED]
+
+0.0.0.0
+-------
+
+Private initial release
+
+All-time Issues
+---------------
+
+- Nothing, yet :)
+
+All-time Not-issues
+-------------------
+
+- Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
+- Being often disconnected - server fault, trying to find a work-around, but that's not easy - pidgin-facebookchat reports same thing
+- Long time/never becoming Away on web - server fault, inactivity should be set instantly, but seems like they ignore it - pidgin-facebookchat reports same thing
+- Away status as is not applicable, FB doesn't support any active/controllable Away status, only server-driven Idle.

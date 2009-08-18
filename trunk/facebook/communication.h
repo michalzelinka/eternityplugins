@@ -41,6 +41,7 @@ struct facebook_user
 	{
 		this->user_id = this->real_name = this->status = this->profile_image_url = "";
 		this->is_idle = false;
+		bool first_touch = false;
 	}
 };
 
@@ -82,6 +83,7 @@ public:
 	std::string post_form_id_;
 	unsigned int chat_channel_num_;
 	unsigned int chat_sequence_num_;
+	bool first_touch_;
 
 	std::string log;
 
@@ -94,8 +96,9 @@ public:
 	void clear_cookies( );
 
 	// Login handling
-	bool login( const std::string &username, const std::string &password, bool test = true ); // TODO: test??
+	bool login( const std::string &username, const std::string &password );
 	bool logout( );
+	bool validate_response( http::response* );
 
 	const std::string & get_username() const;
 

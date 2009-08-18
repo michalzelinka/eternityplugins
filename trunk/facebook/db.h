@@ -46,16 +46,10 @@ Last change on : $Date$
 #define FACEBOOK_KEY_DEF_GROUP      "DefaultGroup"
 #define FACEBOOK_KEY_AV_URL         "AvatarURL"
 #define FACEBOOK_KEY_POLL_RATE      "PollRate"
+#define FACEBOOK_KEY_USER_AGENT     "UserAgent"
 
 #define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"
 #define FACEBOOK_KEY_POPUP_SIGNON   "Popup/Signon"
 #define FACEBOOK_KEY_POPUP_COLBACK  "Popup/ColorBack"
 #define FACEBOOK_KEY_POPUP_COLTEXT  "Popup/ColorText"
 #define FACEBOOK_KEY_POPUP_TIMEOUT  "Popup/Timeout"
-
-#define FACEBOOK_KEY_SINCEID        "SinceID"
-#define FACEBOOK_KEY_DMSINCEID      "DMSinceID"
-#define FACEBOOK_KEY_NEW            "NewAcc"
-
-// DB event types
-#define FACEBOOK_DB_EVENT_TYPE_MIND 2718

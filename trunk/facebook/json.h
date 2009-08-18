@@ -43,9 +43,11 @@ Last change on : $Date$
 #define FB_PARSE_UPDATE_THMB 3
 #define FB_PARSE_UPDATE_STAT 4
 
-#define FB_PARSE_MESSAGE_TEXT 1
-#define FB_PARSE_MESSAGE_TIME 2
-#define FB_PARSE_MESSAGE_FROM 3
+#define FB_PARSE_MESSAGE_TYPE 1
+#define FB_PARSE_MESSAGE_BODY 2
+#define FB_PARSE_MESSAGE_TEXT 3
+#define FB_PARSE_MESSAGE_TIME 4
+#define FB_PARSE_MESSAGE_FROM 5
 
 // Parser front-end
 
@@ -64,8 +66,8 @@ public:
 	std::map< std::string, facebook_user* >* friends;
 	facebook_user* currentFriend;
 	std::string  currentFriendStr;
-	unsigned int updatesSection;
 
+	unsigned int section;
 	unsigned int valueType;
 
 	int parseFriends( std::map< std::string, facebook_user* >*, void* );
@@ -79,11 +81,11 @@ public:
 		this->isKey = false;
 		this->valueType = 0;
 		this->parserType = pType;
-		this->updatesSection = 0;
+		this->section = 0;
 		this->parent = fbp;
 		this->currentFriendStr = "";
 		this->local_user_id = fbp->facy.user_id_;
-		if ( this->parserType != pType || this->valueType != 0 || this->updatesSection != 0 )
+		if ( this->parserType != pType || this->valueType != 0 || this->section != 0 )
 			throw std::exception( std::string(("error creating facebook_json_parser")).c_str() );
 	};
 };

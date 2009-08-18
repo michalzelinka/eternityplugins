@@ -28,13 +28,14 @@ Last change on : $Date$
 #pragma once
 
 // Version management
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 2)
+#include "build.h"
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 3)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.0.0.2"
+#define __VERSION_STRING            "0.0.0.3"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,0,0,2
+#define __VERSION_VS_FILE           0,0,0,3
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 0, 0, 2"
+#define __VERSION_VS_FILE_STRING    "0, 0, 0, 3"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
 
 // Product management
@@ -56,9 +57,9 @@ Last change on : $Date$
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
 
 // Defaults
-#define FACEBOOK_MINIMAL_POLL_RATE              5  // 10?
+#define FACEBOOK_MINIMAL_POLL_RATE              10
 #define FACEBOOK_DEFAULT_POLL_RATE              15 // in seconds
-#define FACEBOOK_MAXIMAL_POLL_RATE              60 // 45?
+#define FACEBOOK_MAXIMAL_POLL_RATE              60
 
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically
@@ -73,11 +74,9 @@ Last change on : $Date$
 #define FACEBOOK_REQUEST_MESSAGES_RECEIVE       301 // receiving messages
 #define FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE  401 // receiving notifications
 
-#define WM_SETREPLY   WM_APP+10
-
 // User-Agents
-static const char* user_agents[] = {
-	"Miranda (default)",
+static char* user_agents[] = {
+	"Miranda/0.x (default)",
 	"Lynx/2.8.4rel.1 libwww-FM/2.14",
 	"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)",
 	"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
