@@ -27,6 +27,20 @@ Last change on : $Date$
 
 #include "common.h"
 
+static BOOL LoadDBCheckState(FacebookProto* ppro, HWND hwnd, int idCtrl, const char* szSetting, BYTE bDef)
+{
+	BOOL state = DBGetContactSettingByte(NULL, ppro->m_szModuleName, szSetting, bDef);
+	CheckDlgButton(hwnd, idCtrl, state);
+	return state;
+}
+
+static BOOL StoreDBCheckState(FacebookProto* ppro, HWND hwnd, int idCtrl, const char* szSetting)
+{
+	BOOL state = IsDlgButtonChecked(hwnd, idCtrl);
+	DBWriteContactSettingByte(NULL, ppro->m_szModuleName, szSetting, (BYTE)state);
+	return state;
+}
+
 INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
 	FacebookProto *proto;
@@ -203,6 +217,8 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		SendDlgItemMessage(hwnd, IDC_AGENT, CB_SETCURSEL,
 		    DBGetContactSettingByte(NULL, proto->m_szModuleName, "UserAgent", 0), 0);
 
+		LoadDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING, 0);
+
 		return TRUE;
 
 	case WM_COMMAND:
@@ -213,12 +229,27 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			return TRUE;
 		}
 
-		if ( ( HIWORD( wparam ) == EN_CHANGE ) ||
-		     ( HIWORD( wparam ) == CBN_EDITCHANGE )
-		     && reinterpret_cast<HWND>(lparam) == GetFocus() )
+		if ( LOWORD( wparam ) == IDC_COOKIES )
 		{
-			SendMessage(GetParent(hwnd),PSM_CHANGED,0,0);
+			proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
+			if ( proto->facy.cookies.size() )
+			{
+				std::string cookie_content = "";
+
+				for ( map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
+					cookie_content += i->first + ": " + i->second + "\r\n";
+
+				utils::debug::info(cookie_content.c_str());
+			}
+			else MessageBox(NULL, TEXT("No cookies available."), TEXT("Facebook protocol"), MB_OK|MB_TASKMODAL);
 		}
+
+		if ((LOWORD(wparam)==IDC_UN || LOWORD(wparam)==IDC_PW || LOWORD(wparam)==IDC_GROUP) &&
+		    (HIWORD(wparam)!=EN_CHANGE || (HWND)lparam!=GetFocus()))
+			return 0;
+		else
+			SendMessage(GetParent(hwnd),PSM_CHANGED,0,0);
+
 		break;
 
 	case WM_NOTIFY:
@@ -245,6 +276,8 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 
 			DBWriteContactSettingByte(NULL, proto->m_szModuleName, "UserAgent",
 			    SendDlgItemMessage(hwnd, IDC_AGENT, CB_GETCURSEL, 0, 0));
+
+			StoreDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING);
 
 			return TRUE;
 		}

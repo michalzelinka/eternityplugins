@@ -29,13 +29,13 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 3)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 4)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.0.0.3"
+#define __VERSION_STRING            "0.0.0.4"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,0,0,3
+#define __VERSION_VS_FILE           0,0,0,4
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 0, 0, 3"
+#define __VERSION_VS_FILE_STRING    "0, 0, 0, 4"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
 
 // Product management
@@ -44,6 +44,7 @@ Last change on : $Date$
 
 // Connection
 #define FACEBOOK_SERVER_REGULAR     "http://www.facebook.com/"
+#define FACEBOOK_SERVER_MOBILE      "http://m.facebook.com/"
 #define FACEBOOK_SERVER_CHAT        "http://%d.channel%d.facebook.com/"
 #define FACEBOOK_SERVER_LOGIN       "https://login.facebook.com/"
 #define FACEBOOK_SERVER_APPS        "http://apps.facebook.com/"
@@ -58,15 +59,15 @@ Last change on : $Date$
 
 // Defaults
 #define FACEBOOK_MINIMAL_POLL_RATE              10
-#define FACEBOOK_DEFAULT_POLL_RATE              15 // in seconds
+#define FACEBOOK_DEFAULT_POLL_RATE              24 // in seconds
 #define FACEBOOK_MAXIMAL_POLL_RATE              60
 
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically
-#define FACEBOOK_REQUEST_POPOUT                 110 // getting __post_form_id__
-#define FACEBOOK_REQUEST_UPDATE                 120 // regular updates (friends online, ...)
+#define FACEBOOK_REQUEST_LOGOUT                 101 // disconnecting physically
+#define FACEBOOK_REQUEST_HOME                   110 // getting __post_form_id__ + __fb_dtsg__
+#define FACEBOOK_REQUEST_BUDDY_LIST             120 // regular updates (friends online, ...)
 #define FACEBOOK_REQUEST_RECONNECT              130 // getting __sequence_num__ and __channel_id__
-#define FACEBOOK_REQUEST_SETTINGS               140 // looks like nothing special...
 #define FACEBOOK_REQUEST_STATUS_GET             200 // getting others' statuses (TODO: Obsolete?
                                                     // Isn't this distributed via UPDATE?)
 #define FACEBOOK_REQUEST_STATUS_SET             201 // setting my "What's on my mind?"
@@ -74,9 +75,14 @@ Last change on : $Date$
 #define FACEBOOK_REQUEST_MESSAGES_RECEIVE       301 // receiving messages
 #define FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE  401 // receiving notifications
 
+#define FACEBOOK_RECONNECT_LOGIN        6 // When logging in
+#define FACEBOOK_RECONNECT_KEEP_ALIVE   3 // After a period, used to keep session alive
+
 // User-Agents
 static char* user_agents[] = {
-	"Miranda/0.x (default)",
+	"Miranda IM (default)",
+	"FacebookTouch2.5",
+	"Facebook/2.5 CFNetwork/342.1 Darwin/9.4.1",
 	"Lynx/2.8.4rel.1 libwww-FM/2.14",
 	"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)",
 	"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",

@@ -32,11 +32,8 @@ void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
 //	LOG("***** Executing APC");
 }
 
-void FacebookProto::SignOn(void*)
+void FacebookProto::KillThreads( )
 {
-	LOG("***** Beginning SignOn process");
-	WaitForSingleObject(&signon_lock_,INFINITE);
-
 	// Kill the old threads if they are still around
 	if(m_hUpdLoop)
 	{
@@ -45,6 +42,7 @@ void FacebookProto::SignOn(void*)
 		LOG("***** Waiting for old UpdateLoop to exit");
 		WaitForSingleObject(m_hUpdLoop,INFINITE);
 		CloseHandle(m_hUpdLoop);
+		m_hUpdLoop = NULL;
 	}
 	if(m_hMsgLoop)
 	{
@@ -53,7 +51,17 @@ void FacebookProto::SignOn(void*)
 		LOG("***** Waiting for old MessageLoop to exit");
 		WaitForSingleObject(m_hMsgLoop,INFINITE);
 		CloseHandle(m_hMsgLoop);
+		m_hMsgLoop = NULL;
 	}
+}
+
+void FacebookProto::SignOn(void*)
+{
+	LOG("***** Beginning SignOn process");
+	WaitForSingleObject(&signon_lock_,INFINITE);
+
+	KillThreads( );
+
 	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
 	{
 		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );
@@ -68,32 +76,20 @@ void FacebookProto::SignOn(void*)
 void FacebookProto::SignOff(void*)
 {
 	LOG("xxxxx Beginning SignOff process");
+	WaitForSingleObject(&signon_lock_,INFINITE);
 
-	// Kill the old threads if they are still around
-	if(m_hUpdLoop)
-	{
-		LOG("***** Requesting UpdateLoop to exit");
-		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old UpdateLoop to exit");
-		WaitForSingleObject(m_hUpdLoop,INFINITE);
-		CloseHandle(m_hUpdLoop);
-	}
-	if(m_hMsgLoop)
-	{
-		LOG("***** Requesting MessageLoop to exit");
-		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old MessageLoop to exit");
-		WaitForSingleObject(m_hMsgLoop,INFINITE);
-		CloseHandle(m_hMsgLoop);
-	}
+	KillThreads( );
+
 	ToggleStatusMenuItems(isOnline());
 
 	{
 		ScopedLock s(facebook_lock_);
 		facy.logout( );
 		facy.clear_cookies( );
+		facy.buddies.clear( );
 	}
 
+	ReleaseMutex(signon_lock_);
 	LOG("xxxxx SignOff complete");
 }
 
@@ -132,14 +128,10 @@ bool FacebookProto::NegotiateConnection( )
 	bool success;
 	{
 		ScopedLock s(facebook_lock_);
-		facy.first_touch_ = true; // DAMN
+		facy.first_touch_ = true;
 		success = facy.login( user, pass );
-		// TODO: Following functions here, or in the ::SignOn( ) ?
-		// TODO:RE: Probably here, lots of data to process, better mask them as 'connecting' :))
-		if (success) success = facy.popout( );
-		if (success) success = facy.update( );
+		if (success) success = facy.home( );
 		if (success) success = facy.reconnect( );
-		if (success) success = facy.settings( );
 	}
 
 	if(!success)
@@ -178,7 +170,8 @@ void FacebookProto::UpdateLoop(void *)
 	{
 		if ( !isOnline( ) )
 			goto exit;
-		facy.update( );
+		if ( !facy.buddy_list( ) )
+			goto exit;
 
 // TODO: Dummy for notifications
 //		if ( i % 2 == 0 )
@@ -204,7 +197,8 @@ void FacebookProto::MessageLoop(void *)
 	{
 		if ( !isOnline( ) )
 			goto exit;
-		facy.channel( );
+		if ( !facy.channel( ) )
+			goto exit;
 
 		LOG( "***** FacebookProto::MessageLoop refreshing..." );
 	}
@@ -218,91 +212,4 @@ BYTE FacebookProto::GetPollRate( )
 	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_DEFAULT_POLL_RATE );
 
 	return ( ( poll_rate >= FACEBOOK_MINIMAL_POLL_RATE && poll_rate <= FACEBOOK_MAXIMAL_POLL_RATE ) ? poll_rate : FACEBOOK_DEFAULT_POLL_RATE );
-}
-
-void FacebookProto::ProcessUpdates( void* data )
-{
-	try
-	{
-		LOG("***** Starting processing updates");
-		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_UPDATES, this );
-		std::map< std::string, facebook_user* > friends;
-		friends.insert( make_pair( this->facy.user_id_, new facebook_user( ) ) );
-		friends[this->facy.user_id_]->user_id = this->facy.user_id_;
-		fbjp->parseFriends( &friends, data );
-		delete fbjp;
-		delete ( std::string* )data;
-
-		for(std::map<std::string, facebook_user*>::iterator i=friends.begin(); i!=friends.end(); ++i)
-		{
-			if(i->first == this->facy.user_id_)
-			{
-				// TODO: Merge this with AddToClientList() below as it does the same for already added contacts
-				// TODO: Optionally allow self contact in a contact list
-				//       for ( ) { if () { ..... if ( !allow_self ) continue; } add_to_cl( ); }
-				// TODO:RE: Better inside AddToClientList, fine construction :)
-				DBWriteContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_ID,i->first.c_str());
-				DBWriteContactSettingUTF8String(NULL,m_szModuleName,FACEBOOK_KEY_NAME,i->second->real_name.c_str());
-				DBWriteContactSettingUTF8String(NULL,"CList","StatusMsg",i->second->status.c_str());
-				ProcessAvatar(NULL,i->second->profile_image_url);
-			}
-			else
-			{
-				LOG("      Online friend: %s", i->second->user_id.c_str());
-				HANDLE hContact = AddToClientList(i->second);
-				ProcessAvatar(hContact,i->second->profile_image_url);
-			}			
-		}
-
-		SetAllContactUpdates( friends );
-		LOG("***** Updates processed");
-	}
-	catch(const std::exception &e)
-	{
-		LOG("***** Error processing updates: %s", e.what());
-	}
-}
-
-void FacebookProto::ProcessMessages( void* data )
-{
-	try
-	{
-		LOG("***** Starting processing messages");
-		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_MESSAGES, this );
-		std::vector< facebook_message* > messages;
-		fbjp->parseMessages( &messages, data );
-		delete fbjp;
-		delete ( std::string* )data;
-
-		for(size_t i = 0; i < messages.size( ); i++)
-		{
-			if ( messages[i]->user_id == this->facy.user_id_ )
-				continue;
-
-			LOG("      Got message: %s", messages[i]->message_text.c_str());
-			facebook_user fbu;
-			fbu.user_id = messages[i]->user_id;
-
-			HANDLE hContact = AddToClientList(&fbu);
-
-			PROTORECVEVENT recv = {};
-			CCSDATA ccs = {};
-
-			recv.flags = PREF_UTF;
-			recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
-			recv.timestamp = static_cast<DWORD>(messages[i]->time);
-
-			ccs.hContact = hContact;
-			ccs.szProtoService = PSR_MESSAGE;
-			ccs.wParam = ID_STATUS_ONLINE;
-			ccs.lParam = reinterpret_cast<LPARAM>(&recv);
-			CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
-		}
-
-		LOG("***** Messages processed");
-	}
-	catch(const std::exception &e)
-	{
-		LOG("***** Error processing messages: %s", e.what());
-	}
 }

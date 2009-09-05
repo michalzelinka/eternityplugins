@@ -31,17 +31,26 @@ class FacebookProto;
 
 struct facebook_user
 {
+	HANDLE handle;
+
 	std::string user_id;
 	std::string real_name;
-	bool is_idle;
+
+	unsigned int status_id;
 	std::string status;
-	std::string profile_image_url;
+	bool is_idle;
+
+	std::string image_url;
+
+	bool passed;
+	bool just_added;
 
 	facebook_user( )
 	{
-		this->user_id = this->real_name = this->status = this->profile_image_url = "";
-		this->is_idle = false;
-		bool first_touch = false;
+		this->handle = NULL;
+		this->user_id = this->real_name = this->status = this->image_url = "";
+		this->is_idle = this->passed = this->just_added = false;
+		this->status_id = ID_STATUS_OFFLINE;
 	}
 };
 
@@ -65,11 +74,11 @@ struct facebook_message
 	}
 };
 
-class facebook_communication
+class facebook_client
 {
 public:
 
-	facebook_communication( );
+	facebook_client( );
 
 	// Parent handle
 
@@ -80,53 +89,57 @@ public:
 	std::string username_;
 	std::string password_;
 	std::string user_id_;
+	std::string real_name_;
+	std::string status_;
+
 	std::string post_form_id_;
+	std::string dtsg_;
+	std::string logout_action_;
 	unsigned int chat_channel_num_;
 	unsigned int chat_sequence_num_;
-	bool first_touch_;
+	bool    first_touch_;
 
 	std::string log;
 
-	// Session, Cookies, Data handling
+	// Session, Cookies, Data storage
+
 	std::map< string, string >   cookies;
 
-	char* get_user_agent( );
-	char* load_cookies( );
-	void store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
-	void clear_cookies( );
+	char*   get_user_agent( );
+	char*   load_cookies( );
+	void    store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
+	void    clear_cookies( );
 
 	// Login handling
-	bool login( const std::string &username, const std::string &password );
-	bool logout( );
-	bool validate_response( http::response* );
+
+	bool    login( const std::string &username, const std::string &password );
+	bool    logout( );
+	bool    validate_response( http::response* );
 
 	const std::string & get_username() const;
 
-	// Chat session handling
-	bool popout( );
-	bool reconnect( );
-	bool settings( );
+	// Session handling
 
-	// Users handling
+	bool    home( );
+	bool    reconnect( );
 
-	bool update( );
-	bool fetch( );
-	//bool get_info(const std::string &name,facebook_user *);
-	//bool get_info_by_email(const std::string &email,facebook_user *);
-	//std::vector<facebook_user> get_friends();
+	// Updates handling
 
-	//facebook_user add_friend(const std::string &name);
-	//void remove_friend(const std::string &name);
+	std::map< std::string, facebook_user* > buddies;
+
+	bool    buddy_list( );
+	void __cdecl process_updates( void* );
 
 	// Messages handling
 
-	bool send_message( string message_recipient, string message_text );
-	bool channel( );
+	bool    send_message( string message_recipient, string message_text );
+	bool    channel( );
+	void __cdecl process_messages( void* );
 
 	// Status handling
 
-	bool set_status(const std::string &text);
-	//std::vector<facebook_user> get_statuses(int count=20,int id=0);
+	bool    get_status(facebook_user* fbu);
+	bool    set_status(const std::string &text);
 
 	////////////////////////////////////////////////////////////
 
@@ -134,11 +147,11 @@ public:
 
 	http::response flap( const int request_type, char* request_data = NULL );
 
-	DWORD choose_security_level( int );
-	int choose_method( int );
-	char* choose_server( int );
-	char* choose_action( int );
-	char* choose_request_url( int );
+	DWORD   choose_security_level( int );
+	int     choose_method( int );
+	char*   choose_server( int, char* data = NULL );
+	char*   choose_action( int, char* data = NULL );
+	char*   choose_request_url( int, char* data = NULL );
 
 	NETLIBHTTPHEADER*   get_request_headers( int request_type, int* headers_count );
 	void    set_header( NETLIBHTTPHEADER* header, char* header_name, char* header_value );

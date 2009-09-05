@@ -43,6 +43,7 @@
 				Name="VCCLCompilerTool"
 				AdditionalIncludeDirectories="../../include;."
 				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FACEBOOK_EXPORTS;_CRT_SECURE_NO_WARNINGS;NOMINMAX"
+				MinimalRebuild="false"
 				RuntimeLibrary="2"
 				UsePrecompiledHeader="0"
 				WarningLevel="3"
@@ -54,6 +55,7 @@
 			/>
 			<Tool
 				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_UNICODE;UNICODE;"
 			/>
 			<Tool
 				Name="VCPreLinkEventTool"
@@ -141,6 +143,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\process.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\proto.cpp"
 				>
 			</File>
@@ -179,11 +185,11 @@
 				>
 			</File>
 			<File
-				RelativePath=".\common.h"
+				RelativePath=".\client.h"
 				>
 			</File>
 			<File
-				RelativePath=".\communication.h"
+				RelativePath=".\common.h"
 				>
 			</File>
 			<File

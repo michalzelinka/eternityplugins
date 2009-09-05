@@ -134,6 +134,36 @@ unsigned int utils::text::find_matching_quote( std::string msg, unsigned int sta
 	return 0;
 }
 
+void utils::text::replace_all( std::string* data, std::string from, std::string to )
+{
+	string::size_type position = 0;
+
+	while ( ( position = data->find(from, position) ) != string::npos )
+	{
+		data->replace( position, from.size(), to );
+		position++;
+	}
+}
+
+unsigned int utils::text::find_all( std::string* data, std::string term )
+{
+	unsigned int count = 0;
+	string::size_type position = 0;
+
+	while ( true )
+	{
+		position = data->find( term, position );
+		if ( position != string::npos )
+		{
+			count++;
+			position++;
+		}
+		else break;
+	}
+
+	return count;
+}
+
 std::string utils::number::random( )
 {
 	string number = "";
@@ -153,6 +183,20 @@ void utils::debug::info( const char* info )
 void utils::debug::test( FacebookProto* fbp )
 {
 	return;
+}
+
+int utils::debug::log(std::string text)
+{
+	char szFile[MAX_PATH];
+	GetModuleFileNameA(g_hInstance, szFile, SIZEOF(szFile));
+	std::string path = szFile;
+	path = path.substr( 0, path.rfind( "\\" ) );
+	path = path.substr( 0, path.rfind( "\\" ) + 1 );
+	path += "log.txt";
+	FILE* f = fopen( path.c_str(), "a" );
+	fprintf( f, "%s\r\n", text.c_str() );
+	fclose( f );
+	return EXIT_SUCCESS;
 }
 
 void __fastcall utils::mem::detract(char** str )
@@ -240,28 +284,6 @@ void NOTIFY( char* title, char* message )
 	string log_message = title;
 	log_message += message;
 	//LOG( ( char* )log_message.c_str( ) );
-}
-
-int FacebookProto::LOG(const char *fmt,...)
-{
-	if ( getByte( "DisableLogging", 0 ) )
-		return 0;
-
-	va_list va;
-	char text[65535];
-	//if (!this->m_hNetlibUser) return;
-	ScopedLock s(log_lock_);
-
-	va_start(va,fmt);
-	mir_vsnprintf(text,sizeof(text),fmt,va);
-	va_end(va);
-
-	// TODO: Route to NetLib when the proper time will come
-	//return CallService(MS_NETLIB_LOG,(WPARAM)m_hNetlibUser,(LPARAM)text);
-	FILE* f = fopen( "facebook.log", "a" );
-	fprintf( f, "%s\r\n", text );
-	fclose( f );
-	return EXIT_SUCCESS;
 }
 
 void MB( char* m )
