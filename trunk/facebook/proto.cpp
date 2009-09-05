@@ -39,15 +39,16 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	CreateProtoService(m_szModuleName, PS_GETNAME,        &FacebookProto::GetName,           this);
 	CreateProtoService(m_szModuleName, PS_GETSTATUS,      &FacebookProto::GetStatus,         this);
 
-//	HookProtoEvent(ME_DB_CONTACT_DELETED,       &FacebookProto::OnContactDeleted,     this);
+	HookProtoEvent(ME_DB_CONTACT_DELETED,       &FacebookProto::OnContactDeleted,     this);
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &FacebookProto::OnBuildStatusMenu,    this);
+	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU,&FacebookProto::OnBuildContactMenu,   this);
 	HookProtoEvent(ME_OPT_INITIALISE,           &FacebookProto::OnOptionsInit,        this);
 
 	char *profile = Utils_ReplaceVars("%miranda_avatarcache%");
 	def_avatar_folder_ = std::string(profile)+"\\"+m_szModuleName;
 	mir_free(profile);
 	hAvatarFolder_ = FoldersRegisterCustomPath(m_szModuleName,"Avatars",
-		def_avatar_folder_.c_str());
+	    def_avatar_folder_.c_str());
 
 	// Set all contacts offline -- in case we crashed
 	SetAllContactStatuses( ID_STATUS_OFFLINE );
@@ -69,14 +70,16 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 
 FacebookProto::~FacebookProto( )
 {
-	mir_free( m_szProtoName );
-	mir_free( m_szModuleName );
-	mir_free( m_tszUserName );
-
 	if ( m_hNetlibUser )
 		Netlib_CloseHandle( m_hNetlibUser );
 	if ( m_hNetlibAvatar )
 		Netlib_CloseHandle( m_hNetlibAvatar );
+
+	KillThreads( );
+
+	mir_free( m_tszUserName );
+	mir_free( m_szModuleName );
+	mir_free( m_szProtoName );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -299,6 +302,7 @@ int FacebookProto::OnMind(WPARAM,LPARAM)
 
 int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 {
+	SetStatus( ID_STATUS_OFFLINE );
 	Netlib_Shutdown( m_hNetlibUser );
 	Netlib_Shutdown( m_hNetlibAvatar );
 	return 0;
@@ -311,4 +315,20 @@ int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 	utils::debug::info( facy.choose_request_url( FACEBOOK_REQUEST_MESSAGES_RECEIVE ) );
 
 	return FALSE;
+}
+
+int FacebookProto::LOG(const char *fmt,...)
+{
+	if ( getByte( FACEBOOK_KEY_ENABLE_LOGGING, 0 ) != TRUE )
+		return EXIT_SUCCESS;
+
+	va_list va;
+	char text[65535];
+	ScopedLock s(log_lock_);
+
+	va_start(va,fmt);
+	mir_vsnprintf(text,sizeof(text),fmt,va);
+	va_end(va);
+
+	return utils::debug::log( text );
 }

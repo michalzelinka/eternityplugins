@@ -39,7 +39,7 @@ struct
 static const icons[] =
 {
 	{ "facebook", "Facebook Icon", IDI_FACEBOOK },
-	{ "mind",     "Mind",          IDI_FACEBOOK },
+	{ "mind",     "Mind",          IDI_MIND     },
 //	{ "homepage", "Visit Homepage", 0, "core_main_2" }, // Uncomment when this menu item is available
 };
 

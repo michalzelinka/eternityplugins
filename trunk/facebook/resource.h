@@ -3,6 +3,7 @@
 // Used by facebook.rc
 //
 #define IDI_FACEBOOK                    101
+#define IDI_MIND                        102
 #define IDD_FACEBOOKACCOUNT             111
 #define IDD_MIND                        112
 #define IDD_OPTIONS                     113
@@ -17,6 +18,8 @@
 #define IDC_GROUP                       1021
 #define IDC_AGENT                       1022
 #define IDC_POLLRATE                    1023
+#define IDC_LOGGING                     1024
+#define IDC_COOKIES                     1025
 #define IDC_DEBUGINFO                   1041
 #define IDC_COLBACK                     1051
 #define IDC_COLTEXT                     1052

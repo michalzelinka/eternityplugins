@@ -73,11 +73,14 @@ namespace utils
 	namespace text {
 		unsigned int find_matching_bracket( std::string msg, unsigned int start_bracket_position );
 		unsigned int find_matching_quote( std::string msg, unsigned int start_quote_position );
+		void replace_all( std::string* data, std::string from, std::string to );
+		unsigned int find_all( std::string* data, std::string term );
 	};
 
 	namespace debug {
 		void info( const char* info );
 		void test( FacebookProto* fbp );
+		int log(std::string text);
 	};
 
 	namespace mem {
@@ -128,7 +131,6 @@ int ext_to_format(const std::string &ext);
 
 void DebugInfo( const char* debugInfo );
 void NOTIFY( char* title, char* message );
-void LOG( char* message );
 void MB( char* m );
 void MBI( int a );
 void ShowPopup( TCHAR* message );

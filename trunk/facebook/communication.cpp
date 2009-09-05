@@ -26,20 +26,21 @@ Last change on : $Date$
 */
 
 #include "common.h"
+
 extern DWORD g_mirandaVersion;
 
-facebook_communication::facebook_communication( )
+facebook_client::facebook_client( )
 {
-	username_ = password_ = user_id_ = post_form_id_ = "";
+	username_ = password_ = user_id_ = real_name_ = status_ = post_form_id_ = dtsg_ = "";
 	chat_sequence_num_ = 0;
 	first_touch_ = false;
 }
 
-http::response facebook_communication::flap( const int request_type, char* request_data )
+http::response facebook_client::flap( const int request_type, char* request_data )
 {
 	NETLIBHTTPREQUEST nlhr = {sizeof( nlhr )};
 	nlhr.requestType = choose_method( request_type );
-	nlhr.szUrl = choose_request_url( request_type );
+	nlhr.szUrl = choose_request_url( request_type, request_data );
 	nlhr.flags = NLHRF_NODUMP | choose_security_level( request_type ) | NLHRF_GENERATEHOST;
 	nlhr.headers = get_request_headers( request_type, &nlhr.headersCount );
 
@@ -62,8 +63,9 @@ http::response facebook_communication::flap( const int request_type, char* reque
 		CallService(MS_NETLIB_FREEHTTPREQUESTSTRUCT, 0, (LPARAM)pnlhr);
 	}
 	else
-		resp.code = 0; // Better have something set explicitely as this value
-	                   // is compaired in all communication requests
+		resp.code = HTTP_CODE_FAKE_DISCONNECTED;
+		// Better to have something set explicitely as this value
+	    // is compaired in all communication requests
 
 	// free data
 	utils::mem::detract( &nlhr.szUrl );
@@ -81,14 +83,14 @@ http::response facebook_communication::flap( const int request_type, char* reque
 	return resp;
 }
 
-bool facebook_communication::validate_response( http::response* resp )
+bool facebook_client::validate_response( http::response* resp )
 {
-	if ( resp->code == 0 )
+	if ( resp->code == HTTP_CODE_FAKE_DISCONNECTED )
 		return false;
 	
 	if ( resp->data.find( "\"errorSummary\":\"Not Logged In\"" ) != string::npos )
 	{
-		resp->code = 0;
+		resp->code = HTTP_CODE_FAKE_LOGGED_OUT;
 		return false;
 	}
 
@@ -97,45 +99,45 @@ bool facebook_communication::validate_response( http::response* resp )
 
 //////////////////////////////////////////////////////////////////////////////
 
-DWORD facebook_communication::choose_security_level( int request_type )
+DWORD facebook_client::choose_security_level( int request_type )
 {
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
 		return NLHRF_SSL;
 
-	case FACEBOOK_REQUEST_POPOUT:
-	case FACEBOOK_REQUEST_UPDATE:
+	case FACEBOOK_REQUEST_HOME:
+	case FACEBOOK_REQUEST_BUDDY_LIST:
 	case FACEBOOK_REQUEST_RECONNECT:
-	case FACEBOOK_REQUEST_SETTINGS:
 	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
+	case FACEBOOK_REQUEST_LOGOUT:
 	default:
 		return ( DWORD )0;
 	}
 }
 
-int facebook_communication::choose_method( int request_type )
+int facebook_client::choose_method( int request_type )
 {
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
-	case FACEBOOK_REQUEST_UPDATE:
-	case FACEBOOK_REQUEST_SETTINGS:
+	case FACEBOOK_REQUEST_BUDDY_LIST:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		return REQUEST_POST;
 
-	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_GET:
+	case FACEBOOK_REQUEST_LOGOUT:
 	default:
 		return REQUEST_GET;
 	}
 }
 
-char* facebook_communication::choose_server( int request_type )
+char* facebook_client::choose_server( int request_type, char* data )
 {
 	switch ( request_type )
 	{
@@ -145,47 +147,47 @@ char* facebook_communication::choose_server( int request_type )
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	{
 		char* chatServer = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
-		mir_snprintf( chatServer, 64, FACEBOOK_SERVER_CHAT, 1, chat_channel_num_ );
+		mir_snprintf( chatServer, 64, FACEBOOK_SERVER_CHAT, 0, chat_channel_num_ );
 		return chatServer;
 	}
 
-	case FACEBOOK_REQUEST_SETTINGS:
-		return FACEBOOK_SERVER_APPS;
-
-	case FACEBOOK_REQUEST_POPOUT:
-	case FACEBOOK_REQUEST_UPDATE:
-	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_GET:
+		return FACEBOOK_SERVER_MOBILE;
+
+	case FACEBOOK_REQUEST_HOME:
+	case FACEBOOK_REQUEST_BUDDY_LIST:
+	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
+	case FACEBOOK_REQUEST_LOGOUT:
 	default:
 		return FACEBOOK_SERVER_REGULAR;
 	}
 }
 
-char* facebook_communication::choose_action( int request_type )
+char* facebook_client::choose_action( int request_type, char* data )
 {
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
 		return "login.php?login_attempt=1";
 
-	case FACEBOOK_REQUEST_POPOUT:
-		return "presence/popout.php";
+	case FACEBOOK_REQUEST_HOME:
+		return "home.php?";
 
-	case FACEBOOK_REQUEST_UPDATE:
-		return "ajax/presence/update.php";
+	case FACEBOOK_REQUEST_BUDDY_LIST:
+		return "ajax/chat/buddy_list.php";
 
-	case FACEBOOK_REQUEST_RECONNECT:
-	{
-		char* reconn_action = ( char* )utils::mem::allocate( 128 * sizeof( char ) );
-		mir_snprintf( reconn_action, 128, "ajax/presence/reconnect.php?reason=%d&post_form_id=%s", 3, post_form_id_.c_str( ) );
-		// TODO: What is reason "3"?
-		return reconn_action;
-	}
+	case FACEBOOK_REQUEST_RECONNECT: {
+		char* action = ( char* )utils::mem::allocate( 128 * sizeof( char ) );
+		unsigned int reason = ( this->first_touch_ ) ? FACEBOOK_RECONNECT_LOGIN : FACEBOOK_RECONNECT_KEEP_ALIVE;
+		mir_snprintf( action, 128, "ajax/presence/reconnect.php?reason=%d&post_form_id=%s&iframe_loaded=false&__a=1&nctr[n]=1", reason, post_form_id_.c_str( ) );
+		return action; }
 
-	case FACEBOOK_REQUEST_SETTINGS:
-		return "ajax/chat/settings.php";
+	case FACEBOOK_REQUEST_STATUS_GET: {
+		char* action = ( char* )utils::mem::allocate( 48 * sizeof( char ) );
+		mir_snprintf( action, 48, "profile.php?id=%s&v=info", data );
+		return action; }
 
 	case FACEBOOK_REQUEST_STATUS_SET:
 		return "ajax/updatestatus.php";
@@ -193,33 +195,29 @@ char* facebook_communication::choose_action( int request_type )
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		return "ajax/chat/send.php";
 
-	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
-	{
-		char* chat_action = ( char* )utils::mem::allocate( 64 * sizeof( char ) );
-//		std::string is_idle = ( this->parent->m_iStatus == ID_STATUS_AWAY ) ? "false" : "true";
-		std::string first_time; // DAMN
-		if ( this->first_touch_ )
-		{
-			first_time = "true";
-			this->first_touch_ = false;
-		}
-		else
-			first_time = "false";
-		mir_snprintf( chat_action, 64, "x/%s/%s/p_%s=%d", utils::time::unix_timestamp().c_str(), first_time.c_str(), user_id_.c_str(), chat_sequence_num_ );
-		return chat_action;
-	}
+	case FACEBOOK_REQUEST_MESSAGES_RECEIVE: {
+		char* action = ( char* )utils::mem::allocate( 48 * sizeof( char ) );
+		std::string first_time;
+		if ( this->first_touch_ ) { first_time = "true"; this->first_touch_ = false; }
+		else first_time = "false";
+		mir_snprintf( action, 48, "x/%s/%s/p_%s=%d", utils::time::unix_timestamp().c_str(), first_time.c_str(), user_id_.c_str(), chat_sequence_num_ );
+		return action; }
+
+	case FACEBOOK_REQUEST_LOGOUT: {
+		char* action = ( char* )utils::mem::allocate( 128 * sizeof( char ) );
+		mir_snprintf( action, 128, "logout.php%s", this->logout_action_.c_str() );
+		return action; }
 
 	default:
-	case FACEBOOK_REQUEST_STATUS_GET:
 		return "";
 	}
 }
 
-char* facebook_communication::choose_request_url( int request_type )
+char* facebook_client::choose_request_url( int request_type, char* data )
 {
 	char* url = ( char* )utils::mem::allocate( 255 * sizeof( char ) );
-	char* server = choose_server( request_type );
-	char* action = choose_action( request_type );
+	char* server = choose_server( request_type, data );
+	char* action = choose_action( request_type, data );
 	mir_snprintf( url, 255, "%s%s", server, action );
 //// TODO: server + action leaks
 //	utils::mem::detract( &server );
@@ -228,23 +226,21 @@ char* facebook_communication::choose_request_url( int request_type )
 }
 
 
-NETLIBHTTPHEADER* facebook_communication::get_request_headers( int request_type, int* headers_count )
+NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* headers_count )
 {
 	// TODO: cookies leak
-	// TODO: user-agent leak
 	// TODO: headers could be static
 
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
-	case FACEBOOK_REQUEST_UPDATE:
-	case FACEBOOK_REQUEST_SETTINGS:
+	case FACEBOOK_REQUEST_BUDDY_LIST:
 	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		*( headers_count ) = 7;
 		break;
-	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
@@ -258,13 +254,12 @@ NETLIBHTTPHEADER* facebook_communication::get_request_headers( int request_type,
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
-	case FACEBOOK_REQUEST_UPDATE:
-	case FACEBOOK_REQUEST_SETTINGS:
+	case FACEBOOK_REQUEST_BUDDY_LIST:
 	case FACEBOOK_REQUEST_STATUS_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		set_header( &headers[6], "Content-Type", "application/x-www-form-urlencoded" );
-	case FACEBOOK_REQUEST_POPOUT:
+	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
@@ -281,84 +276,73 @@ NETLIBHTTPHEADER* facebook_communication::get_request_headers( int request_type,
 	return headers;
 }
 
-void facebook_communication::set_header( NETLIBHTTPHEADER* header, char* header_name, char* header_value )
+void facebook_client::set_header( NETLIBHTTPHEADER* header, char* header_name, char* header_value )
 {
 	header->szName  = header_name;
 	header->szValue = header_value;
 }
 
-// TODO: Make default user-agent string global (avoid periodical leak), move generation elsewhere (Load() +
-//       Unload()), maybe add additional info
-char* facebook_communication::get_user_agent( )
+char* facebook_client::get_user_agent( )
 {
+	extern char* g_szUserAgent;
 	BYTE user_agent = DBGetContactSettingByte(NULL, parent->m_szModuleName, FACEBOOK_KEY_USER_AGENT, 0);
-	if (user_agent)
-	{
-		return user_agents[user_agent];
-	}
-	else
-	{
-		string user_agent = "Miranda IM/";
-
-//		DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
-
-		user_agent += ( char )((( g_mirandaVersion >> 24 ) & 0xFF ) + 0x30);
-		user_agent += ".";
-		user_agent += ( char )((( g_mirandaVersion >> 16 ) & 0xFF ) + 0x30);
-
-		char* user_agent_c = ( char* )utils::mem::allocate( user_agent.length( ) * sizeof( char ) );
-		strcpy( user_agent_c, user_agent.c_str( ) );
-
-		return user_agent_c;
-	}
+	if (user_agent) return user_agents[user_agent];
+	else return g_szUserAgent;
 }
 
-char* facebook_communication::load_cookies( )
+char* facebook_client::load_cookies( )
 {
 	// TODO: rewrite to use input string pointer (partially/fully avoid leak?)
 
 	string cookieString = "isfbe=false;";
 
-	for ( map< string, string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter )
-		cookieString += ( *iter ).first + "=" + ( *iter ).second + ";";
+	if ( cookies.size() )
+		for ( map< string, string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter ) {
+			cookieString.append( iter->first );
+			cookieString.append( "=" );
+			cookieString.append( iter->second );
+			cookieString.append( ";" ); }
 
 	char* cookieCharString = ( char* )utils::mem::allocate( ( cookieString.length( ) ) * sizeof( char ) );
 	strcpy( cookieCharString, cookieString.c_str( ) );
 	return cookieCharString;
 }
 
-void facebook_communication::store_cookies( NETLIBHTTPHEADER* headers, int headersCount )
+void facebook_client::store_cookies( NETLIBHTTPHEADER* headers, int headersCount )
 {
 	for ( int i = 0; i < headersCount; i++ )
 	{
-		if ( strcmpi( headers[i].szName, "Set-Cookie" ) == 0 )
+		if ( std::string( headers[i].szName ) == std::string( "Set-Cookie" ) )
 		{
 			string cookieString = headers[i].szValue;
 			string cookieName = cookieString.substr( 0, cookieString.find( "=" ) );
 			string cookieValue = cookieString.substr( cookieString.find( "=" ) + 1, cookieString.find( ";" ) - cookieString.find( "=" ) - 1 );
-//			cookies[cookieName] = cookieValue;
-			cookies.insert( make_pair( cookieName, cookieValue ) );
+			if ( cookieValue == std::string( "deleted" ) ) {
+				parent->LOG("      Deleted cookie '%s'", cookieName.c_str());
+				cookies.erase( cookieName ); }
+			else {
+				parent->LOG("      New cookie '%s': %s", cookieName.c_str(), cookieValue.c_str());
+				cookies[cookieName] = cookieValue; }
 		}
 	}
 }
 
-void facebook_communication::clear_cookies( )
+void facebook_client::clear_cookies( )
 {
-	cookies.clear( );
+	if ( cookies.size() )
+		cookies.clear( );
 }
 
 //////////////////////////////////////////////////////////////////////////////
 
-bool facebook_communication::login(const std::string &username,const std::string &password)
+bool facebook_client::login(const std::string &username,const std::string &password)
 {
 	username_ = username;
 	password_ = password;
 
 	// Prepare validation data
 	clear_cookies( );
-//	cookies["isfbe"] = "false";
 	cookies.insert( make_pair( "isfbe", "false" ) );
-//	cookies["test_cookie"] = "1";
 	cookies.insert( make_pair( "test_cookie", "1" ) );
 
 	string data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&email=";
@@ -378,34 +362,49 @@ bool facebook_communication::login(const std::string &username,const std::string
 	switch ( resp.code )
 	{
 
-	case 200: // OK page returned, but that is regular login page we don't want in fact
-	case 403: // Forbidden
-	case 404: // Not Found
+	case HTTP_CODE_OK: // OK page returned, but that is regular login page we don't want in fact
+		if ( resp.data.find( "<title>Login | Facebook</title>" ) != string::npos )
+			MessageBox( NULL, TEXT( "Wrong password entered, please try again." ), TEXT( FACEBOOK_NAME ), MB_OK );
+	case HTTP_CODE_FORBIDDEN: // Forbidden
+	case HTTP_CODE_NOT_FOUND: // Not Found
 	default:
 		parent->LOG("!!!!! login: Something went wrong...");
 		parent->SetStatus(ID_STATUS_OFFLINE);
 		return false;
 
-	case 302: // Found and redirected to Home, Logged in, everything is OK
+	case HTTP_CODE_FOUND: // Found and redirected to Home, Logged in, everything is OK
 		user_id_ = cookies["c_user"]; // TODO: Buffer overrun fix?
 		return true;
 
 	}
 }
 
-bool facebook_communication::logout( )
+bool facebook_client::logout( )
 {
+	http::response resp = flap( FACEBOOK_REQUEST_LOGOUT );
+
+	// Process result
+
 	username_ = password_ = user_id_ = "";
 
-	// TODO: Logout process if applicable
-	// TODO:RE: Yeah, applicable, sniffed
+	switch ( resp.code )
+	{
 
-	return true;
+	case HTTP_CODE_OK:
+	case HTTP_CODE_FOUND:
+		return true;
+
+	default:
+		parent->LOG("!!!!! logout: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
+		return false;
+
+	}
 }
 
-bool facebook_communication::popout( )
+bool facebook_client::home( )
 {
-	http::response resp = flap( FACEBOOK_REQUEST_POPOUT );
+	http::response resp = flap( FACEBOOK_REQUEST_HOME );
 
 	// Process result data
 
@@ -414,8 +413,39 @@ bool facebook_communication::popout( )
 	switch ( resp.code )
 	{
 
-	case 200:
-		post_form_id_ = resp.data.substr( resp.data.find( "post_form_id" ) + 14, 32 );
+	case HTTP_CODE_OK:
+		// Get real_name
+		{
+			int start = resp.data.find( "id=\"fb_menu_account\"" );
+			int end = resp.data.find( "</a>", start );
+			start = resp.data.rfind( "\">", end ) + 2;
+			this->real_name_ = resp.data.substr( start, end - start );
+			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,FACEBOOK_KEY_NAME,real_name_.c_str());
+		}
+
+		// Get post_form_id
+		this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 32 );
+// If something would go wrong:
+//		{
+//			this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 48 );
+//			this->post_form_id_ = this->post_form_id_.substr( 0, this->post_form_id_.find( "\"" ) );
+//		}
+
+		// Get dtsg
+		{
+			this->dtsg_ = resp.data.substr( resp.data.find( "fb_dtsg:" ) + 9, 48 );
+			this->dtsg_ = this->dtsg_.substr( 0, this->dtsg_.find( "\"" ) );
+		}
+
+		// Get logout action
+		{
+			this->logout_action_ = resp.data.substr( resp.data.find( "id=\"fb_menu_logout\"" ), 256 );
+			int start = this->logout_action_.find( "<a href=\"" ) + 9;
+			start = this->logout_action_.find( "?", start );
+			int end = this->logout_action_.find( "\" class=\"fb_menu_link\"", start );
+			this->logout_action_ = this->logout_action_.substr( start, end - start );
+			utils::text::replace_all( &this->logout_action_, "&amp;", "&" );
+		}
 		return true;
 
 	default:
@@ -426,7 +456,7 @@ bool facebook_communication::popout( )
 	}
 }
 
-bool facebook_communication::reconnect( )
+bool facebook_client::reconnect( )
 {
 	http::response resp = flap( FACEBOOK_REQUEST_RECONNECT );
 
@@ -437,15 +467,14 @@ bool facebook_communication::reconnect( )
 	switch ( resp.code )
 	{
 
-	case 200: {
-		// TODO: Optimize to use std::string constructor instead of C-like conversations?
-		int channel_num_begin = resp.data.find( "\"host\":" ) + 8 + 7;
-		int channel_num_length = resp.data.substr( channel_num_begin ).find( "\"" );
-		string channel_num = resp.data.substr( channel_num_begin, channel_num_length );
+	case HTTP_CODE_OK: {
+		std::string channel_num = resp.data.substr( resp.data.find( "\"host\":" ) + 8 + 7, 16 );
+		int end = channel_num.find( "\"" );
+		channel_num = channel_num.substr( 0, end );
 
-		int sequence_num_begin = resp.data.find( "\"seq\":" ) + 6;
-		int sequence_num_length = resp.data.substr( sequence_num_begin ).find( "," );
-		string sequence_num = resp.data.substr( sequence_num_begin, sequence_num_length );
+		std::string sequence_num = resp.data.substr( resp.data.find( "\"seq\":" ) + 6, 16 );
+		end = sequence_num.find( "," );
+		sequence_num = sequence_num.substr( 0, end );
 
 		this->chat_channel_num_ = atoi( channel_num.c_str( ) );
 		this->chat_sequence_num_ = atoi( sequence_num.c_str( ) ); }
@@ -460,44 +489,27 @@ bool facebook_communication::reconnect( )
 	}
 }
 
-bool facebook_communication::settings( )
-{
-	// Prepare settings data
-
-	string data = "visibility=true&post_form_id=" + this->post_form_id_;
-
-	// Send settings
-
-	http::response resp = flap( FACEBOOK_REQUEST_SETTINGS, (char*)data.c_str( ) );
-
-	// Process result data
-
-	validate_response(&resp);
-
-	switch ( resp.code )
-	{
-
-	case 200:
-		return true;
-
-	default:
-		parent->LOG("!!!!! settings: Something went wrong...");
-		parent->SetStatus(ID_STATUS_OFFLINE);
-		return false;
-
-	}
-}
-
-bool facebook_communication::update( )
+bool facebook_client::buddy_list( )
 {
 	// Prepare update data
 
 	// TODO: Request & process notifications by adding &notifications=1
-	string data = "user=" + this->user_id_ + "&popped_out=true&force_render=true&buddy_list=1&notifications=0";
+	string data = "user=" + this->user_id_ + "&popped_out=false&force_render=true&buddy_list=1&notifications=0&post_form_id=" + this->post_form_id_ + "&fb_dtsg=" + this->dtsg_ + "&post_form_id_source=AsyncRequest&__a=1&nctr[n]=1";
 
-	// Get update
+	for (std::map< std::string, facebook_user* >::iterator i = buddies.begin(); i != buddies.end(); ++i )
+	{
+		if ( i->first == this->user_id_ )
+			continue;
 
-	http::response resp = flap( FACEBOOK_REQUEST_UPDATE, (char*)data.c_str( ) );
+		data += "&available_list[";
+		data += i->first;
+		data += "][i]=";
+		data += ( i->second->is_idle ) ? "1" : "0";
+	}
+
+	// Get buddy list
+
+	http::response resp = flap( FACEBOOK_REQUEST_BUDDY_LIST, (char*)data.c_str( ) );
 
 	// Process result data
 
@@ -506,9 +518,11 @@ bool facebook_communication::update( )
 	switch ( resp.code )
 	{
 
-	case 200: {
-		std::string* response_data = new std::string( resp.data );
-		ForkThreadEx( &FacebookProto::ProcessUpdates, this->parent, ( void* )response_data ); }
+	case HTTP_CODE_OK:
+		if ( resp.data.find( "\"listChanged\":false" ) == string::npos ) {
+			std::string* response_data = new std::string( resp.data );
+			ForkThreadEx( &facebook_client::process_updates, this, ( void* )response_data ); }
+	case HTTP_CODE_FAKE_LOGGED_OUT:
 		return true;
 
 	default:
@@ -519,7 +533,7 @@ bool facebook_communication::update( )
 	}
 }
 
-bool facebook_communication::channel( )
+bool facebook_client::channel( )
 {
 	// Get update
 
@@ -529,7 +543,7 @@ bool facebook_communication::channel( )
 
 	validate_response(&resp);
 
-	if ( resp.code != 200 )
+	if ( resp.code != HTTP_CODE_OK )
 	{
 		// Something went wrong
 	}
@@ -548,17 +562,11 @@ bool facebook_communication::channel( )
 		// Something has been received, throw to new thread to process
 
 		string* response_data = new std::string( resp.data );
-		ForkThreadEx( &FacebookProto::ProcessMessages, this->parent, ( void* )response_data );
+		ForkThreadEx( &facebook_client::process_messages, this, ( void* )response_data );
 
 		// Increment sequence number
 
-		// TODO: This should be incremented elsewhere, in order of the received
-		//       messages count, but not possible right now when we know the
-		//       messages count mouch later (in thread) than we need as we need
-		//       this number for a following MessageLoop instantly
-		// TODO:RE:
-		//       Maybe via recursive find() :)
-		this->chat_sequence_num_++;
+		this->chat_sequence_num_ += utils::text::find_all( &resp.data, "{\"type\":\"" );
 	}
 
 	// Return
@@ -566,7 +574,7 @@ bool facebook_communication::channel( )
 	switch ( resp.code )
 	{
 
-	case 200:
+	case HTTP_CODE_OK:
 		return true;
 
 	default:
@@ -577,7 +585,7 @@ bool facebook_communication::channel( )
 	}
 }
 
-bool facebook_communication::send_message( string message_recipient, string message_text )
+bool facebook_client::send_message( string message_recipient, string message_text )
 {
 	string data = "msg_text=";
 	data += utils::url::encode( message_text );
@@ -597,7 +605,7 @@ bool facebook_communication::send_message( string message_recipient, string mess
 	switch ( resp.code )
 	{
 
-	case 200:
+	case HTTP_CODE_OK:
 		return true;
 
 	default:
@@ -609,7 +617,35 @@ bool facebook_communication::send_message( string message_recipient, string mess
 
 }
 
-bool facebook_communication::set_status(const std::string &status_text)
+bool facebook_client::get_status(facebook_user* fbu)
+{
+	http::response resp = flap( FACEBOOK_REQUEST_STATUS_GET, (char*)fbu->user_id.c_str() );
+
+	validate_response(&resp);
+
+	switch ( resp.code )
+	{
+
+	case HTTP_CODE_OK: {
+		int start = resp.data.find( "<div class=\"sectitle\">" );
+		start = resp.data.find( "class=\"nopad\">", start );
+		if ( start > 0 ) {
+			start += 14;
+			int end = resp.data.find( "&nbsp;<small>", start ) - 1; // hopefuly remove the "evil" dot. ^^
+			fbu->status = resp.data.substr( start, end - start ); }
+		else fbu->status = ""; }
+	case HTTP_CODE_FOUND:
+		return true;
+
+	default:
+		parent->LOG("!!!!! get_status: Something went wrong...");
+		parent->SetStatus(ID_STATUS_OFFLINE);
+		return false;
+
+	}
+}
+
+bool facebook_client::set_status(const std::string &status_text)
 {
 	string data = "action=HOME_UPDATE&home_tab_id=1&profile_id=";
 	data += this->user_id_;
@@ -626,14 +662,14 @@ bool facebook_communication::set_status(const std::string &status_text)
 	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
 	data += "&target_id=0&app_id=&post_form_id_source=AsyncRequest";
 
-	http::response resp = flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str( ) );
+	http::response resp = flap( FACEBOOK_REQUEST_STATUS_SET, (char*)data.c_str() );
 
 	validate_response(&resp);
 
 	switch ( resp.code )
 	{
 
-	case 200:
+	case HTTP_CODE_OK:
 		return true;
 
 	default:

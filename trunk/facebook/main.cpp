@@ -36,6 +36,8 @@ LIST_INTERFACE li;
 
 HINSTANCE g_hInstance;
 
+char* g_szUserAgent;
+
 DWORD g_mirandaVersion;
 
 PLUGININFOEX pluginInfo={
@@ -167,6 +169,23 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 	InitIcons();
 	//InitContactMenus();
 
+	// Init native User-Agent
+	{
+		std::string user_agent = "MirandaIM/";
+//		DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
+		user_agent += ( char )((( g_mirandaVersion >> 24) & 0xFF) + 0x30);
+		user_agent += ".";
+		user_agent += ( char )((( g_mirandaVersion >> 16) & 0xFF) + 0x30);
+		user_agent += ".";
+		user_agent += ( char )((( g_mirandaVersion >>  8) & 0xFF) + 0x30);
+		user_agent += ".";
+		user_agent += ( char )((( g_mirandaVersion      ) & 0xFF) + 0x30);
+		user_agent += " FacebookProtocol/";
+		user_agent += __VERSION_STRING;
+		g_szUserAgent = ( char* )utils::mem::allocate( user_agent.length( ) * sizeof( char ) );
+		strcpy( g_szUserAgent, user_agent.c_str( ) );
+	}
+
     return 0;
 }
 
@@ -176,5 +195,6 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 extern "C" int __declspec(dllexport) Unload(void)
 {
 	//UninitContactMenus();
+	utils::mem::detract(&g_szUserAgent);
 	return 0;
 }

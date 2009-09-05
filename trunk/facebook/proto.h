@@ -109,11 +109,11 @@ public:
 	int  __cdecl SvcCreateAccMgrUI( WPARAM, LPARAM );
 
 	// Events
-	int  __cdecl OnModulesLoaded( WPARAM, LPARAM );
-	int  __cdecl OnOptionsInit( WPARAM, LPARAM );
+	int  __cdecl OnModulesLoaded(WPARAM, LPARAM);
+	int  __cdecl OnOptionsInit(WPARAM, LPARAM);
 	int  __cdecl OnBuildStatusMenu(WPARAM wParam,LPARAM lParam);
-	int  __cdecl OnPrebuildContactMenu(WPARAM,LPARAM) { return NULL; };
-	int  __cdecl OnContactDeleted(WPARAM,LPARAM) { return NULL; };
+	int  __cdecl OnBuildContactMenu(WPARAM,LPARAM);
+	int  __cdecl OnContactDeleted(WPARAM,LPARAM);
 	int  __cdecl OnMind(WPARAM,LPARAM);
 	int  __cdecl OnPreShutdown(WPARAM,LPARAM);
 
@@ -129,9 +129,7 @@ public:
 	void __cdecl UpdateInfoWorker(void *);
 
 	// Processing threads
-	void __cdecl ProcessUpdates( void* );
-	void __cdecl ProcessMessages( void* );
-	void         ProcessAvatar(HANDLE,const std::string &,bool force=false);
+	void         ProcessAvatar(HANDLE,const std::string*,bool force=false);
 
 	// Message Loop
 	bool    NegotiateConnection( );
@@ -139,15 +137,17 @@ public:
 	void __cdecl UpdateLoop(void *);
 	BYTE    GetPollRate( );
 
+	void    KillThreads( );
+
 	// Users handling
-	bool IsMyContact(HANDLE);
-	HANDLE UserIDToHContact(std::string);
-	HANDLE AddToClientList(facebook_user*);
-	void SetAllContactStatuses(int);
-	void SetAllContactUpdates(std::map<std::string, facebook_user*>);
+	bool    IsMyContact(HANDLE);
+	HANDLE  UserIDToHContact(std::string);
+	HANDLE  AddToClientList(facebook_user*);
+	void    SetAllContactStatuses(int);
+	void    UpdateContact(facebook_user*);
 
 	// User
-	facebook_communication  facy;
+	facebook_client facy;
 	int __cdecl Test( WPARAM, LPARAM );
 
 	// Helpers
@@ -166,11 +166,11 @@ public:
 
 	HANDLE  m_hNetlibUser;
 	HANDLE  m_hNetlibAvatar;
-	HANDLE  m_hMsgLoop;
 	HANDLE  m_hUpdLoop;
+	HANDLE  m_hMsgLoop;
 
 	std::string def_avatar_folder_;
-	HANDLE hAvatarFolder_;
+	HANDLE  hAvatarFolder_;
 
 	static void CALLBACK APC_callback(ULONG_PTR p);
 

@@ -36,7 +36,8 @@ Last change on : $Date$
 #define FB_PARSE_MESSAGES  2
 
 #define FB_PARSE_UPDATE_NOWAVAILABLE 1
-#define FB_PARSE_UPDATE_USERINFOS    2
+#define FB_PARSE_UPDATE_WASAVAILABLE 2
+#define FB_PARSE_UPDATE_USERINFOS    3
 
 #define FB_PARSE_UPDATE_IDLE 1
 #define FB_PARSE_UPDATE_NAME 2
@@ -54,37 +55,38 @@ Last change on : $Date$
 class facebook_json_parser
 {
 public:
-	FacebookProto*  parent;
-	unsigned int    level;
-	bool    isKey;
-	unsigned int    parserType;
+	facebook_client*    parent;
 	std::string     local_user_id;
 
 	std::vector< facebook_message* >* messages;
 	facebook_message* currentMessage;
 
-	std::map< std::string, facebook_user* >* friends;
+	std::map< std::string, facebook_user* >* buddies;
 	facebook_user* currentFriend;
 	std::string  currentFriendStr;
 
+	// TODO: Convert to bitmasks
+	unsigned int    parserType;
+	unsigned int    level;
 	unsigned int section;
 	unsigned int valueType;
+	bool    isKey;
 
 	int parseFriends( std::map< std::string, facebook_user* >*, void* );
-	int parseMessages( std::vector< facebook_message* >*, void* data );
+	int parseMessages( std::vector< facebook_message* >*, void* );
 
 	static int parse(void* ctx, int type, const JSON_value* value);
 
-	facebook_json_parser( unsigned int pType, FacebookProto* fbp )
+	facebook_json_parser( unsigned int pType, facebook_client* fbc )
 	{
 		this->level = 0;
 		this->isKey = false;
 		this->valueType = 0;
 		this->parserType = pType;
 		this->section = 0;
-		this->parent = fbp;
+		this->parent = fbc;
 		this->currentFriendStr = "";
-		this->local_user_id = fbp->facy.user_id_;
+		this->local_user_id = fbc->user_id_;
 		if ( this->parserType != pType || this->valueType != 0 || this->section != 0 )
 			throw std::exception( std::string(("error creating facebook_json_parser")).c_str() );
 	};

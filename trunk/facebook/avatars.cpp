@@ -44,11 +44,12 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 	if(DBGetContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv))
 		return;
 
-	std::string ext = data->url.substr(data->url.rfind('.'));
-	if ( data->url == FACEBOOK_DEFAULT_AVATAR_URL )
-		data->url = data->url.replace( data->url.rfind( "/q" ), 2, "/d" );
+	std::string new_url = data->url;
+	std::string ext = new_url.substr(new_url.rfind('.'));
+	if ( new_url == FACEBOOK_DEFAULT_AVATAR_URL )
+		new_url = new_url.replace( new_url.rfind( "/q" ), 2, "/d" );
 	else
-		data->url = data->url.replace( data->url.rfind( "/q" ), 2, "/n" );
+		new_url = new_url.replace( new_url.rfind( "/q" ), 2, "/n" );
 	std::string filename = GetAvatarFolder() + '\\' + dbv.pszVal + ext;
 	DBFreeVariant(&dbv);
 
@@ -65,13 +66,9 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 		return;
 	}
 
-	if(save_url(this->m_hNetlibAvatar,data->url,filename))
-	{
-		DBWriteContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_AV_URL,
-			data->url.c_str());
+	if(save_url(this->m_hNetlibAvatar,new_url,filename))
 		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
 			ACKRESULT_SUCCESS,&ai,0);
-	}
 	else
 		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
 			ACKRESULT_FAILED, &ai,0);
@@ -79,37 +76,10 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 	LOG("***** Done avatar: %s",data->url.c_str());
 }
 
-void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string &url,bool force)
+void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
 {
-	DBVARIANT dbv;
-
-	if( !force &&
-	  ( !DBGetContactSettingString(hContact,m_szModuleName,FACEBOOK_KEY_AV_URL,&dbv) &&
-	    url == dbv.pszVal) )
-	{
-		LOG("***** Avatar already up-to-date: %s",url.c_str());
-	}
-	else
-	{
-//// TODO: Fix "default avatar" flickering issue
-//// TODO: more defaults (configurable?)
-//		
-//		if(url == FACEBOOK_DEFAULT_AVATAR_URL)
-//		{
-//			PROTO_AVATAR_INFORMATION ai = {sizeof(ai),hContact};
-//			
-//			db_string_set(hContact,m_szModuleName,FACEBOOK_KEY_AV_URL,url.c_str());
-//			ProtoBroadcastAck(m_szModuleName,hContact,ACKTYPE_AVATAR,
-//				ACKRESULT_SUCCESS,&ai,0);
-//		}
-//		else
-		{
-			ForkThread(&FacebookProto::UpdateAvatarWorker, this,
-				new update_avatar(hContact,url));
-		}
-	}
-
-	DBFreeVariant(&dbv);
+	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
+	    new update_avatar(hContact,(*url)));
 }
 
 std::string FacebookProto::GetAvatarFolder()

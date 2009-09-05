@@ -1,4 +1,23 @@
 
+0.0.0.4
+-------
+
+- Finally reached persistent connection - silent session refresh + periodical reconnect like original web client - although the connection may fall down, restrictive politics will disconnect when any error occurs (mostly server time-out)
+- Redesigned session control to fit original web client
+- Raised default update loop poll rate to 24 seconds - less traffic, optimal processing load side by side with message loop, which has poll rate of 55 seconds when not active
+- Work-around for last protocol change (not receiving status message with periodical updates) by loading mobile profile page to get the data (maybe usable for other user details in future)
+- Rewritten update process to request only changes since last check for updates - minimal traffic, noticefuly reduced processing load
+- Completely rewritten contacts handling - this solves a) avatar flickering b) updating status, real name and idle flag too often
+- Fixed reloading avatar when not needed
+- Parsing improvements (solves many issues like buffer overruns/overflows)
+- Fixed leak of User-Agent strings
+- Better handling of garbage collecting on shutdown
+- Possibility to see actual cookies via Options dialog
+- Optional toggling of logging (default off)
+- Extra icon for "Mind" function
+- Light performance improvements in getting data from results
+- More sophisticated logging system
+
 0.0.0.3
 -------
 
@@ -13,7 +32,7 @@
 
 Known issues:
 
-- Loggin session gets down after some time (should be more than 1 hour), the reason or a way to avoid this is not known to me, yet
+- Login session gets down after some time (should be more than 1 hour), the reason or a way to avoid this is not known to me, yet [FIXED]
 
 0.0.0.2
 -------
@@ -34,7 +53,7 @@ Known issues:
 
 - Crash is invoked when receiving typing notification from FB with no message followed in a "packet" (both events use similar format => bad exception for non-message content leading to buffer overrun) [FIXED]
 - Plugin doesn't detect when the connection is closed/logged out remotely (rarely, but may happen, may bring some crash) [FIXED]
-- Avatars may flicker, their updating process hasn't been optimized, yet
+- Avatars may flicker, their updating process hasn't been optimized, yet [FIXED]
 
 0.0.0.1
 -------
@@ -69,5 +88,4 @@ All-time Not-issues
 
 - Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
 - Being often disconnected - server fault, trying to find a work-around, but that's not easy - pidgin-facebookchat reports same thing
-- Long time/never becoming Away on web - server fault, inactivity should be set instantly, but seems like they ignore it - pidgin-facebookchat reports same thing
 - Away status as is not applicable, FB doesn't support any active/controllable Away status, only server-driven Idle.
