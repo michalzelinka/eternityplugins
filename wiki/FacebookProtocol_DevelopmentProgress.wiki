@@ -22,8 +22,7 @@
  * _^DONE — Already Done^_
 
 = Known issues =
- * Friends' names are loaded only when added to CL - optional synchronization TBD
- * Avatars may flicker sometimes
+None at this moment
 
 = Not-Issues =
  * Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
