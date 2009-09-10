@@ -52,6 +52,11 @@ public:
 		return ( m_iStatus != ID_STATUS_OFFLINE && m_iStatus != ID_STATUS_CONNECTING );
 	}
 
+	inline bool isOffline( )
+	{
+		return ( m_iStatus == ID_STATUS_OFFLINE );
+	}
+
 	//PROTO_INTERFACE
 
 	virtual	HANDLE   __cdecl AddToList( int flags, PROTOSEARCHRESULT* psr ) { return NULL; }; //
@@ -95,7 +100,7 @@ public:
 	virtual	HANDLE    __cdecl GetAwayMsg( HANDLE hContact );
 	virtual	int       __cdecl RecvAwayMsg( HANDLE hContact, int mode, PROTORECVEVENT* evt );
 	virtual	int       __cdecl SendAwayMsg( HANDLE hContact, HANDLE hProcess, const char* msg );
-	virtual	int       __cdecl SetAwayMsg( int iStatus, const char* msg ); // TODO: Implement?
+	virtual	int       __cdecl SetAwayMsg( int iStatus, const char* msg );
 
 	virtual	int       __cdecl UserIsTyping( HANDLE hContact, int type );
 
@@ -106,7 +111,11 @@ public:
 	// Services
 	int  __cdecl GetName( WPARAM, LPARAM );
 	int  __cdecl GetStatus( WPARAM, LPARAM );
+	int  __cdecl SetStatus( WPARAM, LPARAM );
+	int  __cdecl GetMyAwayMsg( WPARAM, LPARAM );
+	int  __cdecl SetMyAwayMsg( WPARAM, LPARAM );
 	int  __cdecl SvcCreateAccMgrUI( WPARAM, LPARAM );
+	INT_PTR  __cdecl GetMyAvatar(WPARAM, LPARAM );
 
 	// Events
 	int  __cdecl OnModulesLoaded(WPARAM, LPARAM);
@@ -117,36 +126,34 @@ public:
 	int  __cdecl OnMind(WPARAM,LPARAM);
 	int  __cdecl OnPreShutdown(WPARAM,LPARAM);
 
-	// Worker threads
-	void __cdecl AddToListWorker(void *p);
-	void __cdecl SendSuccess(void *);
-	void __cdecl DoSearch(void *);
-	void __cdecl SignOn(void *);
-	void __cdecl SignOff(void *);
-	void __cdecl SendMindWorker(void *);
-	void __cdecl GetAwayMsgWorker(void *);
-	void __cdecl UpdateAvatarWorker(void *);
-	void __cdecl UpdateInfoWorker(void *);
+	// Loops
+	bool    NegotiateConnection( );
+	BYTE    GetPollRate( );
+	void __cdecl MessageLoop(void *);
+	void __cdecl UpdateLoop(void *);
+	void    KillThreads( );
 
 	// Processing threads
 	void         ProcessAvatar(HANDLE,const std::string*,bool force=false);
+	void __cdecl ProcessBuddyList( void* );
+	void __cdecl ProcessMessages( void* );
 
-	// Message Loop
-	bool    NegotiateConnection( );
-	void __cdecl MessageLoop(void *);
-	void __cdecl UpdateLoop(void *);
-	BYTE    GetPollRate( );
+	// Worker threads
+	void __cdecl SendMindWorker(void *);
+	void __cdecl SignOn(void *);
+	void __cdecl SignOff(void *);
+	void __cdecl GetAwayMsgWorker(void *);
+	void __cdecl UpdateContactWorker(void *);
+	void __cdecl UpdateAvatarWorker(void *);
+	void __cdecl SendSuccess(void *);
 
-	void    KillThreads( );
-
-	// Users handling
+	// Contacts handling
 	bool    IsMyContact(HANDLE);
-	HANDLE  UserIDToHContact(std::string);
-	HANDLE  AddToClientList(facebook_user*);
+	HANDLE  ContactIDToHContact(std::string);
+	HANDLE  AddToContactList(facebook_user*);
 	void    SetAllContactStatuses(int);
-	void    UpdateContact(facebook_user*);
 
-	// User
+	// Connection client
 	facebook_client facy;
 	int __cdecl Test( WPARAM, LPARAM );
 
@@ -155,7 +162,6 @@ public:
 	void ToggleStatusMenuItems( BOOL bEnable );
 
 	// Handles, Locks
-
 	HANDLE  m_hMenuRoot;
 	HANDLE  m_hStatusMind;
 

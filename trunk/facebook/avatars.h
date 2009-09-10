@@ -27,8 +27,9 @@ Last change on : $Date$
 
 #pragma once
 
-INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBPopupsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBInfoDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
+struct update_avatar
+{
+	update_avatar(HANDLE hContact,const std::string &url) : hContact(hContact),url(url) {}
+	HANDLE hContact;
+	std::string url;
+};

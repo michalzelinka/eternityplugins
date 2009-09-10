@@ -64,6 +64,7 @@ namespace utils
 
 	namespace time {
 		std::string unix_timestamp( );
+		std::string mili_timestamp( );
 	};
 
 	namespace number {
@@ -78,14 +79,15 @@ namespace utils
 	};
 
 	namespace debug {
-		void info( const char* info );
+		void info( const char* info, HWND parent = NULL );
 		void test( FacebookProto* fbp );
-		int log(std::string text);
+		int log(std::string file_name, std::string text);
 	};
 
 	namespace mem {
 		void __fastcall detract(char** str );
 		void __fastcall detract(void** p);
+		void __fastcall detract(void* p);
 		void* __fastcall allocate(size_t size);
 	};
 };
@@ -131,6 +133,6 @@ int ext_to_format(const std::string &ext);
 
 void DebugInfo( const char* debugInfo );
 void NOTIFY( char* title, char* message );
-void MB( char* m );
+void MB( const char* m );
 void MBI( int a );
 void ShowPopup( TCHAR* message );

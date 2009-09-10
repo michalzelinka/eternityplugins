@@ -1,4 +1,38 @@
 
+0.0.0.5
+-------
+
+- Added loading of own avatar and status message
+- Added option to set Facebook "What's on my mind?" via Miranda status message system
+- Better handling of own credentials (own nickname, avatar, status)
+- Fixed serious mistake in Message server URL generation which caused all accounts using channels 01--09 to disconnect immediately
+- Added timeout limitation + response success/error system
+- Heavily optimized service of updating contacts' details + moved into separate threads to project buddy updates immediately
+- Logging system improvements
+- Processing improvements
+- Initial translation support
+- Proper logout request
+- Handling of non-supported statuses -- Offline + Invisible results in Offline status, otherwise you're marked as Online
+- Fix for a condition deciding whether buddy list update is needed
+- Re-factorized some functions to better fit a proper object model
+- Proper milliseconds time stamp for outgoing messages
+- Signing off is signalized with "Connecting" icon (Experimental)
+- Removed some rare HTTP User-Agents
+- Editing E-mail and Password impossible when Online (Experimental)
+- Simplified JSON parser entry point
+- Modified memory-freeing function, should solve related rare crashes
+- Fix for a crash when calling Cookies dialog (I hope)
+- Logging files are now properly placed inside Miranda root only, no more mess elsewhere
+- Each account now has it's own logging file
+- Removed force disconnection flag for messages-updating request -- this request usually times out from time to time
+- Removed unneeded new-lines from protocol logs
+- 2 hidden variables: (BYTE)EnableRealLogoutSignal and (BYTE)TimeoutsLimit
+
+Notes:
+- You'll have to delete all your contacts and let them reload (or at least delete their DB "RealName" values or rename them to "Nick"), otherwise contacts will stay unnamed in the CL - the names weren't handled 100% correctly, the same as unique user identification.
+- Own avatar is now handled and processed, so it's visible where possible (tabSRMM, inside Tipper when hovering account icon in statusbar, ...)
+- Real names updating option has gone from now as contact's RealName/Nick value is updated normally, if you want anyone to have custom name, you can edit it like elsewhere (clist module stores this elsewhere and prioritizes this value before others)
+
 0.0.0.4
 -------
 
@@ -17,6 +51,12 @@
 - Extra icon for "Mind" function
 - Light performance improvements in getting data from results
 - More sophisticated logging system
+
+Known issues:
+
+- Status messages may contain HTML character entities for some specific characters [REPORTED]
+- Protocol is signed off each time server times out — will be changed in next version, disconnecting only when connection is down (more exactly when reaching 3 time-outs, while error increments time-out counter, success decrements — cheap, but working solution) [FIXED]
+- Accounts linked with message servers 0.channel01—0.channel09 can't connect for more than just a few seconds followed by possible crash because of my beginner's bug in URL generation causing fake connection time-out [FIXED]
 
 0.0.0.3
 -------

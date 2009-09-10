@@ -8,7 +8,7 @@
 #define IDD_MIND                        112
 #define IDD_OPTIONS                     113
 #define IDD_OPTIONS_POPUPS              114
-#define IDD_DEBUGINFO                   115
+#define IDD_INFO                        115
 #define IDC_UN                          1001
 #define IDC_PW                          1002
 #define IDC_NEWACCOUNTLINK              1003
@@ -18,8 +18,9 @@
 #define IDC_GROUP                       1021
 #define IDC_AGENT                       1022
 #define IDC_POLLRATE                    1023
-#define IDC_LOGGING                     1024
-#define IDC_COOKIES                     1025
+#define IDC_SET_STATUS                  1124
+#define IDC_LOGGING                     1025
+#define IDC_COOKIES                     1026
 #define IDC_DEBUGINFO                   1041
 #define IDC_COLBACK                     1051
 #define IDC_COLTEXT                     1052
@@ -40,7 +41,7 @@
 // 
 #ifdef APSTUDIO_INVOKED
 #ifndef APSTUDIO_READONLY_SYMBOLS
-#define _APS_NEXT_RESOURCE_VALUE        108
+#define _APS_NEXT_RESOURCE_VALUE        121
 #define _APS_NEXT_COMMAND_VALUE         40001
 #define _APS_NEXT_CONTROL_VALUE         1101
 #define _APS_NEXT_SYMED_VALUE           131

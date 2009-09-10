@@ -32,8 +32,8 @@ Last change on : $Date$
 #define strsame( a, b ) !lstrcmpA( a, b )
 #define lltoa _i64toa
 
-#define FB_PARSE_UPDATES   1
-#define FB_PARSE_MESSAGES  2
+#define FB_PARSE_BUDDY_LIST 1
+#define FB_PARSE_MESSAGES   2
 
 #define FB_PARSE_UPDATE_NOWAVAILABLE 1
 #define FB_PARSE_UPDATE_WASAVAILABLE 2
@@ -56,7 +56,6 @@ class facebook_json_parser
 {
 public:
 	facebook_client*    parent;
-	std::string     local_user_id;
 
 	std::vector< facebook_message* >* messages;
 	facebook_message* currentMessage;
@@ -72,8 +71,7 @@ public:
 	unsigned int valueType;
 	bool    isKey;
 
-	int parseFriends( std::map< std::string, facebook_user* >*, void* );
-	int parseMessages( std::vector< facebook_message* >*, void* );
+	int parse_data( void*, void* );
 
 	static int parse(void* ctx, int type, const JSON_value* value);
 
@@ -86,7 +84,6 @@ public:
 		this->section = 0;
 		this->parent = fbc;
 		this->currentFriendStr = "";
-		this->local_user_id = fbc->user_id_;
 		if ( this->parserType != pType || this->valueType != 0 || this->section != 0 )
 			throw std::exception( std::string(("error creating facebook_json_parser")).c_str() );
 	};

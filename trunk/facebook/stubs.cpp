@@ -138,11 +138,6 @@ int FacebookProto::SendAwayMsg(HANDLE hContact,HANDLE hProcess,const char *msg)
 	return 0;
 }
 
-int FacebookProto::SetAwayMsg(int status,const char *msg)
-{
-	return 0;
-}
-
 int FacebookProto::UserIsTyping(HANDLE hContact,int type)
 { 
 	return 0;

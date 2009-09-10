@@ -69,6 +69,10 @@ INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			DBFreeVariant(&dbv);
 		}
 
+		if (!proto->isOffline()) {
+			SendMessage(GetDlgItem(hwnd,IDC_UN),EM_SETREADONLY,1,0);
+			SendMessage(GetDlgItem(hwnd,IDC_PW),EM_SETREADONLY,1,0); }
+
 		return TRUE;
 
 	case WM_COMMAND:
@@ -119,24 +123,41 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 	switch(message)
 	{
 
-	case WM_INITDIALOG:
+	case WM_INITDIALOG: {
 		TranslateDialogDefault(hwnd);
 
 		proto = reinterpret_cast<FacebookProto*>(lparam);
 		SetWindowLong(hwnd,GWL_USERDATA,lparam);
 		SendDlgItemMessage(hwnd,IDC_MINDMSG,EM_LIMITTEXT,FACEBOOK_MIND_LIMIT,0);
-		SetDlgItemText(hwnd,IDC_CHARACTERS,_T(FACEBOOK_MIND_LIMIT_TEXT));
+
+		DBVARIANT dbv = { DBVT_TCHAR };
+
+		if (!DBGetContactSettingTString(NULL,proto->m_szModuleName,FACEBOOK_KEY_NAME,&dbv))
 		{
-			DBVARIANT dbv = { DBVT_TCHAR };
-			DBGetContactSettingTString(NULL,proto->m_szModuleName,FACEBOOK_KEY_NAME,&dbv);
 			SetDlgItemText(hwnd,IDC_NAME,dbv.ptszVal);
 			DBFreeVariant( &dbv );
 		}
-
+		if (!DBGetContactSettingTString(NULL,proto->m_szModuleName,"StatusMsg",&dbv))
+		{
+			SetDlgItemText(hwnd,IDC_MINDMSG,dbv.ptszVal);
+			DBFreeVariant( &dbv );
+			SendMessage(hwnd,WM_COMMAND,(EN_CHANGE << 16) | IDC_MINDMSG,0);
+		} }
 		return TRUE;
 
 	case WM_COMMAND:
-		if ( LOWORD( wparam ) == IDOK )
+		if ( LOWORD( wparam ) == IDC_MINDMSG && HIWORD( wparam ) == EN_CHANGE )
+		{
+			size_t len = SendDlgItemMessage(hwnd,IDC_MINDMSG,WM_GETTEXTLENGTH,0,0);
+			TCHAR str[4];
+			_sntprintf( str, 4, TEXT( "%d" ), FACEBOOK_MIND_LIMIT-len );
+			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
+
+			SetDlgItemText(hwnd,IDOK, (len > 0) ? LPGENT("Share") : LPGENT("Clear"));
+
+			return TRUE;
+		}
+		else if ( LOWORD( wparam ) == IDOK )
 		{
 			TCHAR mindMessage[FACEBOOK_MIND_LIMIT+1];
 			proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
@@ -144,7 +165,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			GetDlgItemText(hwnd,IDC_MINDMSG,mindMessage,SIZEOF(mindMessage));
 			ShowWindow(hwnd,SW_HIDE);
 
-			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8); // TODO: narrow leak
+			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8);
 			ForkThread(&FacebookProto::SendMindWorker, proto,narrow);
 
 			EndDialog(hwnd, wparam); 
@@ -153,17 +174,6 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 		else if ( LOWORD( wparam ) == IDCANCEL )
 		{
 			EndDialog(hwnd, wparam);
-			return TRUE;
-		}
-		else if ( LOWORD( wparam ) == IDC_MINDMSG && HIWORD( wparam ) == EN_CHANGE )
-		{
-			size_t len = SendDlgItemMessage(hwnd,IDC_MINDMSG,WM_GETTEXTLENGTH,0,0);
-			TCHAR str[4];
-			_sntprintf( str, 4, TEXT( "%d" ), FACEBOOK_MIND_LIMIT-len );
-			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
-
-			SetDlgItemText(hwnd,IDOK, (len > 0) ? TEXT("Share") : TEXT("Clear"));
-
 			return TRUE;
 		}
 		break;
@@ -175,7 +185,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 
 INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
-	FacebookProto *proto;
+	FacebookProto *proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
 
 	switch ( message )
 	{
@@ -201,6 +211,10 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			DBFreeVariant(&dbv);
 		}
 
+		if (!proto->isOffline()) {
+			SendMessage(GetDlgItem(hwnd,IDC_UN),EM_SETREADONLY,TRUE,0);
+			SendMessage(GetDlgItem(hwnd,IDC_PW),EM_SETREADONLY,TRUE,0); }
+
 //		SendDlgItemMessage(hwnd, IDC_GROUP, EM_LIMITTEXT, 8, 0); // TODO: Is there any length limit?
 
 		if( !DBGetContactSettingTString(0,proto->ModuleName(),FACEBOOK_KEY_DEF_GROUP,&dbv) )
@@ -218,6 +232,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		    DBGetContactSettingByte(NULL, proto->m_szModuleName, "UserAgent", 0), 0);
 
 		LoadDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING, 0);
+		LoadDBCheckState(proto, hwnd, IDC_SET_STATUS, FACEBOOK_KEY_SET_MIRANDA_STATUS, 0);
 
 		return TRUE;
 
@@ -231,20 +246,13 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 
 		if ( LOWORD( wparam ) == IDC_COOKIES )
 		{
-			proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
-			if ( proto->facy.cookies.size() )
-			{
-				std::string cookie_content = "";
-
-				for ( map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
-					cookie_content += i->first + ": " + i->second + "\r\n";
-
-				utils::debug::info(cookie_content.c_str());
-			}
-			else MessageBox(NULL, TEXT("No cookies available."), TEXT("Facebook protocol"), MB_OK|MB_TASKMODAL);
+			std::string cookie_content = "";
+			for ( map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
+				cookie_content += i->first + ":\r\n" + i->second + "\r\n";
+			utils::debug::info(cookie_content.c_str(),hwnd);
 		}
 
-		if ((LOWORD(wparam)==IDC_UN || LOWORD(wparam)==IDC_PW || LOWORD(wparam)==IDC_GROUP) &&
+		if ((LOWORD(wparam)==IDC_UN || LOWORD(wparam)==IDC_PW || LOWORD(wparam)==IDC_GROUP || LOWORD(wparam)==IDC_COOKIES) &&
 		    (HIWORD(wparam)!=EN_CHANGE || (HWND)lparam!=GetFocus()))
 			return 0;
 		else
@@ -255,7 +263,6 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 	case WM_NOTIFY:
 		if ( reinterpret_cast<NMHDR*>(lparam)->code == PSN_APPLY )
 		{
-			proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
 			char str[128]; TCHAR tstr[128];
 
 			GetDlgItemTextA(hwnd,IDC_UN,str,sizeof(str));
@@ -278,6 +285,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			    SendDlgItemMessage(hwnd, IDC_AGENT, CB_GETCURSEL, 0, 0));
 
 			StoreDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING);
+			StoreDBCheckState(proto, hwnd, IDC_SET_STATUS, FACEBOOK_KEY_SET_MIRANDA_STATUS);
 
 			return TRUE;
 		}
@@ -293,7 +301,7 @@ INT_PTR CALLBACK FBPopupsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 	return FALSE;
 }
 
-INT_PTR CALLBACK FBDebugDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
+INT_PTR CALLBACK FBInfoDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
 	HFONT hFont = NULL;
 
@@ -304,16 +312,18 @@ INT_PTR CALLBACK FBDebugDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPAR
 		TranslateDialogDefault(hwnd);
 
 		hFont = CreateFont( 14, 0, 0, 0, 400, 0, 0, 0, 1, 0, 0, 0, 2, TEXT( "Courier New" ) );
-		SendMessage(GetDlgItem( hwnd, IDC_DEBUGINFO  ), WM_SETFONT, (WPARAM)hFont, (LPARAM)TRUE);
+		SendMessage(GetDlgItem( hwnd, IDC_DEBUGINFO ), WM_SETFONT, (WPARAM)hFont, (LPARAM)TRUE);
 
 		char* debugInfo = reinterpret_cast< char* >(lparam);
 		SetDlgItemTextA( hwnd, IDC_DEBUGINFO, debugInfo );
 
 		SetClipboardData( CF_TEXT, ( HANDLE )debugInfo );
+
+		EnableWindow(GetParent(hwnd),FALSE);
 		} return TRUE;
 
 	case WM_COMMAND:
-		if ( LOWORD( wparam ) == IDCLOSE )
+		if ( LOWORD(wparam)==IDCLOSE || LOWORD(wparam)==IDCANCEL )
 		{
 			CloseWindow( hwnd );
 			DestroyWindow( hwnd );
@@ -322,6 +332,9 @@ INT_PTR CALLBACK FBDebugDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPAR
 
 	case WM_DESTROY:
 		DeleteObject( hFont );
+		utils::mem::detract((void**)&lparam);
+		EnableWindow(GetParent(hwnd),TRUE);
+		SetFocus(GetParent(hwnd));
 		break;
 
 	}

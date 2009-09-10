@@ -181,6 +181,10 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
+				RelativePath=".\avatars.h"
+				>
+			</File>
+			<File
 				RelativePath=".\build.h"
 				>
 			</File>
@@ -236,6 +240,10 @@
 			</File>
 			<File
 				RelativePath=".\facebook.rc"
+				>
+			</File>
+			<File
+				RelativePath=".\icons\mind.ico"
 				>
 			</File>
 			<File
