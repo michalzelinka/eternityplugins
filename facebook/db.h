@@ -47,13 +47,15 @@ Last change on : $Date$
 #define FACEBOOK_KEY_ID             "ID"
 #define FACEBOOK_KEY_NAME           "RealName"
 #define FACEBOOK_KEY_UPD_NAMES      "UpdateNames"
-#define FACEBOOK_KEY_INC_SELF       "IncludeSelfContact"
 #define FACEBOOK_KEY_PASS           "Password"
 #define FACEBOOK_KEY_DEF_GROUP      "DefaultGroup"
 #define FACEBOOK_KEY_AV_URL         "AvatarURL"
 #define FACEBOOK_KEY_POLL_RATE      "PollRate"
 #define FACEBOOK_KEY_USER_AGENT     "UserAgent"
 #define FACEBOOK_KEY_ENABLE_LOGGING "EnableLogging"
+#define FACEBOOK_KEY_SET_MIRANDA_STATUS "SetMirandaStatus"
+#define FACEBOOK_KEY_ENABLE_REAL_LOGOUT_SIGNAL  "EnableRealLogoutSignal" // [HIDDEN]
+#define FACEBOOK_KEY_TIMEOUTS_LIMIT "TimeoutsLimit" // [HIDDEN]
 
 #define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"
 #define FACEBOOK_KEY_POPUP_SIGNON   "Popup/Signon"

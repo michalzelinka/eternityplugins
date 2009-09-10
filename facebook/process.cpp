@@ -27,72 +27,74 @@ Last change on : $Date$
 
 #include "common.h"
 
-void facebook_client::process_updates( void* data )
+void FacebookProto::ProcessBuddyList( void* data )
 {
+	if (!isOnline())
+		return;
+
 	try
 	{
-		parent->LOG("***** Starting processing updates");
-		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_UPDATES, this );
-		fbjp->parseFriends( &buddies, data );
-		delete fbjp;
-		delete ( std::string* )data;
+		LOG("***** Starting processing buddy list");
+		facebook_json_parser* jp = new facebook_json_parser( FB_PARSE_BUDDY_LIST, &this->facy );
+		jp->parse_data( &facy.buddies, data );
+		delete jp;
 
-		for(std::map<std::string, facebook_user*>::iterator i=buddies.begin(); i!=buddies.end(); )
+		for(std::map<std::string, facebook_user*>::iterator i=facy.buddies.begin(); i!=facy.buddies.end(); )
 		{
-			if ( i->second->passed ) // This contact has been processed already
-			{
-				i++;
-				continue;
-			}
+			std::map< std::string, facebook_user*>::iterator this_one = i;
+			++i;
 
-			parent->LOG("      Now %s: %s", (i->second->status_id==ID_STATUS_ONLINE)?"online":"offline", i->first.c_str());
-			i->second->passed = true;
-			if ( i->second->status_id == ID_STATUS_OFFLINE )
+			if ( this_one->second->passed ) { // This contact has been processed already
+				continue; }
+
+			this_one->second->passed = true;
+			LOG("      Now %s: %s", (this_one->second->status_id==ID_STATUS_ONLINE)?"online":"offline", this_one->second->real_name.c_str());
+			if ( this_one->second->status_id == ID_STATUS_OFFLINE )
 			{
-				std::map< std::string, facebook_user*>::iterator j = i++;
-				DBWriteContactSettingDword( j->second->handle, parent->m_szModuleName, "Status", ID_STATUS_OFFLINE );
-				DBDeleteContactSetting(j->second->handle,parent->m_szModuleName,"IdleTS");
-				this->buddies.erase( j );
+				DBWriteContactSettingWord(this_one->second->handle,m_szModuleName,"Status",ID_STATUS_OFFLINE );
+				DBDeleteContactSetting(this_one->second->handle,m_szModuleName,"IdleTS");
+				facy.buddies.erase( this_one );
 			}
 			else
 			{
-				i->second->handle = parent->AddToClientList(i->second);
-				DBWriteContactSettingDword( i->second->handle, parent->m_szModuleName, "Status", ID_STATUS_ONLINE );
-				parent->UpdateContact( i->second );
-				i->second->just_added = false;
-				i++;
+				this_one->second->handle = AddToContactList(this_one->second);
+				DBWriteContactSettingWord(this_one->second->handle,m_szModuleName,"Status",ID_STATUS_ONLINE );
+				ForkThreadEx(&FacebookProto::UpdateContactWorker, this, (void*)this_one->second);
+				this_one->second->just_added = false;
 			}
 		}
 
-		parent->LOG("***** Updates processed");
+		LOG("***** Buddy list processed");
 	}
 	catch(const std::exception &e)
 	{
-		parent->LOG("***** Error processing updates: %s", e.what());
+		LOG("***** Error processing buddy list: %s", e.what());
 	}
 }
 
-void facebook_client::process_messages( void* data )
+void FacebookProto::ProcessMessages( void* data )
 {
+	if (!isOnline())
+		return;
+
 	try
 	{
-		parent->LOG("***** Starting processing messages");
-		facebook_json_parser* fbjp = new facebook_json_parser( FB_PARSE_MESSAGES, this );
+		LOG("***** Starting processing messages");
+		facebook_json_parser* jp = new facebook_json_parser( FB_PARSE_MESSAGES, &this->facy );
 		std::vector< facebook_message* > messages;
-		fbjp->parseMessages( &messages, data );
-		delete fbjp;
-		delete ( std::string* )data;
+		jp->parse_data( &messages, data );
+		delete jp;
 
 		for(size_t i = 0; i < messages.size( ); i++)
 		{
-			if ( messages[i]->user_id == this->user_id_ )
+			if ( messages[i]->user_id == facy.self_.user_id )
 				continue;
 
-			parent->LOG("      Got message: %s", messages[i]->message_text.c_str());
+			LOG("      Got message: %s", messages[i]->message_text.c_str());
 			facebook_user fbu;
 			fbu.user_id = messages[i]->user_id;
 
-			HANDLE hContact = parent->AddToClientList(&fbu);
+			HANDLE hContact = AddToContactList(&fbu);
 
 			PROTORECVEVENT recv = {};
 			CCSDATA ccs = {};
@@ -108,10 +110,16 @@ void facebook_client::process_messages( void* data )
 			CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
 		}
 
-		parent->LOG("***** Messages processed");
+		LOG("***** Messages processed");
 	}
 	catch(const std::exception &e)
 	{
-		parent->LOG("***** Error processing messages: %s", e.what());
+		LOG("***** Error processing messages: %s", e.what());
 	}
+}
+
+void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
+{
+	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
+	    new update_avatar(hContact,(*url)));
 }

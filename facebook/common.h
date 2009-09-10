@@ -87,6 +87,9 @@ using namespace std;
 
 #include "JSON_parser/JSON_parser.h"
 
+class FacebookProto;
+
+#include "avatars.h"
 #include "http.h"
 #include "client.h"
 #include "utils.h"

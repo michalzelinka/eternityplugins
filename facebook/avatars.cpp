@@ -27,13 +27,6 @@ Last change on : $Date$
 
 #include "common.h"
 
-struct update_avatar
-{
-	update_avatar(HANDLE hContact,const std::string &url) : hContact(hContact),url(url) {}
-	HANDLE hContact;
-	std::string url;
-};
-
 void FacebookProto::UpdateAvatarWorker(void *p)
 {
 	if(p == 0)
@@ -76,12 +69,6 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 	LOG("***** Done avatar: %s",data->url.c_str());
 }
 
-void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
-{
-	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
-	    new update_avatar(hContact,(*url)));
-}
-
 std::string FacebookProto::GetAvatarFolder()
 {
 	char path[MAX_PATH];
@@ -89,4 +76,31 @@ std::string FacebookProto::GetAvatarFolder()
 		return path;
 	else
 		return def_avatar_folder_;
+}
+
+INT_PTR FacebookProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
+{
+	if (!wParam) return -3;
+
+	DBVARIANT dbv;
+	std::string avatar_url;
+
+	if ( !getString( FACEBOOK_KEY_AV_URL,&dbv) )
+	{
+		std::string avatar_url = dbv.pszVal;
+		DBFreeVariant(&dbv);
+		if ( !getString( FACEBOOK_KEY_ID,&dbv) )
+		{
+			std::string ext = avatar_url.substr(avatar_url.rfind('.'));
+			std::string file_name = GetAvatarFolder() + '\\' + dbv.pszVal + ext;
+			DBFreeVariant(&dbv);
+
+			if ( file_name.length() )
+				strncpy((char*)wParam, file_name.c_str(), (int)lParam);
+			
+			if (!_access((char*)wParam, 0)) return 0; // Avatar file exists
+			return -1; // Avatar file doesn't exist
+		}
+	}
+	return -2; // No avatar set
 }

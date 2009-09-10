@@ -40,7 +40,7 @@ void FacebookProto::KillThreads( )
 		LOG("***** Requesting UpdateLoop to exit");
 		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
 		LOG("***** Waiting for old UpdateLoop to exit");
-		WaitForSingleObject(m_hUpdLoop,INFINITE);
+		WaitForSingleObject(m_hUpdLoop,IGNORE);
 		CloseHandle(m_hUpdLoop);
 		m_hUpdLoop = NULL;
 	}
@@ -49,7 +49,7 @@ void FacebookProto::KillThreads( )
 		LOG("..... Requesting MessageLoop to exit");
 		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
 		LOG("***** Waiting for old MessageLoop to exit");
-		WaitForSingleObject(m_hMsgLoop,INFINITE);
+		WaitForSingleObject(m_hMsgLoop,IGNORE);
 		CloseHandle(m_hMsgLoop);
 		m_hMsgLoop = NULL;
 	}
@@ -57,30 +57,30 @@ void FacebookProto::KillThreads( )
 
 void FacebookProto::SignOn(void*)
 {
-	LOG("***** Beginning SignOn process");
 	WaitForSingleObject(&signon_lock_,INFINITE);
+	LOG("***** Beginning SignOn process");
 
 	KillThreads( );
 
 	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
 	{
-		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop, this );
+		setDword( "LogonTS", (DWORD)time(NULL) );
+		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop,  this );
 		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this );
 	}
 	ToggleStatusMenuItems(isOnline());
 
+	LOG("***** SignOn complete");
 	ReleaseMutex(signon_lock_);
-	LOG("..... SignOn complete");
 }
 
 void FacebookProto::SignOff(void*)
 {
-	LOG("xxxxx Beginning SignOff process");
 	WaitForSingleObject(&signon_lock_,INFINITE);
+	LOG("##### Beginning SignOff process");
 
-	KillThreads( );
-
-	ToggleStatusMenuItems(isOnline());
+	deleteSetting( "LogonTS" );
+	SetAllContactStatuses( ID_STATUS_OFFLINE );
 
 	{
 		ScopedLock s(facebook_lock_);
@@ -89,8 +89,16 @@ void FacebookProto::SignOff(void*)
 		facy.buddies.clear( );
 	}
 
+	if ( !getByte(FACEBOOK_KEY_ENABLE_REAL_LOGOUT_SIGNAL, 0) )
+		m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
+	                                       //  ^
+	ToggleStatusMenuItems(isOnline());     //  |  customizable real
+	KillThreads( );                        //  |  logout signalization
+	                                       //  v
+	m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
+
+	LOG("##### SignOff complete");
 	ReleaseMutex(signon_lock_);
-	LOG("xxxxx SignOff complete");
 }
 
 bool FacebookProto::NegotiateConnection( )
@@ -128,7 +136,6 @@ bool FacebookProto::NegotiateConnection( )
 	bool success;
 	{
 		ScopedLock s(facebook_lock_);
-		facy.first_touch_ = true;
 		success = facy.login( user, pass );
 		if (success) success = facy.home( );
 		if (success) success = facy.reconnect( );
@@ -146,8 +153,6 @@ bool FacebookProto::NegotiateConnection( )
 		SetAllContactStatuses(ID_STATUS_OFFLINE);
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
 			(HANDLE)old_status,m_iStatus);
-
-		facy.logout( );
 
 		return false;
 	}
@@ -172,11 +177,6 @@ void FacebookProto::UpdateLoop(void *)
 			goto exit;
 		if ( !facy.buddy_list( ) )
 			goto exit;
-
-// TODO: Dummy for notifications
-//		if ( i % 2 == 0 )
-//			facy.update( );
-
 		if ( !isOnline( ) )
 			goto exit;
 		LOG( "***** FacebookProto::UpdateLoop going to sleep..." );
@@ -211,5 +211,8 @@ BYTE FacebookProto::GetPollRate( )
 {
 	BYTE poll_rate = getByte( FACEBOOK_KEY_POLL_RATE, FACEBOOK_DEFAULT_POLL_RATE );
 
-	return ( ( poll_rate >= FACEBOOK_MINIMAL_POLL_RATE && poll_rate <= FACEBOOK_MAXIMAL_POLL_RATE ) ? poll_rate : FACEBOOK_DEFAULT_POLL_RATE );
+	return (
+	    ( poll_rate >= FACEBOOK_MINIMAL_POLL_RATE &&
+	      poll_rate <= FACEBOOK_MAXIMAL_POLL_RATE )
+	    ? poll_rate : FACEBOOK_DEFAULT_POLL_RATE );
 }

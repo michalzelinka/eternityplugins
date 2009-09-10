@@ -38,6 +38,10 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	CreateProtoService(m_szModuleName, PS_CREATEACCMGRUI, &FacebookProto::SvcCreateAccMgrUI, this);
 	CreateProtoService(m_szModuleName, PS_GETNAME,        &FacebookProto::GetName,           this);
 	CreateProtoService(m_szModuleName, PS_GETSTATUS,      &FacebookProto::GetStatus,         this);
+	CreateProtoService(m_szModuleName, PS_SETSTATUS,      &FacebookProto::SetStatus,         this);
+	CreateProtoService(m_szModuleName, PS_GETMYAWAYMSG,   &FacebookProto::GetMyAwayMsg,      this);
+	CreateProtoService(m_szModuleName, PS_SETAWAYMSG,     &FacebookProto::SetMyAwayMsg,      this);
+	CreateProtoService(m_szModuleName, PS_GETMYAVATAR,    &FacebookProto::GetMyAvatar,       this);
 
 	HookProtoEvent(ME_DB_CONTACT_DELETED,       &FacebookProto::OnContactDeleted,     this);
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU, &FacebookProto::OnBuildStatusMenu,    this);
@@ -52,20 +56,6 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 
 	// Set all contacts offline -- in case we crashed
 	SetAllContactStatuses( ID_STATUS_OFFLINE );
-
-//// TODO: Will this be needed for something?
-//	CreateProtoService("Facebook", "/Test", &FacebookProto::Test, this);
-//
-//	CLISTMENUITEM mi = {0};
-//	mi.cbSize = sizeof(CLISTMENUITEM);
-//	mi.flags = 0;
-//	mi.hIcon = (HICON)LoadImage(g_hInstance, MAKEINTRESOURCE(IDI_FACEBOOK), IMAGE_ICON, 0, 0, 0);
-//	mi.pszContactOwner = NULL;
-//	mi.position = 1000000000;
-//	mi.pszName = Translate("Test Facebook");
-//	mi.pszService = "Facebook/Test";
-//
-//	CallService(MS_CLIST_ADDMAINMENUITEM, 0, (LPARAM)&mi);
 }
 
 FacebookProto::~FacebookProto( )
@@ -89,19 +79,19 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 	switch(type)
 	{
 	case PFLAGNUM_1:
-		return PF1_IM | PF1_MODEMSGRECV; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL; // TODO
+		return PF1_IM | PF1_MODEMSG; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL; // TODO?
 	case PFLAGNUM_2:
 		return PF2_ONLINE;
 	case PFLAGNUM_3:
 		return PF2_ONLINE;
 	case PFLAGNUM_4:
-		return PF4_NOCUSTOMAUTH | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING | PF4_SUPPORTIDLE; // TODO
+		return PF4_NOCUSTOMAUTH | PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_AVATARS; // | PF4_SUPPORTTYPING; // TODO?
 	case PFLAG_MAXLENOFMESSAGE:
 		return FACEBOOK_MESSAGE_LIMIT;
 	case PFLAG_UNIQUEIDTEXT:
-		return (int) "Real name";
+		return (int) "Facebook ID";
 	case PFLAG_UNIQUEIDSETTING:
-		return (int) FACEBOOK_KEY_NAME;
+		return (int) FACEBOOK_KEY_ID;
 	}
 	return 0;
 }
@@ -140,14 +130,26 @@ int FacebookProto::SetStatus( int new_status )
 	}
 	else if ( new_status == ID_STATUS_OFFLINE )
 	{
-		m_iStatus = m_iDesiredStatus;
+		m_iStatus = ID_STATUS_CONNECTING;
 		ProtoBroadcastAck( m_szModuleName, 0, ACKTYPE_STATUS, ACKRESULT_SUCCESS,
 			( HANDLE ) old_status, m_iStatus );
 
-		SetAllContactStatuses( ID_STATUS_OFFLINE );
 		ForkThread( &FacebookProto::SignOff, this );
 	}
 
+	// Routing statuses not supported by Facebook
+	else if ( new_status == ID_STATUS_INVISIBLE )
+		SetStatus( ID_STATUS_OFFLINE );
+	else
+		SetStatus( ID_STATUS_ONLINE );
+
+	return 0;
+}
+
+int FacebookProto::SetAwayMsg( int status,const char *msg )
+{
+	if ( isOnline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
+		ForkThread(&FacebookProto::SendMindWorker, this, (void*)msg);
 	return 0;
 }
 
@@ -156,6 +158,39 @@ void FacebookProto::SendMindWorker(void * data)
 	const std::string new_status = ( char* )data;
 	facy.set_status( new_status );
 	// TODO: data leak?
+	// TODO:RE:
+	utils::mem::detract( ( void** )&data );
+}
+
+//////////////////////////////////////////////////////////////////////////////
+// SERVICES
+
+int FacebookProto::GetStatus( WPARAM wParam, LPARAM lParam )
+{
+	return m_iStatus;
+}
+
+int FacebookProto::SetStatus( WPARAM wParam, LPARAM lParam )
+{
+	return SetStatus( (int)wParam );
+}
+
+int FacebookProto::GetMyAwayMsg( WPARAM wParam, LPARAM lParam )
+{
+	DBVARIANT dbv = { DBVT_TCHAR };
+	if ( !getTString( "StatusMsg", &dbv ) && lstrlen( dbv.ptszVal ) != 0 )
+	{
+		int res = ( int )mir_wstrdup( dbv.ptszVal );
+		DBFreeVariant( &dbv );
+		return res;
+	}
+	else
+		return 0;
+}
+
+int FacebookProto::SetMyAwayMsg( WPARAM wParam, LPARAM lParam )
+{
+	return SetAwayMsg( (int)wParam, (const char*)lParam );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -179,11 +214,6 @@ int FacebookProto::GetName( WPARAM wParam, LPARAM lParam )
 {
 	lstrcpynA(reinterpret_cast<char*>(lParam),m_szProtoName,wParam);
 	return 0;
-}
-
-int FacebookProto::GetStatus( WPARAM wParam, LPARAM lParam )
-{
-	return m_iStatus;
 }
 
 int FacebookProto::SvcCreateAccMgrUI(WPARAM wParam,LPARAM lParam)
@@ -218,6 +248,14 @@ int FacebookProto::OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 
 	facy.set_handle(m_hNetlibUser);
 
+	return 0;
+}
+
+int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
+{
+	SetStatus( ID_STATUS_OFFLINE );
+	Netlib_Shutdown( m_hNetlibAvatar );
+	Netlib_Shutdown( m_hNetlibUser );
 	return 0;
 }
 
@@ -300,20 +338,10 @@ int FacebookProto::OnMind(WPARAM,LPARAM)
 	return FALSE;
 }
 
-int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
-{
-	SetStatus( ID_STATUS_OFFLINE );
-	Netlib_Shutdown( m_hNetlibUser );
-	Netlib_Shutdown( m_hNetlibAvatar );
-	return 0;
-}
-
 //////////////////////////////////////////////////////////////////////////////
 
 int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 {
-	utils::debug::info( facy.choose_request_url( FACEBOOK_REQUEST_MESSAGES_RECEIVE ) );
-
 	return FALSE;
 }
 
@@ -330,5 +358,5 @@ int FacebookProto::LOG(const char *fmt,...)
 	mir_vsnprintf(text,sizeof(text),fmt,va);
 	va_end(va);
 
-	return utils::debug::log( text );
+	return utils::debug::log( m_szModuleName, text );
 }

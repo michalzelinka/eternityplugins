@@ -40,10 +40,21 @@ std::string utils::url::encode(const std::string &s)
 std::string utils::time::unix_timestamp( )
 {
 	string timestamp = "";
-	int in = ::time( NULL );
+	time_t in = ::time( NULL );
 	std::stringstream out;
 	out << in;
 	timestamp = out.str();
+	return timestamp;
+}
+
+std::string utils::time::mili_timestamp( )
+{
+	SYSTEMTIME st;
+	std::string timestamp = utils::time::unix_timestamp();
+	GetSystemTime(&st);
+	std::stringstream out;
+	out << st.wMilliseconds;
+	timestamp.append(out.str());
 	return timestamp;
 }
 
@@ -174,10 +185,10 @@ std::string utils::number::random( )
 	return number;
 }
 
-void utils::debug::info( const char* info )
+void utils::debug::info( const char* info, HWND parent )
 {
-	CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_DEBUGINFO ),
-		NULL, FBDebugDialogProc, ( LPARAM )info );
+	CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_INFO ),
+		parent, FBInfoDialogProc, ( LPARAM )mir_strdup(info) );
 }
 
 void utils::debug::test( FacebookProto* fbp )
@@ -185,16 +196,16 @@ void utils::debug::test( FacebookProto* fbp )
 	return;
 }
 
-int utils::debug::log(std::string text)
+int utils::debug::log(std::string file_name, std::string text)
 {
 	char szFile[MAX_PATH];
 	GetModuleFileNameA(g_hInstance, szFile, SIZEOF(szFile));
 	std::string path = szFile;
 	path = path.substr( 0, path.rfind( "\\" ) );
 	path = path.substr( 0, path.rfind( "\\" ) + 1 );
-	path += "log.txt";
+	path = path + file_name.c_str() + ".txt";
 	FILE* f = fopen( path.c_str(), "a" );
-	fprintf( f, "%s\r\n", text.c_str() );
+	fprintf( f, "%s\n", text.c_str() );
 	fclose( f );
 	return EXIT_SUCCESS;
 }
@@ -206,11 +217,17 @@ void __fastcall utils::mem::detract(char** str )
 
 void __fastcall utils::mem::detract(void** p)
 {
-	if (*p)
-	{
-		free(*p);
-		*p = NULL;
-	}
+//	if (*p)
+//	{
+//		free(*p);
+//		*p = NULL;
+//	}
+	detract((void*)(*p));
+}
+
+void __fastcall utils::mem::detract(void* p)
+{
+	mir_free(p);
 }
 
 void* __fastcall utils::mem::allocate(size_t size)
@@ -286,7 +303,7 @@ void NOTIFY( char* title, char* message )
 	//LOG( ( char* )log_message.c_str( ) );
 }
 
-void MB( char* m )
+void MB( const char* m )
 {
 	MessageBoxA( NULL, m, NULL, MB_OK );
 }
@@ -300,5 +317,5 @@ void MBI( int a )
 
 void ShowPopup( TCHAR* message )
 {
-	MessageBox( NULL, message, TEXT( "Facebook Protocol" ), MB_OK ); // TODO: Popup? Merge with events?
+	MessageBox( NULL, message, LPGENT( "Facebook Protocol" ), MB_OK ); // TODO: Popup? Merge with events?
 }

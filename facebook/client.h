@@ -27,7 +27,7 @@ Last change on : $Date$
 
 #pragma once
 
-class FacebookProto;
+#define FORCE_DISCONNECT true
 
 struct facebook_user
 {
@@ -78,26 +78,39 @@ class facebook_client
 {
 public:
 
-	facebook_client( );
+	////////////////////////////////////////////////////////////
+
+	// Client definition
+
+	facebook_client( )
+	{
+		username_ = password_ = \
+		post_form_id_ = dtsg_ = \
+		logout_action_ = chat_channel_num_ = \
+		log = "";
+
+		chat_sequence_num_ = error_count_ = 0;
+
+		chat_first_touch_ = false;
+	}
 
 	// Parent handle
 
-	FacebookProto* parent;
+	FacebookProto*  parent;
 
 	// User data
 
+	facebook_user   self_;
+
 	std::string username_;
 	std::string password_;
-	std::string user_id_;
-	std::string real_name_;
-	std::string status_;
 
 	std::string post_form_id_;
 	std::string dtsg_;
 	std::string logout_action_;
-	unsigned int chat_channel_num_;
-	unsigned int chat_sequence_num_;
-	bool    first_touch_;
+	std::string chat_channel_num_;
+	unsigned int    chat_sequence_num_;
+	bool    chat_first_touch_;
 
 	std::string log;
 
@@ -110,11 +123,21 @@ public:
 	void    store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
 	void    clear_cookies( );
 
+	// Connection handling
+
+	unsigned int error_count_;
+
+	bool    validate_response( http::response* );
+	bool    handle_success( );
+	bool    handle_error( std::string method, bool force = false );
+	void __inline increment_error( ) { this->error_count_++; }
+	void __inline decrement_error( ) { if ( error_count_ > 0 ) error_count_--; }
+	void __inline reset_error( ) { error_count_ = 0; }
+
 	// Login handling
 
 	bool    login( const std::string &username, const std::string &password );
 	bool    logout( );
-	bool    validate_response( http::response* );
 
 	const std::string & get_username() const;
 
@@ -128,17 +151,18 @@ public:
 	std::map< std::string, facebook_user* > buddies;
 
 	bool    buddy_list( );
-	void __cdecl process_updates( void* );
 
 	// Messages handling
 
-	bool    send_message( string message_recipient, string message_text );
 	bool    channel( );
-	void __cdecl process_messages( void* );
+	bool    send_message( string message_recipient, string message_text );
+
+	// User details handling
+
+	bool    get_profile(facebook_user* fbu);
 
 	// Status handling
 
-	bool    get_status(facebook_user* fbu);
 	bool    set_status(const std::string &text);
 
 	////////////////////////////////////////////////////////////
