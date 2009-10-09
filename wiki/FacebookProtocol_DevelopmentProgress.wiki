@@ -22,7 +22,7 @@
  * _^DONE — Already Done^_
 
 = Known issues =
-None at this moment
+ * Unfortunately a 100% CPU usage may occur after some time. To walk around this, Miranda restart is not required, just sign off the protocol, go to Account manager and disable and re-enable protocol.
 
 = Not-Issues =
  * Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
