@@ -27,3 +27,9 @@
 = Not-Issues =
  * Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
  * Away status as is not applicable, FB doesn't support any active/controllable Away status, only server-driven Idle.
+
+= Latest API version =
+
+<var>1.2</var>
+
+This value is used to check whether there's a newer plugin with updated implementation available. This value will be incremented each time Facebook changes something inside API.
