@@ -1,3 +1,37 @@
+0.0.0.6
+-------
+
+- Added internal _APP logging (not present in public releases)
+- Some more logging events
+- Made HTTP headers to be quite "static" during runtime (enhanced handling +
+manipulation)
+- Optimized User agent storage manipulation
+- Improved HTTP request success/error handling
+- Lot of strings and data pointers moved from char-fields to C++ std::string +
+optimized usage, getting rid of possible leaks
+- Added secret DB option to disable performing Logout action when signing off
+- Fixed serious JSON parser comparison typos (= -> ==)
+- Fixed usage of int intead of proper std::string::size_type where applicable
+- Fixed conversion of HTML entities which appeared in users' real names and
+status messages
+- Fixed incorrect sequence number incrementation (caused minor looping and
+receiving messages multiple times)
+- Fixed updating avatars + status messages in some cases (f.e. when contact has
+no status message set)
+- Optimized utils::time functions
+- Optimized and fixed utils::number::random to return integer instead of strict
+std::string
+- Added utils::conversion::to_string function (as this is often usable :) +
+macros for use as a data type parameter
+- Added utils::text::find_first function (as an front-end for std::string
+searching)
+- Added utils::text::html_special_chars and html_special_chars_decode
+- Renamed utils::text::find_all to count_all to match what this function really
+does
+- Removed some unused variables
+
+Notes:
+- 100% CPU usage issue should be gone now, but in case it doesn't, you don't have to kill Miranda, turning protocol off, then disabling it and re-enabling it again should be enough
 
 0.0.0.5
 -------
@@ -33,6 +67,9 @@ Notes:
 - Own avatar is now handled and processed, so it's visible where possible (tabSRMM, inside Tipper when hovering account icon in statusbar, ...)
 - Real names updating option has gone from now as contact's RealName/Nick value is updated normally, if you want anyone to have custom name, you can edit it like elsewhere (clist module stores this elsewhere and prioritizes this value before others)
 
+Known issues:
+- [REPORTED] 100% CPU usage issue
+
 0.0.0.4
 -------
 
@@ -54,9 +91,9 @@ Notes:
 
 Known issues:
 
-- Status messages may contain HTML character entities for some specific characters [REPORTED]
-- Protocol is signed off each time server times out — will be changed in next version, disconnecting only when connection is down (more exactly when reaching 3 time-outs, while error increments time-out counter, success decrements — cheap, but working solution) [FIXED]
-- Accounts linked with message servers 0.channel01—0.channel09 can't connect for more than just a few seconds followed by possible crash because of my beginner's bug in URL generation causing fake connection time-out [FIXED]
+- [FIXED] Status messages may contain HTML character entities for some specific characters
+- [FIXED] Protocol is signed off each time server times out — will be changed in next version, disconnecting only when connection is down (more exactly when reaching 3 time-outs, while error increments time-out counter, success decrements — cheap, but working solution)
+- [FIXED] Accounts linked with message servers 0.channel01—0.channel09 can't connect for more than just a few seconds followed by possible crash because of my beginner's bug in URL generation causing fake connection time-out
 
 0.0.0.3
 -------
@@ -72,7 +109,7 @@ Known issues:
 
 Known issues:
 
-- Login session gets down after some time (should be more than 1 hour), the reason or a way to avoid this is not known to me, yet [FIXED]
+- [FIXED] Login session gets down after some time (should be more than 1 hour), the reason or a way to avoid this is not known to me, yet
 
 0.0.0.2
 -------
@@ -91,9 +128,9 @@ Known issues:
 
 Known issues:
 
-- Crash is invoked when receiving typing notification from FB with no message followed in a "packet" (both events use similar format => bad exception for non-message content leading to buffer overrun) [FIXED]
-- Plugin doesn't detect when the connection is closed/logged out remotely (rarely, but may happen, may bring some crash) [FIXED]
-- Avatars may flicker, their updating process hasn't been optimized, yet [FIXED]
+- [FIXED] Crash is invoked when receiving typing notification from FB with no message followed in a "packet" (both events use similar format => bad exception for non-message content leading to buffer overrun)
+- [FIXED] Plugin doesn't detect when the connection is closed/logged out remotely (rarely, but may happen, may bring some crash)
+- [FIXED] Avatars may flicker, their updating process hasn't been optimized, yet
 
 0.0.0.1
 -------
@@ -111,7 +148,7 @@ Known issues:
 
 Known issues:
 
-- Frequent crashes caused by saving cookies on login and when obtaining updates/messages periodically (parse error) [FIXED]
+- [FIXED] Frequent crashes caused by saving cookies on login and when obtaining updates/messages periodically (parse error)
 
 0.0.0.0
 -------
