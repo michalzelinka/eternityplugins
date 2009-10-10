@@ -27,8 +27,9 @@ Last change on : $Date$
 
 #include "common.h"
 
-int FacebookProto::RecvMsg(HANDLE hContact,PROTORECVEVENT *pre)
+int FacebookProto::RecvMsg(HANDLE hContact, PROTORECVEVENT *pre)
 {
+	_APP("RecvMsg");
 	CCSDATA ccs = { hContact,PSR_MESSAGE,0,reinterpret_cast<LPARAM>(pre) };
 	return CallService(MS_PROTO_RECVMSG,0,reinterpret_cast<LPARAM>(&ccs));
 }
@@ -42,6 +43,7 @@ struct send_direct
 
 void FacebookProto::SendSuccess(void *p)
 {
+	_APP("SendSuccess");
 	if(p == 0)
 		return;
 	send_direct *data = static_cast<send_direct*>(p);
@@ -60,8 +62,9 @@ void FacebookProto::SendSuccess(void *p)
 	delete data;
 }
 
-int FacebookProto::SendMsg(HANDLE hContact,int flags,const char *msg)
+int FacebookProto::SendMsg(HANDLE hContact, int flags, const char *msg)
 {
+	_APP("SendMsg");
 	if ( !isOnline( ) )
 		return 0;
 

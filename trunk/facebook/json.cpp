@@ -29,13 +29,14 @@ Last change on : $Date$
 
 int facebook_json_parser::parse_data( void* structure, void* data )
 {
+	_APP("parse_data");
 	std::string json_data = (*( std::string* )data).substr( 9 );
 	std::string parser_name = ""; std::string parsed = "";
 
 	if ( parserType == FB_PARSE_BUDDY_LIST ) {
 		parser_name = "buddy list";
 		this->buddies = ( std::map< std::string, facebook_user* >* )structure; }
-	else if ( parserType = FB_PARSE_MESSAGES ) {
+	else if ( parserType == FB_PARSE_MESSAGES ) {
 		parser_name = "messages";
 		this->messages = ( vector< facebook_message* >* )structure; }
 	else return EXIT_FAILURE;
@@ -56,6 +57,7 @@ int facebook_json_parser::parse_data( void* structure, void* data )
 
 	parent->parent->LOG("===== Parser of %s starts walking through the data", parser_name.c_str());
 
+	_APP("parse_data::before_loop");
 	for (size_t i = 0; i < json_data.length( ); i++ )
 	{
 		int next_char = json_data.at( i );
@@ -66,6 +68,7 @@ int facebook_json_parser::parse_data( void* structure, void* data )
             return EXIT_FAILURE;
         }
     }
+	_APP("parse_data::after_loop");
 //	parent->parent->LOG("\r\n===== Parsed %s data:\n%s\n", parser_name.c_str(), parsed.c_str());
 	if (!JSON_parser_done(jc)) {
 		delete_JSON_parser(jc);
@@ -74,7 +77,7 @@ int facebook_json_parser::parse_data( void* structure, void* data )
 	}
 	if ( parserType == FB_PARSE_BUDDY_LIST )
 		parent->parent->LOG("===== Parsing %s finished, got items: %d", parser_name.c_str(), buddies->size());
-	else if ( parserType = FB_PARSE_MESSAGES )
+	else if ( parserType == FB_PARSE_MESSAGES )
 		parent->parent->LOG("===== Parsing %s finished, got items: %d", parser_name.c_str(), messages->size());
 
 	delete ( std::string* )data;

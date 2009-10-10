@@ -29,6 +29,7 @@ Last change on : $Date$
 
 std::string utils::url::encode(const std::string &s)
 {
+	_APP("url::encode");
 	char *encoded = reinterpret_cast<char*>(CallService( MS_NETLIB_URLENCODE,
 		0,reinterpret_cast<LPARAM>(s.c_str()) ));
 	std::string ret = encoded;
@@ -39,23 +40,47 @@ std::string utils::url::encode(const std::string &s)
 
 std::string utils::time::unix_timestamp( )
 {
-	string timestamp = "";
+	_APP("time::unix_timestamp");
 	time_t in = ::time( NULL );
-	std::stringstream out;
-	out << in;
-	timestamp = out.str();
-	return timestamp;
+	return utils::conversion::to_string( ( void* )&in, UTILS_CONV_TIME_T );
 }
 
 std::string utils::time::mili_timestamp( )
 {
+	_APP("time::mili_timestamp");
 	SYSTEMTIME st;
 	std::string timestamp = utils::time::unix_timestamp();
 	GetSystemTime(&st);
-	std::stringstream out;
-	out << st.wMilliseconds;
-	timestamp.append(out.str());
+	timestamp.append(utils::conversion::to_string( ( void* )&st.wMilliseconds, UTILS_CONV_WORD ));
 	return timestamp;
+}
+
+std::string utils::conversion::to_string( void* data, WORD type )
+{
+	std::stringstream out;
+
+	switch ( type )
+	{
+
+	case UTILS_CONV_BOOLEAN:
+		if ( (*( bool* )data) == true ) return "true";
+		else return "false";
+
+	case UTILS_CONV_TIME_T:
+		out << (*( time_t* )data);
+		break;
+
+	case UTILS_CONV_SIGNED_NUMBER:
+		out << (*( signed long long* )data);
+		break;
+
+	case UTILS_CONV_UNSIGNED_NUMBER:
+		out << (*( unsigned long long* )data);
+		break;
+
+	}
+
+	return out.str( );
 }
 
 unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int start_bracket_position )
@@ -124,7 +149,6 @@ unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int s
 unsigned int utils::text::find_matching_quote( std::string msg, unsigned int start_quote_position )
 {
 	string beginEndQuote = msg.substr( start_quote_position, 1 );
-	bool   insideText = false;
 
 	if ( beginEndQuote != "\"" && beginEndQuote != "'" )
 		return 0;
@@ -145,44 +169,74 @@ unsigned int utils::text::find_matching_quote( std::string msg, unsigned int sta
 	return 0;
 }
 
-void utils::text::replace_all( std::string* data, std::string from, std::string to )
+void utils::text::replace_first( std::string* data, std::string from, std::string to )
 {
 	string::size_type position = 0;
+	_APP("text::replace_first::begin");
 
-	while ( ( position = data->find(from, position) ) != string::npos )
+	if ( ( position = data->find(from, position) ) != string::npos )
 	{
 		data->replace( position, from.size(), to );
 		position++;
 	}
+	_APP("text::replace_first::end");
 }
 
-unsigned int utils::text::find_all( std::string* data, std::string term )
+void utils::text::replace_all( std::string* data, std::string from, std::string to )
+{
+	string::size_type position = 0;
+	_APP("text::replace_all::begin");
+
+	while ( ( position = data->find( from, position ) ) != string::npos )
+	{
+		_APP("text::replace_all::while");
+		data->replace( position, from.size(), to );
+		position++;
+	}
+	_APP("text::replace_all::end");
+}
+
+unsigned int utils::text::count_all( std::string* data, std::string term )
 {
 	unsigned int count = 0;
 	string::size_type position = 0;
+	_APP("text::find_all::begin");
 
-	while ( true )
+	while ( ( position = data->find( term, position ) ) != string::npos )
 	{
-		position = data->find( term, position );
-		if ( position != string::npos )
-		{
-			count++;
-			position++;
-		}
-		else break;
+		_APP("text::find_all::while");
+		count++;
+		position++;
 	}
+	_APP("text::find_all::end");
 
 	return count;
 }
 
-std::string utils::number::random( )
+std::string utils::text::html_special_chars( std::string data )
 {
-	string number = "";
-	int in = ::time( NULL );
-	std::stringstream out;
-	out << in;
-	number = out.str();
-	return number;
+	utils::text::replace_all( &data, "&", "&amp;" );
+	utils::text::replace_all( &data, "\"", "&quot;" );
+	utils::text::replace_all( &data, "'", "&#039;" );
+	utils::text::replace_all( &data, "<", "&lt;" );
+	utils::text::replace_all( &data, ">", "&gt;" );
+	return data;
+}
+
+std::string utils::text::html_special_chars_decode( std::string data )
+{
+	utils::text::replace_all( &data, "&amp;", "&" );
+	utils::text::replace_all( &data, "&quot;", "\"" );
+	utils::text::replace_all( &data, "&#039;", "'" );
+	utils::text::replace_all( &data, "&lt;", "<" );
+	utils::text::replace_all( &data, "&gt;", ">" );
+	return data;
+}
+
+int utils::number::random( )
+{
+	srand( ::time( NULL ) );
+	return rand( );
 }
 
 void utils::debug::info( const char* info, HWND parent )
@@ -212,7 +266,7 @@ int utils::debug::log(std::string file_name, std::string text)
 
 void __fastcall utils::mem::detract(char** str )
 {
-	detract( ( void** )str );
+	utils::mem::detract( ( void** )str );
 }
 
 void __fastcall utils::mem::detract(void** p)
@@ -222,7 +276,7 @@ void __fastcall utils::mem::detract(void** p)
 //		free(*p);
 //		*p = NULL;
 //	}
-	detract((void*)(*p));
+	utils::mem::detract((void*)(*p));
 }
 
 void __fastcall utils::mem::detract(void* p)
@@ -290,6 +344,11 @@ int ext_to_format(const std::string &ext)
 void DebugInfo( const char* debugInfo )
 {
 	utils::debug::info( debugInfo );
+}
+
+void _APP( std::string text )
+{
+//	utils::debug::log( "APP", text );
 }
 
 void NOTIFY( char* title, char* message )

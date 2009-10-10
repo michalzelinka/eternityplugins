@@ -29,6 +29,7 @@ Last change on : $Date$
 
 bool FacebookProto::IsMyContact(HANDLE hContact)
 {
+	_APP("IsMyContact");
 	const char *proto = reinterpret_cast<char*>( CallService(MS_PROTO_GETCONTACTBASEPROTO,
 		reinterpret_cast<WPARAM>(hContact),0) );
 
@@ -40,10 +41,11 @@ bool FacebookProto::IsMyContact(HANDLE hContact)
 
 HANDLE FacebookProto::ContactIDToHContact(std::string user_id)
 {
+	_APP("ContactIDToHContact");
 	for(HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 		hContact;
 		hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0) )
-	{
+	{ _APP("ContactIDToHContact::for");
 		if(!IsMyContact(hContact))
 			continue;
 
@@ -65,6 +67,7 @@ HANDLE FacebookProto::ContactIDToHContact(std::string user_id)
 
 HANDLE FacebookProto::AddToContactList(facebook_user* fbu)
 {
+	_APP("AddToClientList");
 	// First, check if this contact exists
 	HANDLE hContact = ContactIDToHContact(fbu->user_id);
 	if(hContact)
@@ -97,10 +100,11 @@ HANDLE FacebookProto::AddToContactList(facebook_user* fbu)
 
 void FacebookProto::SetAllContactStatuses(int status)
 {
+	_APP("SetAllContactStatuses");
 	for (HANDLE hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDFIRST,0,0);
 	    hContact;
 	    hContact = (HANDLE)CallService(MS_DB_CONTACT_FINDNEXT,(WPARAM)hContact,0))
-	{
+	{ _APP("SetAllContactsStatuses::for");
 		if (!IsMyContact(hContact))
 			continue;
 
@@ -116,6 +120,7 @@ void FacebookProto::SetAllContactStatuses(int status)
 
 void FacebookProto::UpdateContactWorker(void *p)
 {
+	_APP("UpdateContactWorker");
 	if ( this->isOffline( ) )
 		return;
 
@@ -195,6 +200,7 @@ void FacebookProto::UpdateContactWorker(void *p)
 
 void FacebookProto::GetAwayMsgWorker(void *hContact)
 {
+	_APP("GetMyAwayMsgWorker");
 	if(hContact == 0)
 		return;
 
@@ -220,16 +226,18 @@ HANDLE FacebookProto::GetAwayMsg(HANDLE hContact)
 
 int FacebookProto::OnBuildContactMenu(WPARAM,LPARAM)
 {
+	_APP("OnBuildContactMenu");
 	return NULL;
 }
 
 int FacebookProto::OnContactDeleted(WPARAM wparam,LPARAM)
 {
+	_APP("OnContactDeleted");
 	HANDLE hContact = (HANDLE)wparam;
 
 	for (std::map< std::string, facebook_user* >::iterator i = facy.buddies.begin(); i != facy.buddies.end(); ++i)
-		if (hContact == i->second->handle)
-			{ facy.buddies.erase(i); break; }
+		if (hContact == i->second->handle) {
+			facy.buddies.erase(i); break; }
 
 	return NULL;
 }

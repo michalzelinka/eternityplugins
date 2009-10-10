@@ -27,7 +27,9 @@ Last change on : $Date$
 
 #pragma once
 
-#pragma warning( disable: 4996 )
+//#pragma warning(push)
+//#pragma warning(disable:4312)
+#pragma warning(disable:4996)
 
 #define MIRANDA_VER    0x0800
 #define _WIN32_WINNT   0x0500
@@ -35,29 +37,27 @@ Last change on : $Date$
 
 #include <iostream>
 #include <string>
+#include <cstring>
+#include <sstream>
 #include <list>
 #include <map>
 #include <vector>
-#include <sstream>
-#include <time.h>
-#include <cstring>
 #include <ctime>
+#include <time.h>
 #include <assert.h>
 #include <io.h>
+
 using namespace std;
 
 #include <windows.h>
 
-//#pragma warning(push)
-//#	pragma warning(disable:4312)
-//#	pragma warning(disable:4996)
 #include <newpluginapi.h>
 #include <win2k.h>
 #include <m_system.h>
 #include <m_system_cpp.h>
 #include <m_avatars.h>
 #include <m_button.h>
-#include <m_chat.h> // causes Boost/tinyJSON throwing marvellous errors -> tinyJSON must be included first
+#include <m_chat.h>
 #include <m_clc.h>
 #include <m_clist.h>
 #include <m_clistint.h>
@@ -104,3 +104,5 @@ class FacebookProto;
 //#pragma warning(pop)
 
 extern HINSTANCE g_hInstance;
+extern std::string g_strUserAgent;
+extern DWORD g_mirandaVersion;

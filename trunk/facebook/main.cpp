@@ -27,6 +27,7 @@ Last change on : $Date$
 
 #include "common.h"
 
+// TODO: Make following as "globals" structure?
 PLUGINLINK *pluginLink;
 CLIST_INTERFACE* pcli;
 MD5_INTERFACE md5i;
@@ -35,9 +36,7 @@ UTF8_INTERFACE utfi;
 LIST_INTERFACE li;
 
 HINSTANCE g_hInstance;
-
-char* g_szUserAgent;
-
+std::string g_strUserAgent;
 DWORD g_mirandaVersion;
 
 PLUGININFOEX pluginInfo={
@@ -83,9 +82,6 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 	}
 
 	g_mirandaVersion = mirandaVersion;
-	/*unsigned long mv=_htonl(mirandaVersion);
-	memcpy(&AIM_CAP_MIRANDA[8],&mv,sizeof(DWORD));
-	memcpy(&AIM_CAP_MIRANDA[12],AIM_OSCAR_VERSION,sizeof(DWORD));*/
 	return &pluginInfo;
 }
 
@@ -171,19 +167,17 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// Init native User-Agent
 	{
-		std::string user_agent = "MirandaIM/";
+		g_strUserAgent = "MirandaIM/";
 //		DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
-		user_agent += ( char )((( g_mirandaVersion >> 24) & 0xFF) + 0x30);
-		user_agent += ".";
-		user_agent += ( char )((( g_mirandaVersion >> 16) & 0xFF) + 0x30);
-		user_agent += ".";
-		user_agent += ( char )((( g_mirandaVersion >>  8) & 0xFF) + 0x30);
-		user_agent += ".";
-		user_agent += ( char )((( g_mirandaVersion      ) & 0xFF) + 0x30);
-		user_agent += " FacebookProtocol/";
-		user_agent += __VERSION_STRING;
-		g_szUserAgent = ( char* )utils::mem::allocate( user_agent.length( ) * sizeof( char ) );
-		strcpy( g_szUserAgent, user_agent.c_str( ) );
+		g_strUserAgent += ( char )((( g_mirandaVersion >> 24) & 0xFF) + 0x30);
+		g_strUserAgent += ".";
+		g_strUserAgent += ( char )((( g_mirandaVersion >> 16) & 0xFF) + 0x30);
+		g_strUserAgent += ".";
+		g_strUserAgent += ( char )((( g_mirandaVersion >>  8) & 0xFF) + 0x30);
+		g_strUserAgent += ".";
+		g_strUserAgent += ( char )((( g_mirandaVersion      ) & 0xFF) + 0x30);
+		g_strUserAgent += " FacebookProtocol/";
+		g_strUserAgent += __VERSION_STRING;
 	}
 
     return 0;
@@ -195,6 +189,5 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 extern "C" int __declspec(dllexport) Unload(void)
 {
 	//UninitContactMenus();
-	utils::mem::detract(&g_szUserAgent);
 	return 0;
 }

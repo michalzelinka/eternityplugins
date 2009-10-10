@@ -215,7 +215,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			SendMessage(GetDlgItem(hwnd,IDC_UN),EM_SETREADONLY,TRUE,0);
 			SendMessage(GetDlgItem(hwnd,IDC_PW),EM_SETREADONLY,TRUE,0); }
 
-//		SendDlgItemMessage(hwnd, IDC_GROUP, EM_LIMITTEXT, 8, 0); // TODO: Is there any length limit?
+		SendDlgItemMessage(hwnd, IDC_GROUP, EM_LIMITTEXT, FACEBOOK_GROUP_NAME_LIMIT, 0);
 
 		if( !DBGetContactSettingTString(0,proto->ModuleName(),FACEBOOK_KEY_DEF_GROUP,&dbv) )
 		{
