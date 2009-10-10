@@ -27,8 +27,6 @@ Last change on : $Date$
 
 #include "common.h"
 
-extern OBJLIST<FacebookProto> g_Instances;
-
 struct
 {
 	const char*  name;
@@ -40,7 +38,7 @@ static const icons[] =
 {
 	{ "facebook", LPGEN("Facebook Icon"), IDI_FACEBOOK },
 	{ "mind",     LPGEN("Mind"),          IDI_MIND     },
-//	{ "homepage", "Visit Homepage", 0, "core_main_2" }, // Uncomment when this menu item is available
+//	{ "homepage", LPGEN("Visit Homepage"), 0, "core_main_2" }, // Uncomment when this menu item is available
 };
 
 static HANDLE hIconLibItem[SIZEOF(icons)];
@@ -104,7 +102,7 @@ HANDLE GetIconHandle(const char* name)
 
 
 // Contact List menu stuff
-HANDLE g_hMenuItems[2];
+//HANDLE g_hMenuItems[2];
 
 //// Helper functions
 //static FacebookProto * GetInstanceByHContact(HANDLE hContact)

@@ -27,6 +27,26 @@ Last change on : $Date$
 
 #pragma once
 
+// C++ bool type
+#define UTILS_CONV_BOOLEAN              0x0001 // output: "true" / "false"
+// signed regular numbers
+#define UTILS_CONV_SIGNED_SHORT         0x0010 // output: "(-)##"
+#define UTILS_CONV_SIGNED_INT           0x0010 // output: "(-)####"
+#define UTILS_CONV_SIGNED_LONG          0x0010 // output: "(-)####"
+#define UTILS_CONV_SIGNED_LONG_LONG     0x0010 // output: "(-)########"
+#define UTILS_CONV_SIGNED_NUMBER        0x0010
+// unsigned regular numbers
+#define UTILS_CONV_UNSIGNED_SHORT       0x0020 // output: "##"
+#define UTILS_CONV_UNSIGNED_INT         0x0020 // output: "####"
+#define UTILS_CONV_UNSIGNED_LONG        0x0020 // output: "####"
+#define UTILS_CONV_UNSIGNED_LONG_LONG   0x0020 // output: "########"
+#define UTILS_CONV_BYTE                 0x0020 // output: "#"
+#define UTILS_CONV_WORD                 0x0020 // output: "##"
+#define UTILS_CONV_DWORD                0x0020 // output: "####"
+#define UTILS_CONV_UNSIGNED_NUMBER      0x0020
+// miscellaneous
+#define UTILS_CONV_TIME_T               0x0040 // output: "########"
+
 template<typename T>
 void CreateProtoService(const char *module,const char *service,
 	int (__cdecl T::*serviceProc)(WPARAM,LPARAM),T *self)
@@ -68,14 +88,21 @@ namespace utils
 	};
 
 	namespace number {
-		std::string random( );
+		int random( );
 	};
 
 	namespace text {
 		unsigned int find_matching_bracket( std::string msg, unsigned int start_bracket_position );
 		unsigned int find_matching_quote( std::string msg, unsigned int start_quote_position );
+		void replace_first( std::string* data, std::string from, std::string to );
 		void replace_all( std::string* data, std::string from, std::string to );
-		unsigned int find_all( std::string* data, std::string term );
+		unsigned int count_all( std::string* data, std::string term );
+		std::string html_special_chars( std::string data );
+		std::string html_special_chars_decode( std::string data );
+	};
+
+	namespace conversion {
+		std::string to_string( void*, WORD type );
 	};
 
 	namespace debug {
@@ -132,6 +159,7 @@ static const struct
 int ext_to_format(const std::string &ext);
 
 void DebugInfo( const char* debugInfo );
+void _APP( std::string text );
 void NOTIFY( char* title, char* message );
 void MB( const char* m );
 void MBI( int a );

@@ -29,29 +29,34 @@ Last change on : $Date$
 
 void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
 {
-//	LOG("***** Executing APC");
+	_APP("APC_callback");
 }
 
 void FacebookProto::KillThreads( )
 {
+	_APP("KillThreads");
 	// Kill the old threads if they are still around
 	if(m_hUpdLoop)
 	{
+		_APP("KillThreads::before_upd_kill");
 		LOG("***** Requesting UpdateLoop to exit");
 		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
 		LOG("***** Waiting for old UpdateLoop to exit");
 		WaitForSingleObject(m_hUpdLoop,IGNORE);
 		CloseHandle(m_hUpdLoop);
 		m_hUpdLoop = NULL;
+		_APP("KillThreads::after_upd_kill");
 	}
 	if(m_hMsgLoop)
 	{
+		_APP("KillThreads::before_msg_kill");
 		LOG("..... Requesting MessageLoop to exit");
 		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
 		LOG("***** Waiting for old MessageLoop to exit");
 		WaitForSingleObject(m_hMsgLoop,IGNORE);
 		CloseHandle(m_hMsgLoop);
 		m_hMsgLoop = NULL;
+		_APP("KillThreads::after_msg_kill");
 	}
 }
 
@@ -62,7 +67,7 @@ void FacebookProto::SignOn(void*)
 
 	KillThreads( );
 
-	if ( NegotiateConnection( ) ) // Could this be? The legendary Go Time??
+	if ( NegotiateConnection( ) )
 	{
 		setDword( "LogonTS", (DWORD)time(NULL) );
 		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop,  this );
@@ -173,10 +178,16 @@ void FacebookProto::UpdateLoop(void *)
 
 	for ( WORD i = 0; ; i++ )
 	{
+		_APP("UpdateLoop");
 		if ( !isOnline( ) )
 			goto exit;
 		if ( !facy.buddy_list( ) )
 			goto exit;
+		if ( !isOnline( ) )
+			goto exit;
+//		if ( i % 30 == 29 )
+//			if ( !facy.keep_alive( ) )
+//				goto exit;
 		if ( !isOnline( ) )
 			goto exit;
 		LOG( "***** FacebookProto::UpdateLoop going to sleep..." );
@@ -195,6 +206,7 @@ void FacebookProto::MessageLoop(void *)
 
 	for ( WORD i = 0; ; i++ )
 	{
+		_APP("MessageLoop");
 		if ( !isOnline( ) )
 			goto exit;
 		if ( !facy.channel( ) )

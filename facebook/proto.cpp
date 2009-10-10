@@ -111,6 +111,7 @@ HICON FacebookProto::GetIcon(int index)
 
 int FacebookProto::SetStatus( int new_status )
 {
+	_APP("SetStatus");
 	int old_status = m_iStatus;
 	if ( new_status == m_iStatus )
 		return 0;
@@ -146,8 +147,9 @@ int FacebookProto::SetStatus( int new_status )
 	return 0;
 }
 
-int FacebookProto::SetAwayMsg( int status,const char *msg )
+int FacebookProto::SetAwayMsg( int status, const char *msg )
 {
+	_APP("SetAwayMsg");
 	if ( isOnline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
 		ForkThread(&FacebookProto::SendMindWorker, this, (void*)msg);
 	return 0;
@@ -155,10 +157,9 @@ int FacebookProto::SetAwayMsg( int status,const char *msg )
 
 void FacebookProto::SendMindWorker(void * data)
 {
+	_APP("SendMindWorker");
 	const std::string new_status = ( char* )data;
 	facy.set_status( new_status );
-	// TODO: data leak?
-	// TODO:RE:
 	utils::mem::detract( ( void** )&data );
 }
 
@@ -167,6 +168,7 @@ void FacebookProto::SendMindWorker(void * data)
 
 int FacebookProto::GetStatus( WPARAM wParam, LPARAM lParam )
 {
+	_APP("GetStatus");
 	return m_iStatus;
 }
 
@@ -177,6 +179,7 @@ int FacebookProto::SetStatus( WPARAM wParam, LPARAM lParam )
 
 int FacebookProto::GetMyAwayMsg( WPARAM wParam, LPARAM lParam )
 {
+	_APP("GetMyAwayMsg");
 	DBVARIANT dbv = { DBVT_TCHAR };
 	if ( !getTString( "StatusMsg", &dbv ) && lstrlen( dbv.ptszVal ) != 0 )
 	{
@@ -329,9 +332,6 @@ void FacebookProto::ToggleStatusMenuItems( BOOL bEnable )
 
 int FacebookProto::OnMind(WPARAM,LPARAM)
 {
-	if ( !isOnline( ) ) // TODO: remove this, toggle status menu item inside server negotiation proc
-		return TRUE;
-
 	HWND hDlg = CreateDialogParam( g_hInstance, MAKEINTRESOURCE( IDD_MIND ),
 		 ( HWND )0, FBMindProc, reinterpret_cast<LPARAM>( this ) );
 	ShowWindow( hDlg, SW_SHOW );

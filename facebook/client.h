@@ -86,8 +86,7 @@ public:
 	{
 		username_ = password_ = \
 		post_form_id_ = dtsg_ = \
-		logout_action_ = chat_channel_num_ = \
-		log = "";
+		logout_action_ = chat_channel_num_ = "";
 
 		chat_sequence_num_ = error_count_ = 0;
 
@@ -112,27 +111,36 @@ public:
 	unsigned int    chat_sequence_num_;
 	bool    chat_first_touch_;
 
-	std::string log;
+	////////////////////////////////////////////////////////////
 
-	// Session, Cookies, Data storage
+	// Cookies, Data storage
 
-	std::map< string, string >   cookies;
+	std::map< std::string, std::string >    cookies;
+	std::map< std::string, std::string >    headers;
 
-	char*   get_user_agent( );
-	char*   load_cookies( );
+	std::string get_user_agent( );
+
+	std::string load_cookies( );
 	void    store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
 	void    clear_cookies( );
+
+	////////////////////////////////////////////////////////////
 
 	// Connection handling
 
 	unsigned int error_count_;
 
 	bool    validate_response( http::response* );
-	bool    handle_success( );
-	bool    handle_error( std::string method, bool force = false );
+
+	bool    handle_entry( std::string method );
+	bool    handle_success( std::string method );
+	bool    handle_error( std::string method, bool force_disconnect = false );
+
 	void __inline increment_error( ) { this->error_count_++; }
 	void __inline decrement_error( ) { if ( error_count_ > 0 ) error_count_--; }
 	void __inline reset_error( ) { error_count_ = 0; }
+
+	////////////////////////////////////////////////////////////
 
 	// Login handling
 
@@ -141,10 +149,15 @@ public:
 
 	const std::string & get_username() const;
 
+	////////////////////////////////////////////////////////////
+
 	// Session handling
 
 	bool    home( );
 	bool    reconnect( );
+	bool    keep_alive( );
+
+	////////////////////////////////////////////////////////////
 
 	// Updates handling
 
@@ -152,14 +165,20 @@ public:
 
 	bool    buddy_list( );
 
+	////////////////////////////////////////////////////////////
+
 	// Messages handling
 
 	bool    channel( );
 	bool    send_message( string message_recipient, string message_text );
 
+	////////////////////////////////////////////////////////////
+
 	// User details handling
 
 	bool    get_profile(facebook_user* fbu);
+
+	////////////////////////////////////////////////////////////
 
 	// Status handling
 
@@ -169,16 +188,19 @@ public:
 
 	// HTTP communication
 
-	http::response flap( const int request_type, char* request_data = NULL );
+	http::response flap( const int request_type, std::string* request_data = NULL );
 
 	DWORD   choose_security_level( int );
 	int     choose_method( int );
-	char*   choose_server( int, char* data = NULL );
-	char*   choose_action( int, char* data = NULL );
-	char*   choose_request_url( int, char* data = NULL );
+	std::string choose_server( int, std::string* data = NULL );
+	std::string choose_action( int, std::string* data = NULL );
+	std::string choose_request_url( int, std::string* data = NULL );
 
 	NETLIBHTTPHEADER*   get_request_headers( int request_type, int* headers_count );
-	void    set_header( NETLIBHTTPHEADER* header, char* header_name, char* header_value );
+	void    set_header( NETLIBHTTPHEADER* header, char* name );
+	void    refresh_headers( );
+
+	////////////////////////////////////////////////////////////
 
 	// Netlib handle
 

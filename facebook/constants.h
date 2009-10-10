@@ -29,14 +29,20 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 5)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 6)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.0.0.5"
+#define __VERSION_STRING            "0.0.0.6"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,0,0,5
+#define __VERSION_VS_FILE           0,0,0,6
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 0, 0, 5"
+#define __VERSION_VS_FILE_STRING    "0, 0, 0, 6"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
+#define __API_VERSION_STRING        "1.2"
+
+// API versions
+// 1.2 -- buddy_list updates allow non-cumulative update data
+// 1.1 -- buddy_list now includes some reduntant data
+// 1.0 -- initial implementation
 
 // Product management
 #define FACEBOOK_NAME               "Facebook"
@@ -48,6 +54,7 @@ Last change on : $Date$
 #define FACEBOOK_SERVER_CHAT        "http://%s.channel%s.facebook.com/"
 #define FACEBOOK_SERVER_LOGIN       "https://login.facebook.com/"
 #define FACEBOOK_SERVER_APPS        "http://apps.facebook.com/"
+#define PLUGIN_HOSTING_URL          "http://code.google.com/p/eternityplugins/"
 
 // Limits
 #define FACEBOOK_MESSAGE_LIMIT      1024
@@ -55,6 +62,7 @@ Last change on : $Date$
 #define FACEBOOK_MIND_LIMIT         420
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
 #define FACEBOOK_TIMEOUTS_LIMIT     2
+#define FACEBOOK_GROUP_NAME_LIMIT   100
 
 // Defaults
 #define FACEBOOK_MINIMAL_POLL_RATE              10
@@ -66,8 +74,9 @@ Last change on : $Date$
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically
 #define FACEBOOK_REQUEST_LOGOUT                 101 // disconnecting physically
-#define FACEBOOK_REQUEST_HOME                   110 // getting __post_form_id__ + __fb_dtsg__
-#define FACEBOOK_REQUEST_BUDDY_LIST             120 // regular updates (friends online, ...)
+#define FACEBOOK_REQUEST_KEEP_ALIVE             102 // keeping online status alive without idle
+#define FACEBOOK_REQUEST_HOME                   110 // getting __post_form_id__ + __fb_dtsg__ + ...
+#define FACEBOOK_REQUEST_BUDDY_LIST             120 // getting regular updates (friends online, ...)
 #define FACEBOOK_REQUEST_RECONNECT              130 // getting __sequence_num__ and __channel_id__
 #define FACEBOOK_REQUEST_PROFILE_GET            200 // getting others' profiles
 #define FACEBOOK_REQUEST_STATUS_SET             251 // setting my "What's on my mind?"
@@ -76,8 +85,8 @@ Last change on : $Date$
 #define FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE  401 // receiving notifications
 
 // Reconnect flags
-#define FACEBOOK_RECONNECT_LOGIN        6 // When logging in
-#define FACEBOOK_RECONNECT_KEEP_ALIVE   3 // After a period, used to keep session alive
+#define FACEBOOK_RECONNECT_LOGIN        "6" // When logging in
+#define FACEBOOK_RECONNECT_KEEP_ALIVE   "3" // After a period, used to keep session alive
 
 // User-Agents
 static char* user_agents[] = {

@@ -29,6 +29,7 @@ Last change on : $Date$
 
 void FacebookProto::ProcessBuddyList( void* data )
 {
+	_APP("ProcessBuddyList");
 	if (!isOnline())
 		return;
 
@@ -41,6 +42,7 @@ void FacebookProto::ProcessBuddyList( void* data )
 
 		for(std::map<std::string, facebook_user*>::iterator i=facy.buddies.begin(); i!=facy.buddies.end(); )
 		{
+			_APP("BuddyList::for");
 			std::map< std::string, facebook_user*>::iterator this_one = i;
 			++i;
 
@@ -57,6 +59,7 @@ void FacebookProto::ProcessBuddyList( void* data )
 			}
 			else
 			{
+				_APP(this_one->second->image_url);
 				this_one->second->handle = AddToContactList(this_one->second);
 				DBWriteContactSettingWord(this_one->second->handle,m_szModuleName,"Status",ID_STATUS_ONLINE );
 				ForkThreadEx(&FacebookProto::UpdateContactWorker, this, (void*)this_one->second);
@@ -74,6 +77,7 @@ void FacebookProto::ProcessBuddyList( void* data )
 
 void FacebookProto::ProcessMessages( void* data )
 {
+	_APP("ProcessMessages");
 	if (!isOnline())
 		return;
 
@@ -87,6 +91,7 @@ void FacebookProto::ProcessMessages( void* data )
 
 		for(size_t i = 0; i < messages.size( ); i++)
 		{
+			_APP("Message::for");
 			if ( messages[i]->user_id == facy.self_.user_id )
 				continue;
 
@@ -120,6 +125,7 @@ void FacebookProto::ProcessMessages( void* data )
 
 void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
 {
+	_APP("ProcessAvatar");
 	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
 	    new update_avatar(hContact,(*url)));
 }
