@@ -22,7 +22,7 @@
  * _^DONE — Already Done^_
 
 = Known issues =
- * Unfortunately a 100% CPU usage may occur after some time. To walk around this, Miranda restart is not required, just sign off the protocol, go to Account manager and disable and re-enable protocol.
+ * Unfortunately a high memory usage may occur after some time. To walk around this, Miranda restart is required.
 
 = Not-Issues =
  * Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
@@ -30,6 +30,11 @@
 
 = Latest API version =
 
-<var>1.2</var>
+<var>1.3</var>
+
+ * 1.3 — m.facebook.com profile change of syntax
+ * 1.2 — buddy_list updates allow non-cumulative update data
+ * 1.1 — buddy_list now includes some reduntant data
+ * 1.0 — initial implementation
 
 This value is used to check whether there's a newer plugin with updated implementation available. This value will be incremented each time Facebook changes something inside API.
