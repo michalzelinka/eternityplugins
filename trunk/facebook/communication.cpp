@@ -27,9 +27,13 @@ Last change on : $Date$
 
 #include "common.h"
 
+void facebook_client::client_notify( TCHAR* message )
+{
+	parent->ShowNotification( parent->m_tszUserName, message );
+}
+
 http::response facebook_client::flap( const int request_type, std::string* request_data )
 {
-	_APP("flap");
 	NETLIBHTTPREQUEST nlhr = {sizeof( nlhr )};
 	nlhr.requestType = choose_method( request_type );
 	std::string url = choose_request_url( request_type, request_data );
@@ -73,12 +77,11 @@ http::response facebook_client::flap( const int request_type, std::string* reque
 
 bool facebook_client::validate_response( http::response* resp )
 {
-	_APP("validate_response");
-	if ( resp->code == HTTP_CODE_FAKE_DISCONNECTED )
+	if ( resp->code == HTTP_CODE_FAKE_DISCONNECTED ) {
 		parent->LOG(" ! !  Request has timed out, connection or server error");
-		return false;
+		return false; }
 
-	if ( resp->data.find( "{\"error\":" ) != string::npos ) try
+	if ( resp->data.find( "{\"error\":" ) != std::string::npos ) try
 	{
 		std::string error = resp->data.substr( resp->data.find( "{\"error\":" ) + 9, 64 );
 		int error_num = atoi( error.substr( 0, error.find( "," ) ).c_str() );
@@ -141,6 +144,7 @@ DWORD facebook_client::choose_security_level( int request_type )
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
 	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_BUDDY_LIST:
+	case FACEBOOK_REQUEST_NOTIFICATIONS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_PROFILE_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
@@ -163,6 +167,7 @@ int facebook_client::choose_method( int request_type )
 
 	case FACEBOOK_REQUEST_LOGOUT:
 	case FACEBOOK_REQUEST_HOME:
+	case FACEBOOK_REQUEST_NOTIFICATIONS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_PROFILE_GET:
 	default:
@@ -190,6 +195,7 @@ std::string facebook_client::choose_server( int request_type, std::string* data 
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
 	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_BUDDY_LIST:
+	case FACEBOOK_REQUEST_NOTIFICATIONS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
@@ -219,8 +225,16 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 	case FACEBOOK_REQUEST_BUDDY_LIST:
 		return "ajax/chat/buddy_list.php";
 
+	case FACEBOOK_REQUEST_NOTIFICATIONS: {
+		// Filters: lf = live feed, h = news feed
+		// TODO: Make filter selection customizable?
+		std::string action = "ajax/intent.php?filter=lf&request_type=1&__a=1&newest=%s&ignore_self=true";
+		std::string newest = utils::conversion::to_string((void*)&this->last_notifications_update_, UTILS_CONV_UNSIGNED_NUMBER);
+		utils::text::replace_first( &action, "%s", newest );
+		return action; }
+
 	case FACEBOOK_REQUEST_RECONNECT: {
-		std::string action = "ajax/presence/reconnect.php?reason=%s&post_form_id=%s&iframe_loaded=false&__a=1&nctr[n]=1";
+		std::string action = "ajax/presence/reconnect.php?reason=%s&iframe_loaded=false&post_form_id=%s&__a=1&nctr[n]=1";
 		std::string reason = ( this->chat_first_touch_ ) ? FACEBOOK_RECONNECT_LOGIN : FACEBOOK_RECONNECT_KEEP_ALIVE;
 		utils::text::replace_first( &action, "%s", reason );
 		utils::text::replace_first( &action, "%s", this->post_form_id_ );
@@ -245,7 +259,7 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 		utils::text::replace_first( &action, "%s", utils::time::unix_timestamp() );
 		utils::text::replace_first( &action, "%s", first_time );
 		utils::text::replace_first( &action, "%s", self_.user_id );
-		utils::text::replace_first( &action, "%d", utils::conversion::to_string( (void*)&chat_sequence_num_, UTILS_CONV_UNSIGNED_INT ) );
+		utils::text::replace_first( &action, "%d", utils::conversion::to_string( (void*)&chat_sequence_num_, UTILS_CONV_UNSIGNED_NUMBER ) );
 		return action; }
 
 	default:
@@ -263,8 +277,6 @@ std::string facebook_client::choose_request_url( int request_type, std::string* 
 
 NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* headers_count )
 {
-	_APP("get_request_headers");
-
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
@@ -272,14 +284,15 @@ NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* h
 	case FACEBOOK_REQUEST_PROFILE_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
-		*( headers_count ) = 7;
+		*headers_count = 7;
 		break;
 	case FACEBOOK_REQUEST_HOME:
+	case FACEBOOK_REQUEST_NOTIFICATIONS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
 	default:
-		*( headers_count ) = 6;
+		*headers_count = 6;
 		break;
 	}
 
@@ -324,8 +337,9 @@ void facebook_client::refresh_headers( )
 	{
 		this->headers["Connection"] = "close";
 		this->headers["Accept"] = "*/*";
-		this->headers["Accept-Encoding"] = "gzip";
-		this->headers["Accept-Language"] = "en, C";
+//		this->headers["Accept-Encoding"] = "none";
+		this->headers["Accept-Encoding"] = "deflate, gzip, x-gzip, identity, *;q=0";
+		this->headers["Accept-Language"] = "en,en-US;q=0.9";
 		this->headers["Content-Type"] = "application/x-www-form-urlencoded";
 	}
 	this->headers["User-Agent"] = get_user_agent( );
@@ -335,17 +349,17 @@ void facebook_client::refresh_headers( )
 std::string facebook_client::get_user_agent( )
 {
 	BYTE user_agent = DBGetContactSettingByte(NULL, parent->m_szModuleName, FACEBOOK_KEY_USER_AGENT, 0);
-	if (user_agent) return user_agents[user_agent];
+	if (user_agent > 0 && user_agent < SIZEOF(user_agents))
+		return user_agents[user_agent];
 	else return g_strUserAgent;
 }
 
 std::string facebook_client::load_cookies( )
 {
-	string cookieString = "isfbe=false;";
+	std::string cookieString = "isfbe=false;";
 
 	if ( cookies.size() )
-		for ( map< string, string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter ) {
-			_APP("load_cookies::for");
+		for ( std::map< std::string, std::string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter ) {
 			cookieString.append( iter->first );
 			cookieString.append( "=" );
 			cookieString.append( iter->second );
@@ -356,15 +370,13 @@ std::string facebook_client::load_cookies( )
 
 void facebook_client::store_cookies( NETLIBHTTPHEADER* headers, int headersCount )
 {
-	_APP("store_cookies");
 	for ( int i = 0; i < headersCount; i++ )
 	{
 		if ( std::string( headers[i].szName ) == std::string( "Set-Cookie" ) )
 		{
-			_APP("store_cookies::for");
-			string cookieString = headers[i].szValue;
-			string cookieName = cookieString.substr( 0, cookieString.find( "=" ) );
-			string cookieValue = cookieString.substr( cookieString.find( "=" ) + 1, cookieString.find( ";" ) - cookieString.find( "=" ) - 1 );
+			std::string cookieString = headers[i].szValue;
+			std::string cookieName = cookieString.substr( 0, cookieString.find( "=" ) );
+			std::string cookieValue = cookieString.substr( cookieString.find( "=" ) + 1, cookieString.find( ";" ) - cookieString.find( "=" ) - 1 );
 			if ( cookieValue == std::string( "deleted" ) ) {
 				parent->LOG("      Deleted cookie '%s'", cookieName.c_str());
 				cookies.erase( cookieName ); }
@@ -393,8 +405,8 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 
 	// Prepare validation data
 	clear_cookies( );
-	cookies.insert( make_pair( "isfbe", "false" ) );
-	cookies.insert( make_pair( "test_cookie", "1" ) );
+	cookies.insert( std::make_pair( "isfbe", "false" ) );
+	cookies.insert( std::make_pair( "test_cookie", "1" ) );
 
 	std::string data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&email=";
 	data += utils::url::encode( username );
@@ -414,8 +426,7 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 	{
 
 	case HTTP_CODE_OK: // OK page returned, but that is regular login page we don't want in fact
-//		if ( resp.data.find( "<title>Login | Facebook</title>" ) != string::npos )
-			MessageBox( NULL, LPGENT( "Probably wrong password entered, please try again." ), TEXT( FACEBOOK_NAME ), MB_OK );
+		client_notify(TranslateT("Probably wrong password entered, please try again."));
 	case HTTP_CODE_FORBIDDEN: // Forbidden
 	case HTTP_CODE_NOT_FOUND: // Not Found
 	default:
@@ -429,8 +440,10 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 			parent->LOG("      Got self user id: %s", this->self_.user_id.c_str());
 			return handle_success( "login" );
 		}
-		else
+		else {
+			client_notify(TranslateT("Login error, probably bad login credentials."));
 			return handle_error( "login", FORCE_DISCONNECT );
+		}
 	}
 }
 
@@ -472,9 +485,10 @@ bool facebook_client::keep_alive( )
 
 	std::string data = "user=" + this->self_.user_id + "&popped_out=false&force_render=true&buddy_list=1&notifications=0&post_form_id=" + this->post_form_id_ + "&fb_dtsg=" + this->dtsg_ + "&post_form_id_source=AsyncRequest&__a=1&nctr[n]=1";
 
+	ScopedLock s(buddies_lock_);
+
 	for (std::map< std::string, facebook_user* >::iterator i = buddies.begin(); i != buddies.end(); ++i )
 	{
-		_APP("keep_alive::for");
 		data += "&available_list[";
 		data += i->first;
 		data += "][i]=";
@@ -514,54 +528,56 @@ bool facebook_client::home( )
 	{
 
 	case HTTP_CODE_OK:
-		// Get real_name
+		if ( resp.data.find( "id=\"fb_menu_account\"" ) != std::string::npos )
 		{
-			std::string::size_type start = resp.data.find( "id=\"fb_menu_account\"" );
-			std::string::size_type end = resp.data.find( "</a>", start );
+			std::string::size_type start, end;
+
+			// Get real_name
+			start = resp.data.find( "id=\"fb_menu_account\"" );
+			end = resp.data.find( "</a>", start );
 			start = resp.data.rfind( "\">", end ) + 2;
 			this->self_.real_name = resp.data.substr( start, end - start );
-			this->self_.real_name = utils::text::html_special_chars_decode( this->self_.real_name );
+			this->self_.real_name = utils::text::special_expressions_decode( this->self_.real_name );
 			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,FACEBOOK_KEY_NAME,this->self_.real_name.c_str());
 			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,"Nick",this->self_.real_name.c_str());
 			parent->LOG("      Got self real name: %s", this->self_.real_name.c_str());
-		}
 
-		// Get post_form_id
-		this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 32 );
-		parent->LOG("      Got self post form id: %s", this->post_form_id_.c_str());
-// If something would go wrong:
-//		{
+			// Get post_form_id
+			this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 32 );
+			parent->LOG("      Got self post form id: %s", this->post_form_id_.c_str());
+
+			// If something would go wrong:
 //			this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 48 );
 //			this->post_form_id_ = this->post_form_id_.substr( 0, this->post_form_id_.find( "\"" ) );
-//		}
 
-		// Get dtsg
-		{
+			// Get dtsg
 			this->dtsg_ = resp.data.substr( resp.data.find( "fb_dtsg:" ) + 9, 48 );
 			this->dtsg_ = this->dtsg_.substr( 0, this->dtsg_.find( "\"" ) );
 			parent->LOG("      Got self dtsg: %s", this->dtsg_.c_str());
-		}
 
-		// Get logout action
-		{
+			// Get logout action
 			this->logout_action_ = resp.data.substr( resp.data.find( "id=\"fb_menu_logout\"" ), 256 );
-			std::string::size_type start = this->logout_action_.find( "<a href=\"" ) + 9;
+			start = this->logout_action_.find( "<a href=\"" ) + 9;
 			start = this->logout_action_.find( "?", start );
-			std::string::size_type end = this->logout_action_.find( "\" class=\"fb_menu_link\"", start );
+			end = this->logout_action_.find( "\" class=\"fb_menu_link\"", start );
 			this->logout_action_ = this->logout_action_.substr( start, end - start );
 			utils::text::replace_all( &this->logout_action_, "&amp;", "&" );
+
+			// Set first touch flag
+			this->chat_first_touch_ = true;
+
+			// Update self-contact
+			ForkThreadEx(&FacebookProto::UpdateContactWorker, this->parent, (void*)&this->self_);
+
+			return handle_success( "home" );
+		}
+		else {
+			client_notify(TranslateT("Something happened to Facebook. Maybe there was some major update or you have Facebook Lite set as default."));
+			return handle_error( "home", FORCE_DISCONNECT );
 		}
 
-		// Set first touch flag
-		this->chat_first_touch_ = true;
-
-		// Update self-contact + own data in the DB
-		ForkThreadEx(&FacebookProto::UpdateContactWorker, this->parent, (void*)&this->self_);
-
-		return handle_success( "home" );
-
 	case HTTP_CODE_FOUND:
-		// work-around for replica_down? f**king hell what's that?
+		// Work-around for replica_down, f**king hell what's that?
 		return this->home();
 
 	default:
@@ -609,12 +625,13 @@ bool facebook_client::buddy_list( )
 
 	// Prepare update data
 
+	ScopedLock s(buddies_lock_);
+
 	// TODO: Request & process notifications
 	std::string data = "user=" + this->self_.user_id + "&popped_out=false&force_render=true&buddy_list=1&notifications=0&post_form_id=" + this->post_form_id_ + "&fb_dtsg=" + this->dtsg_ + "&post_form_id_source=AsyncRequest&__a=1&nctr[n]=1";
 
 	for (std::map< std::string, facebook_user* >::iterator i = buddies.begin(); i != buddies.end(); ++i )
 	{
-		_APP("buddy_list::for");
 		data += "&available_list[";
 		data += i->first;
 		data += "][i]=";
@@ -633,7 +650,7 @@ bool facebook_client::buddy_list( )
 	{
 
 	case HTTP_CODE_OK:
-		if ( resp.data.find( "\"listChanged\":true" ) != string::npos ) {
+		if ( resp.data.find( "\"listChanged\":true" ) != std::string::npos ) {
 			std::string* response_data = new std::string( resp.data );
 			ForkThreadEx( &FacebookProto::ProcessBuddyList, this->parent, ( void* )response_data ); }
 		return handle_success( "buddy_list" );
@@ -642,6 +659,35 @@ bool facebook_client::buddy_list( )
 	case HTTP_CODE_FAKE_DISCONNECTED:
 	default:
 		return handle_error( "buddy_list" );
+
+	}
+}
+
+bool facebook_client::notifications( )
+{
+	handle_entry( "notifications" );
+
+	// Get notifications
+
+	http::response resp = flap( FACEBOOK_REQUEST_NOTIFICATIONS );
+
+	// Process result data
+
+	validate_response(&resp);
+
+	switch ( resp.code )
+	{
+
+	case HTTP_CODE_OK:
+		if ( resp.data.find( "\"storyCount\":" ) != std::string::npos ) {
+			std::string* response_data = new std::string( resp.data );
+			ForkThreadEx( &FacebookProto::ProcessNotifications, this->parent, ( void* )response_data ); }
+		return handle_success( "notifications" );
+
+	case HTTP_CODE_FAKE_LOGGED_OUT:
+	case HTTP_CODE_FAKE_DISCONNECTED:
+	default:
+		return handle_error( "notifications" );
 
 	}
 }
@@ -662,11 +708,11 @@ bool facebook_client::channel( )
 	{
 		// Something went wrong
 	}
-	else if ( resp.data.find( "\"t\":\"continue\"" ) != string::npos )
+	else if ( resp.data.find( "\"t\":\"continue\"" ) != std::string::npos )
 	{
 		// Everything is OK, no new message received
 	}
-	else if ( resp.data.find( "\"t\":\"refresh\"" ) != string::npos )
+	else if ( resp.data.find( "\"t\":\"refresh\"" ) != std::string::npos )
 	{
 		// Something went wrong with the session (has expired?), refresh it
 
@@ -676,7 +722,7 @@ bool facebook_client::channel( )
 	{
 		// Something has been received, throw to new thread to process
 
-		string* response_data = new std::string( resp.data );
+		std::string* response_data = new std::string( resp.data );
 		ForkThreadEx( &FacebookProto::ProcessMessages, this->parent, ( void* )response_data );
 
 		// Increment sequence number
@@ -700,7 +746,7 @@ bool facebook_client::channel( )
 	}
 }
 
-bool facebook_client::send_message( string message_recipient, string message_text )
+bool facebook_client::send_message( std::string message_recipient, std::string message_text )
 {
 	handle_entry( "send_message" );
 
@@ -746,19 +792,18 @@ bool facebook_client::get_profile(facebook_user* fbu)
 	{
 
 	case HTTP_CODE_OK:
-		if ( fbu->status.length() == 0 )
 		{
-			std::string::size_type start = resp.data.find( "<div class=\"sectitle\">" );
-			start = resp.data.find( "class=\"nopad\">", start );
+			std::string::size_type start = resp.data.find( "<div class=\"section_title\">" );
+			start = resp.data.find( "<div id=\"anchor_fbid_", start );
+			start = resp.data.find( "\">", start );
 			if ( start != std::string::npos ) {
-				start += 14;
+				start += 2;
 				std::string::size_type end = resp.data.find( "&nbsp;<small>", start );
 				if ( end != std::string::npos ) {
 					if ( (BYTE)resp.data.at(end-1) == (BYTE)'.' ) end--; // This will hopefuly remove the "evil" dot ^^.
 					fbu->status = resp.data.substr( start, end - start );
-					fbu->status = utils::text::html_special_chars_decode( fbu->status ); } }
+					fbu->status = utils::text::special_expressions_decode( fbu->status ); } }
 		}
-		if ( fbu->image_url.length() == 0 )
 		{
 			std::string::size_type start = resp.data.find( "<img src=\"http://profile.ak.fbcdn.net" );
 			if ( start != std::string::npos ) {
@@ -770,6 +815,7 @@ bool facebook_client::get_profile(facebook_user* fbu)
 			else
 				fbu->image_url = FACEBOOK_DEFAULT_AVATAR_URL;
 		}
+		// TODO: More items?
 	case HTTP_CODE_FOUND:
 		return handle_success( "get_profile" );
 

@@ -29,7 +29,6 @@ Last change on : $Date$
 
 int FacebookProto::RecvMsg(HANDLE hContact, PROTORECVEVENT *pre)
 {
-	_APP("RecvMsg");
 	CCSDATA ccs = { hContact,PSR_MESSAGE,0,reinterpret_cast<LPARAM>(pre) };
 	return CallService(MS_PROTO_RECVMSG,0,reinterpret_cast<LPARAM>(&ccs));
 }
@@ -41,9 +40,8 @@ struct send_direct
 	std::string msg;
 };
 
-void FacebookProto::SendSuccess(void *p)
+void FacebookProto::SendMsgWorker(void *p)
 {
-	_APP("SendSuccess");
 	if(p == 0)
 		return;
 	send_direct *data = static_cast<send_direct*>(p);
@@ -51,7 +49,6 @@ void FacebookProto::SendSuccess(void *p)
 	DBVARIANT dbv;
 	if( !DBGetContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv) )
 	{
-		ScopedLock s(facebook_lock_);
 		facy.send_message(dbv.pszVal, data->msg);
 
 		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_MESSAGE,ACKRESULT_SUCCESS,
@@ -64,10 +61,12 @@ void FacebookProto::SendSuccess(void *p)
 
 int FacebookProto::SendMsg(HANDLE hContact, int flags, const char *msg)
 {
-	_APP("SendMsg");
 	if ( !isOnline( ) )
 		return 0;
 
-	ForkThread(&FacebookProto::SendSuccess, this,new send_direct(hContact,msg));
+	ForkThread(&FacebookProto::SendMsgWorker, this,new send_direct(hContact,msg));
+
+	// TODO: free msg
+
 	return 1;
 }

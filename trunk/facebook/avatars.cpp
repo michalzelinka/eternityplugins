@@ -29,7 +29,6 @@ Last change on : $Date$
 
 void FacebookProto::UpdateAvatarWorker(void *p)
 {
-	_APP("UpdateAvatarWorker");
 	if(p == 0)
 		return;
 	std::auto_ptr<update_avatar> data( static_cast<update_avatar*>(p) );
@@ -72,7 +71,6 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 
 std::string FacebookProto::GetAvatarFolder()
 {
-	_APP("GetAvatarFolder");
 	char path[MAX_PATH];
 	if(hAvatarFolder_ && FoldersGetCustomPath(hAvatarFolder_,path,sizeof(path), "") == 0)
 		return path;
@@ -82,16 +80,16 @@ std::string FacebookProto::GetAvatarFolder()
 
 INT_PTR FacebookProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 {
-	_APP("GetMyAvatar");
 	if (!wParam) return -3;
 
 	DBVARIANT dbv;
 	std::string avatar_url;
 
-	if ( !getString( FACEBOOK_KEY_AV_URL,&dbv) )
+	if ( !getString( FACEBOOK_KEY_AV_URL,&dbv ) && strlen( dbv.pszVal ) > 0 )
 	{
 		std::string avatar_url = dbv.pszVal;
 		DBFreeVariant(&dbv);
+
 		if ( !getString( FACEBOOK_KEY_ID,&dbv ) )
 		{
 			std::string ext = avatar_url.substr(avatar_url.rfind('.'));

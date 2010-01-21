@@ -29,7 +29,6 @@ Last change on : $Date$
 
 std::string utils::url::encode(const std::string &s)
 {
-	_APP("url::encode");
 	char *encoded = reinterpret_cast<char*>(CallService( MS_NETLIB_URLENCODE,
 		0,reinterpret_cast<LPARAM>(s.c_str()) ));
 	std::string ret = encoded;
@@ -40,18 +39,16 @@ std::string utils::url::encode(const std::string &s)
 
 std::string utils::time::unix_timestamp( )
 {
-	_APP("time::unix_timestamp");
 	time_t in = ::time( NULL );
 	return utils::conversion::to_string( ( void* )&in, UTILS_CONV_TIME_T );
 }
 
 std::string utils::time::mili_timestamp( )
 {
-	_APP("time::mili_timestamp");
 	SYSTEMTIME st;
 	std::string timestamp = utils::time::unix_timestamp();
 	GetSystemTime(&st);
-	timestamp.append(utils::conversion::to_string( ( void* )&st.wMilliseconds, UTILS_CONV_WORD ));
+	timestamp.append(utils::conversion::to_string( ( void* )&st.wMilliseconds, UTILS_CONV_UNSIGNED_NUMBER ));
 	return timestamp;
 }
 
@@ -85,9 +82,9 @@ std::string utils::conversion::to_string( void* data, WORD type )
 
 unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int start_bracket_position )
 {
-	string beginBracket = msg.substr( start_bracket_position, 1 );
-	string endBracket = "";
-	string textIdentifier = "";
+	std::string beginBracket = msg.substr( start_bracket_position, 1 );
+	std::string endBracket = "";
+	std::string textIdentifier = "";
 	bool   insideText = false;
 
 	if      ( beginBracket == "(" ) endBracket = ")";
@@ -100,8 +97,8 @@ unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int s
 
 	for ( unsigned int i = start_bracket_position + 1; i < msg.length( ); i++ )
 	{
-		string currChar = msg.substr( i, 1 );
-		string prevChar = msg.substr( i - 1, 1 );
+		std::string currChar = msg.substr( i, 1 );
+		std::string prevChar = msg.substr( i - 1, 1 );
 
 		if ( currChar == "\"" || currChar == "'" )
 		{
@@ -148,14 +145,14 @@ unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int s
 
 unsigned int utils::text::find_matching_quote( std::string msg, unsigned int start_quote_position )
 {
-	string beginEndQuote = msg.substr( start_quote_position, 1 );
+	std::string beginEndQuote = msg.substr( start_quote_position, 1 );
 
 	if ( beginEndQuote != "\"" && beginEndQuote != "'" )
 		return 0;
 
 	for ( unsigned int i = start_quote_position + 1; i < msg.length( ); i++ )
 	{
-		string currChar = msg.substr( i, 1 );
+		std::string currChar = msg.substr( i, 1 );
 
 		if ( currChar == "\"" || currChar == "'" )
 		{
@@ -171,66 +168,115 @@ unsigned int utils::text::find_matching_quote( std::string msg, unsigned int sta
 
 void utils::text::replace_first( std::string* data, std::string from, std::string to )
 {
-	string::size_type position = 0;
-	_APP("text::replace_first::begin");
+	std::string::size_type position = 0;
 
-	if ( ( position = data->find(from, position) ) != string::npos )
+	if ( ( position = data->find(from, position) ) != std::string::npos )
 	{
 		data->replace( position, from.size(), to );
 		position++;
 	}
-	_APP("text::replace_first::end");
 }
 
 void utils::text::replace_all( std::string* data, std::string from, std::string to )
 {
-	string::size_type position = 0;
-	_APP("text::replace_all::begin");
+	std::string::size_type position = 0;
 
-	while ( ( position = data->find( from, position ) ) != string::npos )
+	while ( ( position = data->find( from, position ) ) != std::string::npos )
 	{
-		_APP("text::replace_all::while");
 		data->replace( position, from.size(), to );
 		position++;
 	}
-	_APP("text::replace_all::end");
 }
 
 unsigned int utils::text::count_all( std::string* data, std::string term )
 {
 	unsigned int count = 0;
-	string::size_type position = 0;
-	_APP("text::find_all::begin");
+	std::string::size_type position = 0;
 
-	while ( ( position = data->find( term, position ) ) != string::npos )
+	while ( ( position = data->find( term, position ) ) != std::string::npos )
 	{
-		_APP("text::find_all::while");
 		count++;
 		position++;
 	}
-	_APP("text::find_all::end");
 
 	return count;
 }
 
-std::string utils::text::html_special_chars( std::string data )
-{
-	utils::text::replace_all( &data, "&", "&amp;" );
-	utils::text::replace_all( &data, "\"", "&quot;" );
-	utils::text::replace_all( &data, "'", "&#039;" );
-	utils::text::replace_all( &data, "<", "&lt;" );
-	utils::text::replace_all( &data, ">", "&gt;" );
-	return data;
-}
-
-std::string utils::text::html_special_chars_decode( std::string data )
+std::string utils::text::special_expressions_decode( std::string data )
 {
 	utils::text::replace_all( &data, "&amp;", "&" );
 	utils::text::replace_all( &data, "&quot;", "\"" );
 	utils::text::replace_all( &data, "&#039;", "'" );
 	utils::text::replace_all( &data, "&lt;", "<" );
 	utils::text::replace_all( &data, "&gt;", ">" );
+
+	utils::text::replace_all( &data, "&hearts;", "\xE2\x99\xA5" ); // direct byte replacement
+//	utils::text::replace_all( &data, "&hearts;", "\\u2665" );      // indirect slashu replacement
+
+	utils::text::replace_all( &data, "\\/", "/" );
+	utils::text::replace_all( &data, "\\\\", "\\" );
+
+	// TODO: Add more to comply general usage
+	// http://www.utexas.edu/learn/html/spchar.html
+	// http://www.webmonkey.com/reference/Special_Characters
+	// http://www.degraeve.com/reference/specialcharacters.php
+	// http://www.chami.com/tips/internet/050798i.html
+	// http://www.w3schools.com/tags/ref_entities.asp
+	// http://www.natural-innovations.com/wa/doc-charset.html
+	// http://webdesign.about.com/library/bl_htmlcodes.htm
 	return data;
+}
+
+std::string utils::text::remove_html( std::string data )
+{
+	std::string new_string = "";
+
+	for ( std::string::size_type i = 0; i < data.length( ); i++ )
+	{
+		if ( data.at(i) == '<' && data.at(i+1) != ' ' )
+		{
+			i = data.find( ">", i );
+			continue;
+		}
+
+		new_string += data.at(i);
+	}
+
+	return new_string;
+}
+
+std::string utils::text::slashu_to_utf8( std::string data )
+{
+	std::string new_string = "";
+
+	for ( std::string::size_type i = 0; i < data.length( ); i++ )
+	{
+		if ( data.at(i) == '\\' && data.at(i+1) == 'u' )
+		{
+			unsigned int udn = strtol( data.substr( i + 2, 4 ).c_str(), NULL, 16 );
+
+			if ( udn >= 128 && udn <= 2047 ) // U+0080 .. U+07FF
+			{
+				new_string += ( char )( 192 + ( udn / 64 ) );
+				new_string += ( char )( 128 + ( udn % 64 ) );
+			}
+			else if ( udn >= 2048 && udn <= 65535 ) // U+0800 .. U+FFFF
+			{
+				new_string += ( char )( 224 + ( udn / 4096 ) );
+				new_string += ( char )( 128 + ( ( udn / 64 ) % 64 ) );
+				new_string += ( char )( 128 + ( udn % 64  ) );
+			}
+			else if ( udn <= 127 ) // U+0000 .. U+007F (should not appear)
+				new_string += ( char )udn;
+
+			i += 5;
+			continue;
+		}
+
+		new_string += data.at(i);
+	}
+
+	return new_string;
 }
 
 int utils::number::random( )
@@ -271,11 +317,6 @@ void __fastcall utils::mem::detract(char** str )
 
 void __fastcall utils::mem::detract(void** p)
 {
-//	if (*p)
-//	{
-//		free(*p);
-//		*p = NULL;
-//	}
 	utils::mem::detract((void*)(*p));
 }
 
@@ -341,27 +382,6 @@ int ext_to_format(const std::string &ext)
 
 // OBSOLETE
 
-void DebugInfo( const char* debugInfo )
-{
-	utils::debug::info( debugInfo );
-}
-
-void _APP( std::string text )
-{
-//	utils::debug::log( "APP", text );
-}
-
-void NOTIFY( char* title, char* message )
-{
-	// Notify
-	//POPUP( title, message );
-
-	// Log
-	string log_message = title;
-	log_message += message;
-	//LOG( ( char* )log_message.c_str( ) );
-}
-
 void MB( const char* m )
 {
 	MessageBoxA( NULL, m, NULL, MB_OK );
@@ -372,9 +392,4 @@ void MBI( int a )
 	char b[32];
 	itoa( a, b, 10 );
 	MB( b );
-}
-
-void ShowPopup( TCHAR* message )
-{
-	MessageBox( NULL, message, LPGENT( "Facebook Protocol" ), MB_OK ); // TODO: Popup? Merge with events?
 }

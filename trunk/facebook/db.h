@@ -54,12 +54,12 @@ Last change on : $Date$
 #define FACEBOOK_KEY_USER_AGENT     "UserAgent"
 #define FACEBOOK_KEY_ENABLE_LOGGING "EnableLogging"
 #define FACEBOOK_KEY_SET_MIRANDA_STATUS "SetMirandaStatus"
-#define FACEBOOK_KEY_ENABLE_REAL_LOGOUT_SIGNAL  "EnableRealLogoutSignal" // [HIDDEN]
 #define FACEBOOK_KEY_TIMEOUTS_LIMIT "TimeoutsLimit" // [HIDDEN]
 #define FACEBOOK_KEY_DISABLE_LOGOUT "DisableLogout" // [HIDDEN]
 
-#define FACEBOOK_KEY_POPUP_SHOW     "Popup/Show"
-#define FACEBOOK_KEY_POPUP_SIGNON   "Popup/Signon"
-#define FACEBOOK_KEY_POPUP_COLBACK  "Popup/ColorBack"
-#define FACEBOOK_KEY_POPUP_COLTEXT  "Popup/ColorText"
-#define FACEBOOK_KEY_POPUP_TIMEOUT  "Popup/Timeout"
+#define FACEBOOK_KEY_NOTIFICATIONS_ENABLE   "NotificationsEnable"
+#define FACEBOOK_KEY_NOTIFICATIONS_SIGNON   "NotificationsSignon"
+#define FACEBOOK_KEY_NOTIFICATIONS_COLBACK  "NotificationsColorBack"
+#define FACEBOOK_KEY_NOTIFICATIONS_COLTEXT  "NotificationsColorText"
+#define FACEBOOK_KEY_NOTIFICATIONS_TIMEOUT_TYPE "NotificationsTimeoutType"
+#define FACEBOOK_KEY_NOTIFICATIONS_TIMEOUT  "NotificationsTimeout"

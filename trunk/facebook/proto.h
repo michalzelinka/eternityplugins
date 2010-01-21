@@ -134,27 +134,29 @@ public:
 	void    KillThreads( );
 
 	// Processing threads
-	void         ProcessAvatar(HANDLE,const std::string*,bool force=false);
 	void __cdecl ProcessBuddyList( void* );
+	void __cdecl ProcessNotifications( void* );
 	void __cdecl ProcessMessages( void* );
+	void         ProcessAvatar(HANDLE,const std::string*,bool force=false);
 
 	// Worker threads
-	void __cdecl SendMindWorker(void *);
 	void __cdecl SignOn(void *);
 	void __cdecl SignOff(void *);
 	void __cdecl GetAwayMsgWorker(void *);
+	void __cdecl SetAwayMsgWorker(void *);
 	void __cdecl UpdateContactWorker(void *);
 	void __cdecl UpdateAvatarWorker(void *);
-	void __cdecl SendSuccess(void *);
+	void __cdecl SendMsgWorker(void *);
 
 	// Contacts handling
 	bool    IsMyContact(HANDLE);
 	HANDLE  ContactIDToHContact(std::string);
 	HANDLE  AddToContactList(facebook_user*);
 	void    SetAllContactStatuses(int);
+	bool    ContactNeedsUpdate(facebook_user*);
 
 	// Connection client
-	facebook_client facy;
+	facebook_client facy; // TODO: Refactor to "client" and make dynamic
 	int __cdecl Test( WPARAM, LPARAM );
 
 	// Helpers
@@ -167,7 +169,6 @@ public:
 
 	HANDLE  signon_lock_;
 	HANDLE  avatar_lock_;
-	HANDLE  facebook_lock_;
 	HANDLE  log_lock_;
 
 	HANDLE  m_hNetlibUser;
@@ -180,5 +181,7 @@ public:
 
 	static void CALLBACK APC_callback(ULONG_PTR p);
 
-	int LOG(const char *fmt,...);
+	// Information providing
+	int Log(const char *fmt,...);
+	int ShowNotification(TCHAR* title, TCHAR* info, DWORD flags=NIIF_INFO);
 };

@@ -27,8 +27,18 @@ Last change on : $Date$
 
 #pragma once
 
-INT_PTR CALLBACK FBAccountProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBNotificationsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
-INT_PTR CALLBACK FBInfoDialogProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam );
+#define CODE_BLOCK_BEGIN        {
+#define CODE_BLOCK_TRY          try {
+#define CODE_BLOCK_CATCH        } catch(const std::exception &e) {
+#define CODE_BLOCK_INFINITE     while( true ) {
+#define CODE_BLOCK_END          }
+
+#define LOG Log
+
+#if defined( _UNICODE )
+#define NIIF_INTERN_TCHAR NIIF_INTERN_UNICODE // m_clist.h
+#define mir_tstrdup mir_wstrdup // m_system.h
+#else
+#define NIIF_INTERN_TCHAR 0
+#define mir_tstrdup mir_strdup
+#endif

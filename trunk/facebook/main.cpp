@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright © 2009 Michal Zelinka
+Copyright © 2009-10 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -29,11 +29,11 @@ Last change on : $Date$
 
 // TODO: Make following as "globals" structure?
 PLUGINLINK *pluginLink;
-CLIST_INTERFACE* pcli;
-MD5_INTERFACE md5i;
 MM_INTERFACE mmi;
-UTF8_INTERFACE utfi;
 LIST_INTERFACE li;
+CLIST_INTERFACE* pcli;
+UTF8_INTERFACE utfi;
+MD5_INTERFACE md5i;
 
 HINSTANCE g_hInstance;
 std::string g_strUserAgent;
@@ -46,7 +46,7 @@ PLUGININFOEX pluginInfo={
 	"Provides basic support for Facebook Chat protocol. [Built: "__DATE__" "__TIME__"]",
 	"Michal Zelinka",
 	"jarvis@jabber.cz",
-	"© 2009 Michal Zelinka",
+	"© 2009-10 Michal Zelinka",
 	"http://dev.miranda.im/~jarvis/",
 	UNICODE_AWARE, //not transient
 	0,             //doesn't replace anything built-in
@@ -109,13 +109,14 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 static PROTO_INTERFACE* protoInit(const char *proto_name,const TCHAR *username )
 {
 	FacebookProto *proto = new FacebookProto(proto_name,username);
-	g_Instances.insert(proto);
+//	g_Instances.insert(proto); // TODO: Why does it crash??
 	return proto;
 }
 
 static int protoUninit(PROTO_INTERFACE *proto)
 {
-	g_Instances.remove(static_cast<FacebookProto*>(proto));
+//	g_Instances.remove(static_cast<FacebookProto*>(proto));
+	delete proto;
 	return 0;
 }
 
@@ -146,9 +147,9 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 {
 	pluginLink = link;
 	mir_getMMI(&mmi);
-	mir_getMD5I(&md5i);
-	mir_getUTFI(&utfi);
 	mir_getLI(&li);
+	mir_getUTFI(&utfi);
+	mir_getMD5I(&md5i);
 
 	pcli = reinterpret_cast<CLIST_INTERFACE*>( CallService(
 	    MS_CLIST_RETRIEVE_INTERFACE,0,reinterpret_cast<LPARAM>(g_hInstance)) );
@@ -167,17 +168,19 @@ extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 
 	// Init native User-Agent
 	{
-		g_strUserAgent = "MirandaIM/";
+		std::stringstream agent;
 //		DWORD mir_ver = ( DWORD )CallService( MS_SYSTEM_GETVERSION, NULL, NULL );
-		g_strUserAgent += ( char )((( g_mirandaVersion >> 24) & 0xFF) + 0x30);
-		g_strUserAgent += ".";
-		g_strUserAgent += ( char )((( g_mirandaVersion >> 16) & 0xFF) + 0x30);
-		g_strUserAgent += ".";
-		g_strUserAgent += ( char )((( g_mirandaVersion >>  8) & 0xFF) + 0x30);
-		g_strUserAgent += ".";
-		g_strUserAgent += ( char )((( g_mirandaVersion      ) & 0xFF) + 0x30);
-		g_strUserAgent += " FacebookProtocol/";
-		g_strUserAgent += __VERSION_STRING;
+		agent << "MirandaIM/";
+		agent << (( g_mirandaVersion >> 24) & 0xFF);
+		agent << ".";
+		agent << (( g_mirandaVersion >> 16) & 0xFF);
+		agent << ".";
+		agent << (( g_mirandaVersion >>  8) & 0xFF);
+		agent << ".";
+		agent << (( g_mirandaVersion      ) & 0xFF);
+		agent << " FacebookProtocol/";
+		agent << __VERSION_STRING;
+		g_strUserAgent = agent.str( );
 	}
 
     return 0;

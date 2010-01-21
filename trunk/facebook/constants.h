@@ -29,17 +29,18 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 6)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 0, 0, 7)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.0.0.6"
+#define __VERSION_STRING            "0.0.0.7"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,0,0,6
+#define __VERSION_VS_FILE           0,0,0,7
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 0, 0, 6"
+#define __VERSION_VS_FILE_STRING    "0, 0, 0, 7"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
-#define __API_VERSION_STRING        "1.2"
+#define __API_VERSION_STRING        "1.3"
 
 // API versions
+// 1.3 -- m.facebook.com profile change of syntax
 // 1.2 -- buddy_list updates allow non-cumulative update data
 // 1.1 -- buddy_list now includes some reduntant data
 // 1.0 -- initial implementation
@@ -61,13 +62,25 @@ Last change on : $Date$
 #define FACEBOOK_MESSAGE_LIMIT_TEXT "1024"
 #define FACEBOOK_MIND_LIMIT         420
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
-#define FACEBOOK_TIMEOUTS_LIMIT     2
+#define FACEBOOK_TIMEOUTS_LIMIT     5 // TODO: Maybe switch to time timeout limit? Failure retries? Mmm? x))
 #define FACEBOOK_GROUP_NAME_LIMIT   100
+
+// Fake status
+#define ID_STATUS_ONLY_ONCE         0x000F0000
 
 // Defaults
 #define FACEBOOK_MINIMAL_POLL_RATE              10
 #define FACEBOOK_DEFAULT_POLL_RATE              24 // in seconds
 #define FACEBOOK_MAXIMAL_POLL_RATE              60
+
+#define FACEBOOK_USER_UPDATE_RATE               1800 // in seconds
+
+#define DEFAULT_NOTIFICATIONS_ENABLE    1
+#define DEFAULT_NOTIFICATIONS_SIGNON    0
+#define DEFAULT_NOTIFICATIONS_COLBACK   0x00ffffff
+#define DEFAULT_NOTIFICATIONS_COLTEXT   0x00000000
+#define DEFAULT_NOTIFICATIONS_TIMEOUT_TYPE  0
+#define DEFAULT_NOTIFICATIONS_TIMEOUT   20
 
 #define FACEBOOK_DEFAULT_AVATAR_URL "http://static.ak.fbcdn.net/pics/q_silhouette.gif"
 
@@ -77,6 +90,7 @@ Last change on : $Date$
 #define FACEBOOK_REQUEST_KEEP_ALIVE             102 // keeping online status alive without idle
 #define FACEBOOK_REQUEST_HOME                   110 // getting __post_form_id__ + __fb_dtsg__ + ...
 #define FACEBOOK_REQUEST_BUDDY_LIST             120 // getting regular updates (friends online, ...)
+#define FACEBOOK_REQUEST_NOTIFICATIONS          125 // getting notifications
 #define FACEBOOK_REQUEST_RECONNECT              130 // getting __sequence_num__ and __channel_id__
 #define FACEBOOK_REQUEST_PROFILE_GET            200 // getting others' profiles
 #define FACEBOOK_REQUEST_STATUS_SET             251 // setting my "What's on my mind?"
@@ -86,7 +100,7 @@ Last change on : $Date$
 
 // Reconnect flags
 #define FACEBOOK_RECONNECT_LOGIN        "6" // When logging in
-#define FACEBOOK_RECONNECT_KEEP_ALIVE   "3" // After a period, used to keep session alive
+#define FACEBOOK_RECONNECT_KEEP_ALIVE   "0" // After a period, used to keep session alive
 
 // User-Agents
 static char* user_agents[] = {

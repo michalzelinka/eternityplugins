@@ -65,8 +65,10 @@
 				OutputFile="$(OutDir)\mim\plugins\$(ProjectName).dll"
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
+				AssemblyDebug="0"
 				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
+				MapExports="true"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -127,6 +129,10 @@
 				>
 			</File>
 			<File
+				RelativePath=".\events.cpp"
+				>
+			</File>
+			<File
 				RelativePath=".\http.cpp"
 				>
 			</File>
@@ -145,6 +151,14 @@
 			<File
 				RelativePath=".\process.cpp"
 				>
+				<FileConfiguration
+					Name="Debug Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeLibrary="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\proto.cpp"
@@ -202,6 +216,10 @@
 			</File>
 			<File
 				RelativePath=".\db.h"
+				>
+			</File>
+			<File
+				RelativePath=".\definitions.h"
 				>
 			</File>
 			<File
