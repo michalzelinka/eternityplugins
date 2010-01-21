@@ -47,8 +47,6 @@ Last change on : $Date$
 #include <assert.h>
 #include <io.h>
 
-using namespace std;
-
 #include <windows.h>
 
 #include <newpluginapi.h>
@@ -89,6 +87,7 @@ using namespace std;
 
 class FacebookProto;
 
+#include "definitions.h"
 #include "avatars.h"
 #include "http.h"
 #include "client.h"

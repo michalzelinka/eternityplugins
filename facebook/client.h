@@ -42,15 +42,38 @@ struct facebook_user
 
 	std::string image_url;
 
-	bool passed;
-	bool just_added;
+	time_t last_update;
 
 	facebook_user( )
 	{
 		this->handle = NULL;
 		this->user_id = this->real_name = this->status = this->image_url = "";
-		this->is_idle = this->passed = this->just_added = false;
+		this->is_idle = false;
 		this->status_id = ID_STATUS_OFFLINE;
+		this->last_update = 0;
+	}
+
+	facebook_user( facebook_user* fu )
+	{
+		this->handle = fu->handle;
+		this->image_url = fu->image_url;
+		this->is_idle = fu->is_idle;
+		this->last_update = fu->last_update;
+		this->real_name = fu->real_name;
+		this->status = fu->status;
+		this->status_id = fu->status_id;
+		this->user_id = fu->user_id;
+	}
+};
+
+struct facebook_newsfeed
+{
+	std::string title;
+	std::string text;
+
+	facebook_newsfeed( )
+	{
+		this->text = "";
 	}
 };
 
@@ -88,9 +111,12 @@ public:
 		post_form_id_ = dtsg_ = \
 		logout_action_ = chat_channel_num_ = "";
 
-		chat_sequence_num_ = error_count_ = 0;
+		chat_sequence_num_ = error_count_ = \
+		last_notifications_update_ = 0;
 
 		chat_first_touch_ = false;
+
+		buddies_lock_ = NULL;
 	}
 
 	// Parent handle
@@ -110,6 +136,13 @@ public:
 	std::string chat_channel_num_;
 	unsigned int    chat_sequence_num_;
 	bool    chat_first_touch_;
+	time_t  last_notifications_update_;
+
+	////////////////////////////////////////////////////////////
+
+	// Client vs protocol communication
+
+	void    client_notify( TCHAR* message );
 
 	////////////////////////////////////////////////////////////
 
@@ -162,15 +195,17 @@ public:
 	// Updates handling
 
 	std::map< std::string, facebook_user* > buddies;
+	HANDLE  buddies_lock_;
 
 	bool    buddy_list( );
+	bool    notifications( );
 
 	////////////////////////////////////////////////////////////
 
 	// Messages handling
 
 	bool    channel( );
-	bool    send_message( string message_recipient, string message_text );
+	bool    send_message( std::string message_recipient, std::string message_text );
 
 	////////////////////////////////////////////////////////////
 
@@ -188,7 +223,7 @@ public:
 
 	// HTTP communication
 
-	http::response flap( const int request_type, std::string* request_data = NULL );
+	http::response  flap( const int request_type, std::string* request_data = NULL );
 
 	DWORD   choose_security_level( int );
 	int     choose_method( int );

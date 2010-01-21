@@ -134,7 +134,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 
 		if (!DBGetContactSettingTString(NULL,proto->m_szModuleName,FACEBOOK_KEY_NAME,&dbv))
 		{
-			SetDlgItemText(hwnd,IDC_NAME,dbv.ptszVal);
+			SetWindowText( hwnd, dbv.ptszVal );
 			DBFreeVariant( &dbv );
 		}
 		if (!DBGetContactSettingTString(NULL,proto->m_szModuleName,"StatusMsg",&dbv))
@@ -143,6 +143,9 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			DBFreeVariant( &dbv );
 			SendMessage(hwnd,WM_COMMAND,(EN_CHANGE << 16) | IDC_MINDMSG,0);
 		} }
+
+		EnableWindow(GetDlgItem( hwnd, IDOK ), FALSE);
+
 		return TRUE;
 
 	case WM_COMMAND:
@@ -154,6 +157,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
 
 			SetDlgItemText(hwnd,IDOK, (len > 0) ? LPGENT("Share") : LPGENT("Clear"));
+			EnableWindow(GetDlgItem( hwnd, IDOK ), TRUE);
 
 			return TRUE;
 		}
@@ -165,8 +169,8 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			GetDlgItemText(hwnd,IDC_MINDMSG,mindMessage,SIZEOF(mindMessage));
 			ShowWindow(hwnd,SW_HIDE);
 
-			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8);
-			ForkThread(&FacebookProto::SendMindWorker, proto,narrow);
+			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8); // TODO: Move to another place to apply on Miranda API requests
+			ForkThread(&FacebookProto::SetAwayMsgWorker, proto, narrow);
 
 			EndDialog(hwnd, wparam); 
 			return TRUE;
@@ -190,7 +194,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 	switch ( message )
 	{
 
-	case WM_INITDIALOG:
+	case WM_INITDIALOG: {
 		TranslateDialogDefault(hwnd);
 
 		proto = reinterpret_cast<FacebookProto*>(lparam);
@@ -234,9 +238,9 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		LoadDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING, 0);
 		LoadDBCheckState(proto, hwnd, IDC_SET_STATUS, FACEBOOK_KEY_SET_MIRANDA_STATUS, 0);
 
-		return TRUE;
+		} return TRUE;
 
-	case WM_COMMAND:
+	case WM_COMMAND: {
 		if ( LOWORD( wparam ) == IDC_NEWACCOUNTLINK )
 		{
 			CallService(MS_UTILS_OPENURL,1,reinterpret_cast<LPARAM>
@@ -247,7 +251,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		if ( LOWORD( wparam ) == IDC_COOKIES )
 		{
 			std::string cookie_content = "";
-			for ( map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
+			for ( std::map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
 				cookie_content += i->first + ":\r\n" + i->second + "\r\n";
 			utils::debug::info(cookie_content.c_str(),hwnd);
 		}
@@ -258,7 +262,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		else
 			SendMessage(GetParent(hwnd),PSM_CHANGED,0,0);
 
-		break;
+		} break;
 
 	case WM_NOTIFY:
 		if ( reinterpret_cast<NMHDR*>(lparam)->code == PSN_APPLY )
@@ -296,8 +300,48 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 	return FALSE;
 }
 
-INT_PTR CALLBACK FBPopupsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
+INT_PTR CALLBACK FBNotificationsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
+	FacebookProto *proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
+
+	switch(message) 
+	{
+
+	case WM_INITDIALOG: {
+		TranslateDialogDefault(hwnd);
+
+		proto = reinterpret_cast<FacebookProto*>(lparam);
+		SetWindowLong(hwnd,GWL_USERDATA,lparam);
+
+		LoadDBCheckState(proto, hwnd, IDC_NOTIFICATIONS_ENABLE, FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE);
+	} return TRUE;
+
+	case WM_COMMAND: {
+		switch ( LOWORD( wparam ) ) {
+
+		case IDC_PREVIEW: {
+			TCHAR protoName[255];
+			lstrcpy( protoName, proto->m_tszUserName );
+			proto->ShowNotification( protoName, TEXT("Sample notification") ); }
+			break;
+
+		}
+
+		if ((LOWORD(wparam)==IDC_PREVIEW || (HWND)lparam!=GetFocus()))
+			return 0;
+		else
+			SendMessage(GetParent(hwnd),PSM_CHANGED,0,0); }
+		return TRUE;
+
+	case WM_NOTIFY: {
+		if ( reinterpret_cast<NMHDR*>(lparam)->code == PSN_APPLY )
+		{
+			StoreDBCheckState(proto, hwnd, IDC_NOTIFICATIONS_ENABLE, FACEBOOK_KEY_NOTIFICATIONS_ENABLE);
+		} }
+		return TRUE;
+
+	}
+
 	return FALSE;
 }
 

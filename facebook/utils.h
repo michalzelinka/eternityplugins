@@ -28,24 +28,13 @@ Last change on : $Date$
 #pragma once
 
 // C++ bool type
-#define UTILS_CONV_BOOLEAN              0x0001 // output: "true" / "false"
+#define UTILS_CONV_BOOLEAN              0x0001 // true | false
 // signed regular numbers
-#define UTILS_CONV_SIGNED_SHORT         0x0010 // output: "(-)##"
-#define UTILS_CONV_SIGNED_INT           0x0010 // output: "(-)####"
-#define UTILS_CONV_SIGNED_LONG          0x0010 // output: "(-)####"
-#define UTILS_CONV_SIGNED_LONG_LONG     0x0010 // output: "(-)########"
-#define UTILS_CONV_SIGNED_NUMBER        0x0010
+#define UTILS_CONV_SIGNED_NUMBER        0x0010 // 1234 | -1234
 // unsigned regular numbers
-#define UTILS_CONV_UNSIGNED_SHORT       0x0020 // output: "##"
-#define UTILS_CONV_UNSIGNED_INT         0x0020 // output: "####"
-#define UTILS_CONV_UNSIGNED_LONG        0x0020 // output: "####"
-#define UTILS_CONV_UNSIGNED_LONG_LONG   0x0020 // output: "########"
-#define UTILS_CONV_BYTE                 0x0020 // output: "#"
-#define UTILS_CONV_WORD                 0x0020 // output: "##"
-#define UTILS_CONV_DWORD                0x0020 // output: "####"
-#define UTILS_CONV_UNSIGNED_NUMBER      0x0020
+#define UTILS_CONV_UNSIGNED_NUMBER      0x0020 // 1234
 // miscellaneous
-#define UTILS_CONV_TIME_T               0x0040 // output: "########"
+#define UTILS_CONV_TIME_T               0x0040 // 1234567890
 
 template<typename T>
 void CreateProtoService(const char *module,const char *service,
@@ -97,8 +86,9 @@ namespace utils
 		void replace_first( std::string* data, std::string from, std::string to );
 		void replace_all( std::string* data, std::string from, std::string to );
 		unsigned int count_all( std::string* data, std::string term );
-		std::string html_special_chars( std::string data );
-		std::string html_special_chars_decode( std::string data );
+		std::string special_expressions_decode( std::string data );
+		std::string remove_html( std::string data );
+		std::string slashu_to_utf8( std::string data );
 	};
 
 	namespace conversion {
@@ -158,9 +148,5 @@ static const struct
 
 int ext_to_format(const std::string &ext);
 
-void DebugInfo( const char* debugInfo );
-void _APP( std::string text );
-void NOTIFY( char* title, char* message );
 void MB( const char* m );
 void MBI( int a );
-void ShowPopup( TCHAR* message );

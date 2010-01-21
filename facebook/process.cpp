@@ -29,103 +29,169 @@ Last change on : $Date$
 
 void FacebookProto::ProcessBuddyList( void* data )
 {
-	_APP("ProcessBuddyList");
+	if (isOffline())
+		return;
+
+	CODE_BLOCK_TRY
+
+	LOG("***** Starting processing buddy list");
+
+	facebook_json_parser* jp = new facebook_json_parser( P_BUD_LIST, &this->facy );
+	jp->parse_data( &facy.buddies, data );
+	delete jp;
+
+	ScopedLock s(facy.buddies_lock_);
+
+	for(std::map<std::string, facebook_user*>::iterator i=facy.buddies.begin(); i!=facy.buddies.end();)
+	{
+		std::map< std::string, facebook_user*>::iterator this_ = i;
+		++i;
+
+		LOG("      Now %s%s: %s", (this_->second->status_id==ID_STATUS_ONLINE)?"online":"offline",this_->second->is_idle?" (idle)":"", this_->second->real_name.c_str());
+
+		facebook_user* fu;
+
+		this_->second->status_id &= ~(ID_STATUS_ONLY_ONCE);
+		if ( this_->second->status_id == ID_STATUS_OFFLINE ) {
+			fu = new facebook_user(this_->second);
+			facy.buddies.erase( this_ ); }
+		else
+			fu = this_->second;
+
+		ForkThreadEx(&FacebookProto::UpdateContactWorker, this, (void*)fu);
+	}
+
+	LOG("***** Buddy list processed");
+
+	CODE_BLOCK_CATCH
+
+	LOG("***** Error processing buddy list: %s", e.what());
+
+	CODE_BLOCK_END
+}
+
+void FacebookProto::ProcessNotifications( void* data )
+{
 	if (!isOnline())
 		return;
 
-	try
+	CODE_BLOCK_TRY
+
+	LOG("***** Starting processing notifications");
+
+	std::vector< facebook_newsfeed* > news;
+
+	// PROCESSING INTO VECTOR
+
+	std::string::size_type pos = 0;
+	std::string::size_type end = 0;
+	UINT limit = 0;
+	std::string* resp = (std::string*)data;
+
+	while ( ( pos = resp->find( "<h3", pos ) ) != std::string::npos && limit <= 25 )
 	{
-		LOG("***** Starting processing buddy list");
-		facebook_json_parser* jp = new facebook_json_parser( FB_PARSE_BUDDY_LIST, &this->facy );
-		jp->parse_data( &facy.buddies, data );
-		delete jp;
+		facebook_newsfeed* nf = new facebook_newsfeed;
 
-		for(std::map<std::string, facebook_user*>::iterator i=facy.buddies.begin(); i!=facy.buddies.end(); )
-		{
-			_APP("BuddyList::for");
-			std::map< std::string, facebook_user*>::iterator this_one = i;
-			++i;
+		pos = resp->find( "GenericStory_Name", pos );
+		pos = resp->find( "\">", pos );
+		pos += 2;
+		end = resp->find( "<\\/a>", pos );
+		if ( end == std::string::npos )
+			break;
+		nf->title = utils::text::slashu_to_utf8(
+		    utils::text::special_expressions_decode(
+		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
 
-			if ( this_one->second->passed ) { // This contact has been processed already
-				continue; }
+		pos = end + 6;
+		end = resp->find( "<\\/h3>", pos );
+		if ( end == std::string::npos )
+			break;
+		nf->text = utils::text::slashu_to_utf8(
+		    utils::text::special_expressions_decode(
+		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
 
-			this_one->second->passed = true;
-			LOG("      Now %s: %s", (this_one->second->status_id==ID_STATUS_ONLINE)?"online":"offline", this_one->second->real_name.c_str());
-			if ( this_one->second->status_id == ID_STATUS_OFFLINE )
-			{
-				DBWriteContactSettingWord(this_one->second->handle,m_szModuleName,"Status",ID_STATUS_OFFLINE );
-				DBDeleteContactSetting(this_one->second->handle,m_szModuleName,"IdleTS");
-				facy.buddies.erase( this_one );
-			}
-			else
-			{
-				_APP(this_one->second->image_url);
-				this_one->second->handle = AddToContactList(this_one->second);
-				DBWriteContactSettingWord(this_one->second->handle,m_szModuleName,"Status",ID_STATUS_ONLINE );
-				ForkThreadEx(&FacebookProto::UpdateContactWorker, this, (void*)this_one->second);
-				this_one->second->just_added = false;
-			}
-		}
+		if ( nf->text.length( ) > 0 )
+			news.push_back( nf );
+		else
+			delete nf;
 
-		LOG("***** Buddy list processed");
+		pos++;
+		limit++;
 	}
-	catch(const std::exception &e)
+
+	// PROCESSING INTO VECTOR END
+
+	for(size_t i=0; i<news.size( ); i++)
 	{
-		LOG("***** Error processing buddy list: %s", e.what());
+		LOG("      Got newsfeed: %s %s", news[i]->title.c_str(), news[i]->text.c_str());
+		TCHAR* szTitle = mir_a2t_cp(news[i]->title.c_str(), CP_UTF8);
+		TCHAR* szText = mir_a2t_cp(news[i]->text.c_str(), CP_UTF8);
+		ShowNotification(szTitle,szText);
+		// TODO: Clear szTitle, szText?
 	}
+
+	this->facy.last_notifications_update_ = ::time( NULL );
+	setDword( "LastNotificationsUpdate", this->facy.last_notifications_update_ );
+
+	LOG("***** Notifications processed");
+
+	CODE_BLOCK_CATCH
+
+	LOG("***** Error processing notifications: %s", e.what());
+
+	CODE_BLOCK_END
 }
 
 void FacebookProto::ProcessMessages( void* data )
 {
-	_APP("ProcessMessages");
 	if (!isOnline())
 		return;
 
-	try
+	CODE_BLOCK_TRY
+
+	LOG("***** Starting processing messages");
+
+	facebook_json_parser* jp = new facebook_json_parser( P_MESSAGES, &this->facy );
+	std::vector< facebook_message* > messages;
+	jp->parse_data( &messages, data );
+	delete jp;
+
+	for(size_t i=0; i<messages.size( ); i++)
 	{
-		LOG("***** Starting processing messages");
-		facebook_json_parser* jp = new facebook_json_parser( FB_PARSE_MESSAGES, &this->facy );
-		std::vector< facebook_message* > messages;
-		jp->parse_data( &messages, data );
-		delete jp;
+		if ( messages[i]->user_id == facy.self_.user_id )
+			continue;
 
-		for(size_t i = 0; i < messages.size( ); i++)
-		{
-			_APP("Message::for");
-			if ( messages[i]->user_id == facy.self_.user_id )
-				continue;
+		LOG("      Got message: %s", messages[i]->message_text.c_str());
+		facebook_user fbu;
+		fbu.user_id = messages[i]->user_id;
 
-			LOG("      Got message: %s", messages[i]->message_text.c_str());
-			facebook_user fbu;
-			fbu.user_id = messages[i]->user_id;
+		HANDLE hContact = AddToContactList(&fbu);
 
-			HANDLE hContact = AddToContactList(&fbu);
+		PROTORECVEVENT recv = {};
+		CCSDATA ccs = {};
 
-			PROTORECVEVENT recv = {};
-			CCSDATA ccs = {};
+		recv.flags = PREF_UTF;
+		recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
+		recv.timestamp = static_cast<DWORD>(messages[i]->time);
 
-			recv.flags = PREF_UTF;
-			recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
-			recv.timestamp = static_cast<DWORD>(messages[i]->time);
-
-			ccs.hContact = hContact;
-			ccs.szProtoService = PSR_MESSAGE;
-			ccs.wParam = ID_STATUS_ONLINE;
-			ccs.lParam = reinterpret_cast<LPARAM>(&recv);
-			CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
-		}
-
-		LOG("***** Messages processed");
+		ccs.hContact = hContact;
+		ccs.szProtoService = PSR_MESSAGE;
+		ccs.wParam = ID_STATUS_ONLINE;
+		ccs.lParam = reinterpret_cast<LPARAM>(&recv);
+		CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
 	}
-	catch(const std::exception &e)
-	{
-		LOG("***** Error processing messages: %s", e.what());
-	}
+
+	LOG("***** Messages processed");
+
+	CODE_BLOCK_CATCH
+
+	LOG("***** Error processing messages: %s", e.what());
+
+	CODE_BLOCK_END
 }
 
 void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
 {
-	_APP("ProcessAvatar");
 	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
 	    new update_avatar(hContact,(*url)));
 }

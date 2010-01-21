@@ -29,40 +29,32 @@ Last change on : $Date$
 
 void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
 {
-	_APP("APC_callback");
 }
 
 void FacebookProto::KillThreads( )
 {
-	_APP("KillThreads");
 	// Kill the old threads if they are still around
+	if(m_hMsgLoop)
+	{
+		LOG("***** Requesting MessageLoop to exit");
+		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
+		LOG("***** Waiting for old MessageLoop to exit");
+		WaitForSingleObject(m_hMsgLoop,IGNORE);
+		ReleaseMutex(m_hMsgLoop);
+	}
 	if(m_hUpdLoop)
 	{
-		_APP("KillThreads::before_upd_kill");
 		LOG("***** Requesting UpdateLoop to exit");
 		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
 		LOG("***** Waiting for old UpdateLoop to exit");
 		WaitForSingleObject(m_hUpdLoop,IGNORE);
-		CloseHandle(m_hUpdLoop);
-		m_hUpdLoop = NULL;
-		_APP("KillThreads::after_upd_kill");
-	}
-	if(m_hMsgLoop)
-	{
-		_APP("KillThreads::before_msg_kill");
-		LOG("..... Requesting MessageLoop to exit");
-		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old MessageLoop to exit");
-		WaitForSingleObject(m_hMsgLoop,IGNORE);
-		CloseHandle(m_hMsgLoop);
-		m_hMsgLoop = NULL;
-		_APP("KillThreads::after_msg_kill");
+		ReleaseMutex(m_hUpdLoop);
 	}
 }
 
 void FacebookProto::SignOn(void*)
 {
-	WaitForSingleObject(&signon_lock_,INFINITE);
+	ScopedLock s(signon_lock_);
 	LOG("***** Beginning SignOn process");
 
 	KillThreads( );
@@ -81,26 +73,21 @@ void FacebookProto::SignOn(void*)
 
 void FacebookProto::SignOff(void*)
 {
-	WaitForSingleObject(&signon_lock_,INFINITE);
+	ScopedLock s(signon_lock_);
+	ScopedLock b(facy.buddies_lock_);
 	LOG("##### Beginning SignOff process");
+
+	KillThreads( );
 
 	deleteSetting( "LogonTS" );
 	SetAllContactStatuses( ID_STATUS_OFFLINE );
 
-	{
-		ScopedLock s(facebook_lock_);
-		facy.logout( );
-		facy.clear_cookies( );
-		facy.buddies.clear( );
-	}
+	facy.logout( );
+	facy.clear_cookies( );
+	facy.buddies.clear( );
 
-	if ( !getByte(FACEBOOK_KEY_ENABLE_REAL_LOGOUT_SIGNAL, 0) )
-		m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
-	                                       //  ^
-	ToggleStatusMenuItems(isOnline());     //  |  customizable real
-	KillThreads( );                        //  |  logout signalization
-	                                       //  v
-	m_iStatus = m_iDesiredStatus = ID_STATUS_OFFLINE;
+	m_iStatus = m_iDesiredStatus = facy.self_.status_id = ID_STATUS_OFFLINE;
+	ToggleStatusMenuItems(isOnline());
 
 	LOG("##### SignOff complete");
 	ReleaseMutex(signon_lock_);
@@ -121,8 +108,8 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		ShowPopup(TranslateT("Please enter a username.")); // TODO: Refactor to Notify
-		return false;
+		ShowNotification(m_tszUserName,TranslateT("Please enter a username."));
+		goto error;
 	}
 
 	if( !DBGetContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_PASS,&dbv) )
@@ -134,26 +121,27 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		ShowPopup(TranslateT("Please enter a password."));
-		return false;
+		ShowNotification(m_tszUserName,TranslateT("Please enter a password."));
+		goto error;
 	}
 
 	bool success;
 	{
-		ScopedLock s(facebook_lock_);
 		success = facy.login( user, pass );
 		if (success) success = facy.home( );
 		if (success) success = facy.reconnect( );
+		if (success) success = facy.buddy_list( );
 	}
 
 	if(!success)
 	{
+error:
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_FAILED,
 			(HANDLE)old_status,m_iStatus);
 
 		// Set to offline
 		old_status = m_iStatus;
-		m_iDesiredStatus = m_iStatus = ID_STATUS_OFFLINE;
+		m_iStatus = m_iDesiredStatus = facy.self_.status_id = ID_STATUS_OFFLINE;
 
 		SetAllContactStatuses(ID_STATUS_OFFLINE);
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
@@ -163,7 +151,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		m_iStatus = m_iDesiredStatus;
+		m_iStatus = facy.self_.status_id = m_iDesiredStatus;
 
 		ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
 			(HANDLE)old_status,m_iStatus);
@@ -178,16 +166,20 @@ void FacebookProto::UpdateLoop(void *)
 
 	for ( WORD i = 0; ; i++ )
 	{
-		_APP("UpdateLoop");
 		if ( !isOnline( ) )
 			goto exit;
 		if ( !facy.buddy_list( ) )
 			goto exit;
 		if ( !isOnline( ) )
 			goto exit;
-//		if ( i % 30 == 29 )
-//			if ( !facy.keep_alive( ) )
-//				goto exit;
+		if ( i % 6 == 5 )
+			if ( !facy.notifications( ) )
+				goto exit;
+		if ( !isOnline( ) )
+			goto exit;
+		if ( i % 30 == 29 )
+			if ( !facy.keep_alive( ) )
+				goto exit;
 		if ( !isOnline( ) )
 			goto exit;
 		LOG( "***** FacebookProto::UpdateLoop going to sleep..." );
@@ -206,7 +198,6 @@ void FacebookProto::MessageLoop(void *)
 
 	for ( WORD i = 0; ; i++ )
 	{
-		_APP("MessageLoop");
 		if ( !isOnline( ) )
 			goto exit;
 		if ( !facy.channel( ) )

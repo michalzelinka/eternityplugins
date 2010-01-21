@@ -32,23 +32,27 @@ Last change on : $Date$
 #define strsame( a, b ) !lstrcmpA( a, b )
 #define lltoa _i64toa
 
-#define FB_PARSE_BUDDY_LIST 1
-#define FB_PARSE_MESSAGES   2
+// Parser type flags
+#define P_BUD_LIST   0x1000
+#define P_MESSAGES   0x2000
+#define P_TYPELESS   0x0FFF
 
-#define FB_PARSE_UPDATE_NOWAVAILABLE 1
-#define FB_PARSE_UPDATE_WASAVAILABLE 2
-#define FB_PARSE_UPDATE_USERINFOS    3
+// Section flags
+#define P_BUD_NOWAVAILABLE 0x0100
+#define P_BUD_WASAVAILABLE 0x0200
+#define P_BUD_USERINFOS    0x0400
+#define P_MSG_BODY         0x0800
+#define P_SECTIONLESS      0xF0FF
 
-#define FB_PARSE_UPDATE_IDLE 1
-#define FB_PARSE_UPDATE_NAME 2
-#define FB_PARSE_UPDATE_THMB 3
-#define FB_PARSE_UPDATE_STAT 4
-
-#define FB_PARSE_MESSAGE_TYPE 1
-#define FB_PARSE_MESSAGE_BODY 2
-#define FB_PARSE_MESSAGE_TEXT 3
-#define FB_PARSE_MESSAGE_TIME 4
-#define FB_PARSE_MESSAGE_FROM 5
+// Value flags
+#define P_BUD_IDLE  0x0001
+#define P_BUD_NAME  0x0002
+#define P_BUD_THMB  0x0004
+#define P_MSG_TYPE  0x0010
+#define P_MSG_TEXT  0x0020
+#define P_MSG_TIME  0x0040
+#define P_MSG_FROM  0x0080
+#define P_VALUELESS 0xFF00
 
 // Parser front-end
 
@@ -58,33 +62,25 @@ public:
 	facebook_client*    parent;
 
 	std::vector< facebook_message* >* messages;
-	facebook_message* currentMessage;
+	facebook_message* current_message;
 
 	std::map< std::string, facebook_user* >* buddies;
-	facebook_user* currentFriend;
-	std::string  currentFriendStr;
+	facebook_user* current_friend;
 
 	// TODO: Convert to bitmasks
-	unsigned int    parserType;
-	unsigned int    level;
-	unsigned int section;
-	unsigned int valueType;
-	bool    isKey;
+	unsigned int    flag; // [TYPE][SECT][VALUE][VALUE]
+	unsigned int    lvl;
+	bool    key;
 
 	int parse_data( void*, void* );
 
 	static int parse(void* ctx, int type, const JSON_value* value);
 
-	facebook_json_parser( unsigned int pType, facebook_client* fbc )
+	facebook_json_parser( unsigned int type, facebook_client* fbc )
 	{
-		this->level = 0;
-		this->isKey = false;
-		this->valueType = 0;
-		this->parserType = pType;
-		this->section = 0;
+		this->lvl = 0;
+		this->key = false;
+		this->flag = type;
 		this->parent = fbc;
-		this->currentFriendStr = "";
-		if ( this->parserType != pType || this->valueType != 0 || this->section != 0 )
-			throw std::exception( std::string(("error creating facebook_json_parser")).c_str() );
 	};
 };

@@ -7,7 +7,7 @@
 #define IDD_FACEBOOKACCOUNT             111
 #define IDD_MIND                        112
 #define IDD_OPTIONS                     113
-#define IDD_OPTIONS_POPUPS              114
+#define IDD_OPTIONS_NOTIFICATIONS       114
 #define IDD_INFO                        115
 #define IDC_UN                          1001
 #define IDC_PW                          1002
@@ -22,20 +22,19 @@
 #define IDC_LOGGING                     1025
 #define IDC_COOKIES                     1026
 #define IDC_DEBUGINFO                   1041
-#define IDC_COLBACK                     1051
-#define IDC_COLTEXT                     1052
+#define IDC_NOTIFICATIONS_ENABLE        1051
+#define IDC_NOTIFICATIONS_SIGNON        1052
 #define IDC_TIMEOUT_DEFAULT             1053
 #define IDC_TIMEOUT_CUSTOM              1054
-#define IDC_TIMEOUT_SPIN                1055
-#define IDC_TIMEOUT                     1056
+#define IDC_TIMEOUT                     1055
+#define IDC_TIMEOUT_SPIN                1056
 #define IDC_TIMEOUT_PERMANENT           1057
 #define IDC_COL_WINDOWS                 1058
 #define IDC_COL_POPUP                   1059
 #define IDC_COL_CUSTOM                  1060
-#define IDC_POPUPS_ENABLE               1061
-#define IDC_SHOWPOPUPS                  1062
+#define IDC_COLBACK                     1061
+#define IDC_COLTEXT                     1062
 #define IDC_PREVIEW                     1063
-#define IDC_NOSIGNONPOPUPS              1064
 
 // Next default values for new objects
 // 
