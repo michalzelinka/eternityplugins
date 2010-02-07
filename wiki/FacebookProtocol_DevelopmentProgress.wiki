@@ -9,11 +9,11 @@
  * <font color="green">Getting/setting own "What's on my mind" status // DONE/DONE</font>
  * <font color="green">Getting & viewing friends' status messages // DONE</font>
  * <font color="green">Sending/receiving instant messages (not regular inbox/sent messages) // DONE/DONE</font>
- * <font color="red">Getting notifications // TBD</font>
- * <font color="red">Popup plugin support // TBD</font>
+ * <font color="orange">Getting notifications and feeds // CAPABLE/DONE</font>
+ * <font color="orange">Popup plugin support // CAPABLE</font>
  * <font color="green">Updater plugin support // DONE</font>
  * <font color="green">Avatars // DONE</font>
- * <font color="red">Users' info // TBD</font>
+ * <font color="orange">Users' info // CAPABLE</font>
  * <font color="red">Setting avatar/info // Maybe TBD</font>
  * <font color="red">Authorizations (processing Friend requests) // Maybe TBD</font>
 
@@ -30,8 +30,9 @@
 
 = Latest API version =
 
-<var>1.3</var>
+<var>2.0</var>
 
+ * 2.0 — major Facebook redesign
  * 1.3 — m.facebook.com profile change of syntax
  * 1.2 — buddy_list updates allow non-cumulative update data
  * 1.1 — buddy_list now includes some reduntant data
