@@ -300,7 +300,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 	return FALSE;
 }
 
-INT_PTR CALLBACK FBNotificationsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
+INT_PTR CALLBACK FBEventsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lparam )
 {
 	FacebookProto *proto = reinterpret_cast<FacebookProto*>(GetWindowLong(hwnd,GWL_USERDATA));
 
@@ -314,6 +314,7 @@ INT_PTR CALLBACK FBNotificationsProc( HWND hwnd, UINT message, WPARAM wparam, LP
 		SetWindowLong(hwnd,GWL_USERDATA,lparam);
 
 		LoadDBCheckState(proto, hwnd, IDC_NOTIFICATIONS_ENABLE, FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE);
+		LoadDBCheckState(proto, hwnd, IDC_FEEDS_ENABLE, FACEBOOK_KEY_FEEDS_ENABLE, DEFAULT_FEEDS_ENABLE);
 	} return TRUE;
 
 	case WM_COMMAND: {
@@ -322,7 +323,7 @@ INT_PTR CALLBACK FBNotificationsProc( HWND hwnd, UINT message, WPARAM wparam, LP
 		case IDC_PREVIEW: {
 			TCHAR protoName[255];
 			lstrcpy( protoName, proto->m_tszUserName );
-			proto->ShowNotification( protoName, TEXT("Sample notification") ); }
+			proto->ShowEvent( protoName, TEXT("Sample event") ); }
 			break;
 
 		}
@@ -337,6 +338,7 @@ INT_PTR CALLBACK FBNotificationsProc( HWND hwnd, UINT message, WPARAM wparam, LP
 		if ( reinterpret_cast<NMHDR*>(lparam)->code == PSN_APPLY )
 		{
 			StoreDBCheckState(proto, hwnd, IDC_NOTIFICATIONS_ENABLE, FACEBOOK_KEY_NOTIFICATIONS_ENABLE);
+			StoreDBCheckState(proto, hwnd, IDC_FEEDS_ENABLE, FACEBOOK_KEY_FEEDS_ENABLE);
 		} }
 		return TRUE;
 

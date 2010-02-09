@@ -58,8 +58,8 @@ Last change on : $Date$
 #define FACEBOOK_KEY_DISABLE_LOGOUT "DisableLogout" // [HIDDEN]
 
 #define FACEBOOK_KEY_NOTIFICATIONS_ENABLE   "NotificationsEnable"
-#define FACEBOOK_KEY_NOTIFICATIONS_SIGNON   "NotificationsSignon"
-#define FACEBOOK_KEY_NOTIFICATIONS_COLBACK  "NotificationsColorBack"
-#define FACEBOOK_KEY_NOTIFICATIONS_COLTEXT  "NotificationsColorText"
-#define FACEBOOK_KEY_NOTIFICATIONS_TIMEOUT_TYPE "NotificationsTimeoutType"
-#define FACEBOOK_KEY_NOTIFICATIONS_TIMEOUT  "NotificationsTimeout"
+#define FACEBOOK_KEY_FEEDS_ENABLE           "FeedsEnable"
+#define FACEBOOK_KEY_EVENTS_COLBACK         "EventsColorBack"
+#define FACEBOOK_KEY_EVENTS_COLTEXT         "EventsColorText"
+#define FACEBOOK_KEY_EVENTS_TIMEOUT_TYPE    "EventsTimeoutType"
+#define FACEBOOK_KEY_EVENTS_TIMEOUT         "EventsTimeout"

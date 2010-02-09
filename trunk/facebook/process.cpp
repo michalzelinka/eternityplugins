@@ -36,11 +36,11 @@ void FacebookProto::ProcessBuddyList( void* data )
 
 	LOG("***** Starting processing buddy list");
 
-	facebook_json_parser* jp = new facebook_json_parser( P_BUD_LIST, &this->facy );
-	jp->parse_data( &facy.buddies, data );
-	delete jp;
-
 	ScopedLock s(facy.buddies_lock_);
+
+	facebook_json_parser* p = new facebook_json_parser( this );
+	p->parse_buddy_list( data, &facy.buddies );
+	delete p;
 
 	for(std::map<std::string, facebook_user*>::iterator i=facy.buddies.begin(); i!=facy.buddies.end();)
 	{
@@ -70,14 +70,76 @@ void FacebookProto::ProcessBuddyList( void* data )
 	CODE_BLOCK_END
 }
 
-void FacebookProto::ProcessNotifications( void* data )
+void FacebookProto::ProcessMessages( void* data )
 {
 	if (!isOnline())
 		return;
 
 	CODE_BLOCK_TRY
 
-	LOG("***** Starting processing notifications");
+	LOG("***** Starting processing messages");
+
+	std::vector< facebook_message* > messages;
+	std::vector< facebook_notification* > notifications;
+
+	facebook_json_parser* p = new facebook_json_parser( this );
+	p->parse_messages( data, &messages, &notifications );
+	delete p;
+
+	for(size_t i=0; i<messages.size( ); i++)
+	{
+		if ( messages[i]->user_id == facy.self_.user_id )
+			continue;
+
+		LOG("      Got message: %s", messages[i]->message_text.c_str());
+		facebook_user fbu;
+		fbu.user_id = messages[i]->user_id;
+
+		HANDLE hContact = AddToContactList(&fbu);
+
+		PROTORECVEVENT recv = {};
+		CCSDATA ccs = {};
+
+		recv.flags = PREF_UTF;
+		recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
+		recv.timestamp = static_cast<DWORD>(messages[i]->time);
+
+		ccs.hContact = hContact;
+		ccs.szProtoService = PSR_MESSAGE;
+		ccs.wParam = ID_STATUS_ONLINE;
+		ccs.lParam = reinterpret_cast<LPARAM>(&recv);
+		CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
+	}
+
+	if ( getByte( FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE ) )
+	{
+		for(size_t i=0; i<notifications.size( ); i++)
+		{
+			// TODO: Showing notifications
+		}
+	}
+
+
+	LOG("***** Messages processed");
+
+	CODE_BLOCK_CATCH
+
+	LOG("***** Error processing messages: %s", e.what());
+
+	CODE_BLOCK_END
+}
+
+void FacebookProto::ProcessFeeds( void* data )
+{
+	if (!isOnline())
+		return;
+
+	if ( !getByte( FACEBOOK_KEY_FEEDS_ENABLE, DEFAULT_FEEDS_ENABLE ) )
+		return;
+
+	CODE_BLOCK_TRY
+
+	LOG("***** Starting processing feeds");
 
 	std::vector< facebook_newsfeed* > news;
 
@@ -126,66 +188,18 @@ void FacebookProto::ProcessNotifications( void* data )
 		LOG("      Got newsfeed: %s %s", news[i]->title.c_str(), news[i]->text.c_str());
 		TCHAR* szTitle = mir_a2t_cp(news[i]->title.c_str(), CP_UTF8);
 		TCHAR* szText = mir_a2t_cp(news[i]->text.c_str(), CP_UTF8);
-		ShowNotification(szTitle,szText);
+		ShowEvent(szTitle,szText);
 		// TODO: Clear szTitle, szText?
 	}
 
-	this->facy.last_notifications_update_ = ::time( NULL );
-	setDword( "LastNotificationsUpdate", this->facy.last_notifications_update_ );
+	this->facy.last_feeds_update_ = ::time( NULL );
+	setDword( "LastNotificationsUpdate", this->facy.last_feeds_update_ );
 
-	LOG("***** Notifications processed");
-
-	CODE_BLOCK_CATCH
-
-	LOG("***** Error processing notifications: %s", e.what());
-
-	CODE_BLOCK_END
-}
-
-void FacebookProto::ProcessMessages( void* data )
-{
-	if (!isOnline())
-		return;
-
-	CODE_BLOCK_TRY
-
-	LOG("***** Starting processing messages");
-
-	facebook_json_parser* jp = new facebook_json_parser( P_MESSAGES, &this->facy );
-	std::vector< facebook_message* > messages;
-	jp->parse_data( &messages, data );
-	delete jp;
-
-	for(size_t i=0; i<messages.size( ); i++)
-	{
-		if ( messages[i]->user_id == facy.self_.user_id )
-			continue;
-
-		LOG("      Got message: %s", messages[i]->message_text.c_str());
-		facebook_user fbu;
-		fbu.user_id = messages[i]->user_id;
-
-		HANDLE hContact = AddToContactList(&fbu);
-
-		PROTORECVEVENT recv = {};
-		CCSDATA ccs = {};
-
-		recv.flags = PREF_UTF;
-		recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
-		recv.timestamp = static_cast<DWORD>(messages[i]->time);
-
-		ccs.hContact = hContact;
-		ccs.szProtoService = PSR_MESSAGE;
-		ccs.wParam = ID_STATUS_ONLINE;
-		ccs.lParam = reinterpret_cast<LPARAM>(&recv);
-		CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
-	}
-
-	LOG("***** Messages processed");
+	LOG("***** Feeds processed");
 
 	CODE_BLOCK_CATCH
 
-	LOG("***** Error processing messages: %s", e.what());
+	LOG("***** Error processing feeds: %s", e.what());
 
 	CODE_BLOCK_END
 }

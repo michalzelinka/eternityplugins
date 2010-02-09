@@ -66,17 +66,6 @@ struct facebook_user
 	}
 };
 
-struct facebook_newsfeed
-{
-	std::string title;
-	std::string text;
-
-	facebook_newsfeed( )
-	{
-		this->text = "";
-	}
-};
-
 struct facebook_message
 {
 	std::string user_id;
@@ -97,6 +86,21 @@ struct facebook_message
 	}
 };
 
+struct facebook_notification
+{
+};
+
+struct facebook_newsfeed
+{
+	std::string title;
+	std::string text;
+
+	facebook_newsfeed( )
+	{
+		this->text = "";
+	}
+};
+
 class facebook_client
 {
 public:
@@ -112,7 +116,7 @@ public:
 		logout_action_ = chat_channel_num_ = "";
 
 		chat_sequence_num_ = error_count_ = \
-		last_notifications_update_ = 0;
+		last_feeds_update_ = 0;
 
 		chat_first_touch_ = false;
 
@@ -136,7 +140,7 @@ public:
 	std::string chat_channel_num_;
 	unsigned int    chat_sequence_num_;
 	bool    chat_first_touch_;
-	time_t  last_notifications_update_;
+	time_t  last_feeds_update_;
 
 	////////////////////////////////////////////////////////////
 
@@ -198,7 +202,7 @@ public:
 	HANDLE  buddies_lock_;
 
 	bool    buddy_list( );
-	bool    notifications( );
+	bool    live_feed( );
 
 	////////////////////////////////////////////////////////////
 

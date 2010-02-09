@@ -83,8 +83,6 @@ Last change on : $Date$
 #include <m_updater.h>
 #include <m_folders.h>
 
-#include "JSON_parser/JSON_parser.h"
-
 class FacebookProto;
 
 #include "definitions.h"

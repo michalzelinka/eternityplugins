@@ -108,7 +108,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		ShowNotification(m_tszUserName,TranslateT("Please enter a username."));
+		ShowEvent(m_tszUserName,TranslateT("Please enter a username."));
 		goto error;
 	}
 
@@ -121,7 +121,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		ShowNotification(m_tszUserName,TranslateT("Please enter a password."));
+		ShowEvent(m_tszUserName,TranslateT("Please enter a password."));
 		goto error;
 	}
 
@@ -173,7 +173,7 @@ void FacebookProto::UpdateLoop(void *)
 		if ( !isOnline( ) )
 			goto exit;
 		if ( i % 6 == 5 )
-			if ( !facy.notifications( ) )
+			if ( !facy.live_feed( ) )
 				goto exit;
 		if ( !isOnline( ) )
 			goto exit;

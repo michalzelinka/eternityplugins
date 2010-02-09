@@ -29,7 +29,7 @@ Last change on : $Date$
 
 void facebook_client::client_notify( TCHAR* message )
 {
-	parent->ShowNotification( parent->m_tszUserName, message );
+	parent->ShowEvent( parent->m_tszUserName, message );
 }
 
 http::response facebook_client::flap( const int request_type, std::string* request_data )
@@ -44,7 +44,8 @@ http::response facebook_client::flap( const int request_type, std::string* reque
 	if ( request_data != NULL )
 	{
 		nlhr.pData = (char*)(*request_data).c_str();
-		nlhr.dataLength = strlen( nlhr.pData );
+//		nlhr.dataLength = strlen( nlhr.pData );
+		nlhr.dataLength = request_data->length( );
 	}
 
 	parent->LOG("@@@@@ Sending request to '%s'", nlhr.szUrl);
@@ -144,7 +145,7 @@ DWORD facebook_client::choose_security_level( int request_type )
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
 	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_BUDDY_LIST:
-	case FACEBOOK_REQUEST_NOTIFICATIONS:
+	case FACEBOOK_REQUEST_FEEDS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_PROFILE_GET:
 	case FACEBOOK_REQUEST_STATUS_SET:
@@ -167,7 +168,7 @@ int facebook_client::choose_method( int request_type )
 
 	case FACEBOOK_REQUEST_LOGOUT:
 	case FACEBOOK_REQUEST_HOME:
-	case FACEBOOK_REQUEST_NOTIFICATIONS:
+	case FACEBOOK_REQUEST_FEEDS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_PROFILE_GET:
 	default:
@@ -195,7 +196,7 @@ std::string facebook_client::choose_server( int request_type, std::string* data 
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
 	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_BUDDY_LIST:
-	case FACEBOOK_REQUEST_NOTIFICATIONS:
+	case FACEBOOK_REQUEST_FEEDS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_STATUS_SET:
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
@@ -225,11 +226,11 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 	case FACEBOOK_REQUEST_BUDDY_LIST:
 		return "ajax/chat/buddy_list.php";
 
-	case FACEBOOK_REQUEST_NOTIFICATIONS: {
+	case FACEBOOK_REQUEST_FEEDS: {
 		// Filters: lf = live feed, h = news feed
 		// TODO: Make filter selection customizable?
 		std::string action = "ajax/intent.php?filter=lf&request_type=1&__a=1&newest=%s&ignore_self=true";
-		std::string newest = utils::conversion::to_string((void*)&this->last_notifications_update_, UTILS_CONV_UNSIGNED_NUMBER);
+		std::string newest = utils::conversion::to_string((void*)&this->last_feeds_update_, UTILS_CONV_UNSIGNED_NUMBER);
 		utils::text::replace_first( &action, "%s", newest );
 		return action; }
 
@@ -287,10 +288,9 @@ NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* h
 		*headers_count = 7;
 		break;
 	case FACEBOOK_REQUEST_HOME:
-	case FACEBOOK_REQUEST_NOTIFICATIONS:
+	case FACEBOOK_REQUEST_FEEDS:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
-	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
 	default:
 		*headers_count = 6;
 		break;
@@ -311,7 +311,6 @@ NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* h
 	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
-	case FACEBOOK_REQUEST_NOTIFICATIONS_RECEIVE:
 	default:
 		set_header( &headers[0], "Connection" );
 		set_header( &headers[1], "User-Agent" );
@@ -337,8 +336,8 @@ void facebook_client::refresh_headers( )
 	{
 		this->headers["Connection"] = "close";
 		this->headers["Accept"] = "*/*";
-//		this->headers["Accept-Encoding"] = "none";
-		this->headers["Accept-Encoding"] = "deflate, gzip, x-gzip, identity, *;q=0";
+		this->headers["Accept-Encoding"] = "none";
+//		this->headers["Accept-Encoding"] = "deflate, gzip, x-gzip, identity, *;q=0";
 		this->headers["Accept-Language"] = "en,en-US;q=0.9";
 		this->headers["Content-Type"] = "application/x-www-form-urlencoded";
 	}
@@ -532,6 +531,8 @@ bool facebook_client::home( )
 		{
 			std::string::size_type start, end;
 
+// OLD DESIGN PROCESSING
+
 			// Get real_name
 			start = resp.data.find( "id=\"fb_menu_account\"" );
 			end = resp.data.find( "</a>", start );
@@ -542,6 +543,36 @@ bool facebook_client::home( )
 			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,"Nick",this->self_.real_name.c_str());
 			parent->LOG("      Got self real name: %s", this->self_.real_name.c_str());
 
+			// Get logout action
+			this->logout_action_ = resp.data.substr( resp.data.find( "id=\"fb_menu_logout\"" ), 256 );
+			start = this->logout_action_.find( "<a href=\"" ) + 9;
+			start = this->logout_action_.find( "?", start );
+			end = this->logout_action_.find( "\" class=\"fb_menu_link\"", start );
+			this->logout_action_ = this->logout_action_.substr( start, end - start );
+			utils::text::replace_all( &this->logout_action_, "&amp;", "&" );
+
+			goto rest;
+
+// NEW DESIGN PROCESSING
+newer:
+			// Get real_name
+			start = resp.data.find( "id=\"navAccountName\"" );
+			end = resp.data.find( "</a>", start );
+			start = resp.data.rfind( "\">", end ) + 2;
+			this->self_.real_name = resp.data.substr( start, end - start );
+			this->self_.real_name = utils::text::special_expressions_decode( this->self_.real_name );
+			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,FACEBOOK_KEY_NAME,this->self_.real_name.c_str());
+			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,"Nick",this->self_.real_name.c_str());
+			parent->LOG("      Got self real name: %s", this->self_.real_name.c_str());
+
+			// Get logout action
+			this->logout_action_ = resp.data.substr( resp.data.find( "http://www.facebook.com/logout.php" ), 256 );
+			end = this->logout_action_.find( "\">" );
+			this->logout_action_ = this->logout_action_.substr( 0, end );
+			utils::text::replace_all( &this->logout_action_, "&amp;", "&" );
+
+// REST OF THE PROCESSING
+rest:
 			// Get post_form_id
 			this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 32 );
 			parent->LOG("      Got self post form id: %s", this->post_form_id_.c_str());
@@ -555,13 +586,7 @@ bool facebook_client::home( )
 			this->dtsg_ = this->dtsg_.substr( 0, this->dtsg_.find( "\"" ) );
 			parent->LOG("      Got self dtsg: %s", this->dtsg_.c_str());
 
-			// Get logout action
-			this->logout_action_ = resp.data.substr( resp.data.find( "id=\"fb_menu_logout\"" ), 256 );
-			start = this->logout_action_.find( "<a href=\"" ) + 9;
-			start = this->logout_action_.find( "?", start );
-			end = this->logout_action_.find( "\" class=\"fb_menu_link\"", start );
-			this->logout_action_ = this->logout_action_.substr( start, end - start );
-			utils::text::replace_all( &this->logout_action_, "&amp;", "&" );
+// END OF HOMEPAGE PROCESSING
 
 			// Set first touch flag
 			this->chat_first_touch_ = true;
@@ -571,8 +596,12 @@ bool facebook_client::home( )
 
 			return handle_success( "home" );
 		}
+		else if ( resp.data.find( "id=\"navAccountName\"" ) != std::string::npos )
+		{
+			goto newer;
+		}
 		else {
-			client_notify(TranslateT("Something happened to Facebook. Maybe there was some major update or you have Facebook Lite set as default."));
+			client_notify(TranslateT("Something happened to Facebook. Maybe there was some major update so you should wait for an update, or you have Facebook Lite set as default."));
 			return handle_error( "home", FORCE_DISCONNECT );
 		}
 
@@ -627,7 +656,6 @@ bool facebook_client::buddy_list( )
 
 	ScopedLock s(buddies_lock_);
 
-	// TODO: Request & process notifications
 	std::string data = "user=" + this->self_.user_id + "&popped_out=false&force_render=true&buddy_list=1&notifications=0&post_form_id=" + this->post_form_id_ + "&fb_dtsg=" + this->dtsg_ + "&post_form_id_source=AsyncRequest&__a=1&nctr[n]=1";
 
 	for (std::map< std::string, facebook_user* >::iterator i = buddies.begin(); i != buddies.end(); ++i )
@@ -663,13 +691,13 @@ bool facebook_client::buddy_list( )
 	}
 }
 
-bool facebook_client::notifications( )
+bool facebook_client::live_feed( )
 {
-	handle_entry( "notifications" );
+	handle_entry( "live_feed" );
 
-	// Get notifications
+	// Get feeds
 
-	http::response resp = flap( FACEBOOK_REQUEST_NOTIFICATIONS );
+	http::response resp = flap( FACEBOOK_REQUEST_FEEDS );
 
 	// Process result data
 
@@ -681,13 +709,13 @@ bool facebook_client::notifications( )
 	case HTTP_CODE_OK:
 		if ( resp.data.find( "\"storyCount\":" ) != std::string::npos ) {
 			std::string* response_data = new std::string( resp.data );
-			ForkThreadEx( &FacebookProto::ProcessNotifications, this->parent, ( void* )response_data ); }
-		return handle_success( "notifications" );
+			ForkThreadEx( &FacebookProto::ProcessFeeds, this->parent, ( void* )response_data ); }
+		return handle_success( "live_feed" );
 
 	case HTTP_CODE_FAKE_LOGGED_OUT:
 	case HTTP_CODE_FAKE_DISCONNECTED:
 	default:
-		return handle_error( "notifications" );
+		return handle_error( "live_feed" );
 
 	}
 }

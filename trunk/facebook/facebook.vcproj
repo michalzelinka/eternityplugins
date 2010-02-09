@@ -21,6 +21,95 @@
 			IntermediateDirectory="$(ConfigurationName)"
 			ConfigurationType="2"
 			CharacterSet="1"
+			WholeProgramOptimization="0"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+				CommandLine="$(SolutionDir)incrementbuild.exe"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				Optimization="0"
+				WholeProgramOptimization="false"
+				AdditionalIncludeDirectories="../../include;."
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FACEBOOK_EXPORTS;_CRT_SECURE_NO_WARNINGS;NOMINMAX"
+				MinimalRebuild="false"
+				RuntimeLibrary="3"
+				EnableFunctionLevelLinking="true"
+				UsePrecompiledHeader="0"
+				PrecompiledHeaderThrough=""
+				WarningLevel="3"
+				Detect64BitPortabilityProblems="false"
+				DebugInformationFormat="4"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				PreprocessorDefinitions="_UNICODE;UNICODE;_DEBUG"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLinkerTool"
+				OutputFile="$(OutDir)\mim\plugins\$(ProjectName).dll"
+				LinkIncremental="2"
+				GenerateDebugInformation="true"
+				AssemblyDebug="0"
+				GenerateMapFile="false"
+				MapFileName="$(TargetDir)$(TargetName).map"
+				MapExports="false"
+				SubSystem="2"
+				OptimizeReferences="0"
+				EnableCOMDATFolding="0"
+				LinkTimeCodeGeneration="0"
+				TargetMachine="1"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCManifestTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCAppVerifierTool"
+			/>
+			<Tool
+				Name="VCWebDeploymentTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+			/>
+		</Configuration>
+		<Configuration
+			Name="Release Unicode|Win32"
+			OutputDirectory="$(SolutionDir)$(ConfigurationName)"
+			IntermediateDirectory="$(ConfigurationName)"
+			ConfigurationType="2"
+			CharacterSet="1"
 			WholeProgramOptimization="1"
 			>
 			<Tool
@@ -66,9 +155,9 @@
 				LinkIncremental="1"
 				GenerateDebugInformation="true"
 				AssemblyDebug="0"
-				GenerateMapFile="true"
+				GenerateMapFile="false"
 				MapFileName="$(TargetDir)$(TargetName).map"
-				MapExports="true"
+				MapExports="false"
 				SubSystem="2"
 				OptimizeReferences="2"
 				EnableCOMDATFolding="2"
@@ -159,6 +248,14 @@
 						RuntimeLibrary="2"
 					/>
 				</FileConfiguration>
+				<FileConfiguration
+					Name="Release Unicode|Win32"
+					>
+					<Tool
+						Name="VCCLCompilerTool"
+						RuntimeLibrary="2"
+					/>
+				</FileConfiguration>
 			</File>
 			<File
 				RelativePath=".\proto.cpp"
@@ -177,14 +274,34 @@
 				>
 			</File>
 			<Filter
-				Name="JSON_parser"
+				Name="JSON_CAJUN"
 				>
 				<File
-					RelativePath=".\JSON_parser\JSON_parser.c"
+					RelativePath=".\JSON_CAJUN\elements.h"
 					>
 				</File>
 				<File
-					RelativePath=".\JSON_parser\JSON_parser.h"
+					RelativePath=".\JSON_CAJUN\elements.inl"
+					>
+				</File>
+				<File
+					RelativePath=".\JSON_CAJUN\reader.h"
+					>
+				</File>
+				<File
+					RelativePath=".\JSON_CAJUN\reader.inl"
+					>
+				</File>
+				<File
+					RelativePath=".\JSON_CAJUN\visitor.h"
+					>
+				</File>
+				<File
+					RelativePath=".\JSON_CAJUN\writer.h"
+					>
+				</File>
+				<File
+					RelativePath=".\JSON_CAJUN\writer.inl"
 					>
 				</File>
 			</Filter>
