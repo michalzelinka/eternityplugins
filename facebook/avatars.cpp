@@ -85,8 +85,11 @@ INT_PTR FacebookProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 	DBVARIANT dbv;
 	std::string avatar_url;
 
-	if ( !getString( FACEBOOK_KEY_AV_URL,&dbv ) && strlen( dbv.pszVal ) > 0 )
+	if ( !getString( FACEBOOK_KEY_AV_URL,&dbv ) )
 	{
+		if ( strlen( dbv.pszVal ) == 0 )
+			return -2;
+
 		std::string avatar_url = dbv.pszVal;
 		DBFreeVariant(&dbv);
 

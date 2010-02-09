@@ -135,8 +135,8 @@ public:
 
 	// Processing threads
 	void __cdecl ProcessBuddyList( void* );
-	void __cdecl ProcessNotifications( void* );
 	void __cdecl ProcessMessages( void* );
+	void __cdecl ProcessFeeds( void* );
 	void         ProcessAvatar(HANDLE,const std::string*,bool force=false);
 
 	// Worker threads
@@ -183,5 +183,5 @@ public:
 
 	// Information providing
 	int Log(const char *fmt,...);
-	int ShowNotification(TCHAR* title, TCHAR* info, DWORD flags=NIIF_INFO);
+	int ShowEvent(TCHAR* title, TCHAR* info, DWORD flags=NIIF_INFO);
 };

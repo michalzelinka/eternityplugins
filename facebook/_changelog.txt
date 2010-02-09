@@ -1,3 +1,24 @@
+0.0.0.7
+-------
+
+- Fixed occasional blocking crash on startup caused by missing personal avatar
+file
+- Reworked contacts parsing
+- Thread-safe buddy loop
+- Featuring notifications, including Live Feed
+- More encoding options in HTTP traffic
+- More proper parsing of homepage
+- Renamed html_special_chars_decode to special_expressions_decode
+- Enhanced threads killing and locking
+- Improved sign-off
+- Fixed broken keep-alive hadling
+- Rewritten contacts update logic
+- Redesigned "What's on my mind" dialog
+- Fixed some JSON parser bugs
+- Fixed default user-agent string
+- Fixed contacts status to be loaded before protocol is marked online
+- Simplified number-to-string convertor definitions
+
 0.0.0.6
 -------
 
@@ -68,7 +89,7 @@ Notes:
 - Real names updating option has gone from now as contact's RealName/Nick value is updated normally, if you want anyone to have custom name, you can edit it like elsewhere (clist module stores this elsewhere and prioritizes this value before others)
 
 Known issues:
-- [REPORTED] 100% CPU usage issue
+- [FIXED] 100% CPU usage issue
 
 0.0.0.4
 -------

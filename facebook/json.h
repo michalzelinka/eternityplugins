@@ -27,60 +27,19 @@ Last change on : $Date$
 
 #pragma once
 
-// Parser controllers
-
-#define strsame( a, b ) !lstrcmpA( a, b )
-#define lltoa _i64toa
-
-// Parser type flags
-#define P_BUD_LIST   0x1000
-#define P_MESSAGES   0x2000
-#define P_TYPELESS   0x0FFF
-
-// Section flags
-#define P_BUD_NOWAVAILABLE 0x0100
-#define P_BUD_WASAVAILABLE 0x0200
-#define P_BUD_USERINFOS    0x0400
-#define P_MSG_BODY         0x0800
-#define P_SECTIONLESS      0xF0FF
-
-// Value flags
-#define P_BUD_IDLE  0x0001
-#define P_BUD_NAME  0x0002
-#define P_BUD_THMB  0x0004
-#define P_MSG_TYPE  0x0010
-#define P_MSG_TEXT  0x0020
-#define P_MSG_TIME  0x0040
-#define P_MSG_FROM  0x0080
-#define P_VALUELESS 0xFF00
-
 // Parser front-end
+
+#define lltoa _i64toa
 
 class facebook_json_parser
 {
 public:
-	facebook_client*    parent;
+	FacebookProto* proto;
+	int parse_buddy_list( void*, std::map< std::string, facebook_user* >* );
+	int parse_messages( void*, std::vector< facebook_message* >*, std::vector< facebook_notification* >* );
 
-	std::vector< facebook_message* >* messages;
-	facebook_message* current_message;
-
-	std::map< std::string, facebook_user* >* buddies;
-	facebook_user* current_friend;
-
-	// TODO: Convert to bitmasks
-	unsigned int    flag; // [TYPE][SECT][VALUE][VALUE]
-	unsigned int    lvl;
-	bool    key;
-
-	int parse_data( void*, void* );
-
-	static int parse(void* ctx, int type, const JSON_value* value);
-
-	facebook_json_parser( unsigned int type, facebook_client* fbc )
+	facebook_json_parser( FacebookProto* proto )
 	{
-		this->lvl = 0;
-		this->key = false;
-		this->flag = type;
-		this->parent = fbc;
-	};
+		this->proto = proto;
+	}
 };

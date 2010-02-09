@@ -7,7 +7,7 @@
 #define IDD_FACEBOOKACCOUNT             111
 #define IDD_MIND                        112
 #define IDD_OPTIONS                     113
-#define IDD_OPTIONS_NOTIFICATIONS       114
+#define IDD_OPTIONS_EVENTS              114
 #define IDD_INFO                        115
 #define IDC_UN                          1001
 #define IDC_PW                          1002
@@ -23,7 +23,7 @@
 #define IDC_COOKIES                     1026
 #define IDC_DEBUGINFO                   1041
 #define IDC_NOTIFICATIONS_ENABLE        1051
-#define IDC_NOTIFICATIONS_SIGNON        1052
+#define IDC_FEEDS_ENABLE                1052
 #define IDC_TIMEOUT_DEFAULT             1053
 #define IDC_TIMEOUT_CUSTOM              1054
 #define IDC_TIMEOUT                     1055

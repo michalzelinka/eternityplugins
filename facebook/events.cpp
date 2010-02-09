@@ -29,7 +29,7 @@ Last change on : $Date$
 
 int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 {
-	facy.notifications( );
+	facy.live_feed( );
 	return FALSE;
 }
 
@@ -49,22 +49,19 @@ int FacebookProto::Log(const char *fmt,...)
 	return utils::debug::log( m_szModuleName, text );
 }
 
-int FacebookProto::ShowNotification(TCHAR* title, TCHAR* info, DWORD flags)
+int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, DWORD flags)
 {
-	if ( !getByte( FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE ) )
-		return 0;
-
 	int ret; BYTE timeout;
 
-	switch ( getByte( FACEBOOK_KEY_NOTIFICATIONS_TIMEOUT_TYPE, DEFAULT_NOTIFICATIONS_TIMEOUT_TYPE ) ) {
+	switch ( getByte( FACEBOOK_KEY_EVENTS_TIMEOUT_TYPE, DEFAULT_EVENTS_TIMEOUT_TYPE ) ) {
 		case 0: timeout = 0; break;
-		case 1: timeout = getByte( FACEBOOK_KEY_NOTIFICATIONS_TIMEOUT, DEFAULT_NOTIFICATIONS_TIMEOUT ); break;
+		case 1: timeout = getByte( FACEBOOK_KEY_EVENTS_TIMEOUT, DEFAULT_EVENTS_TIMEOUT ); break;
 		case 2: timeout = -1; }
 
 	if (ServiceExists(MS_POPUP_ADDPOPUP) && DBGetContactSettingByte(NULL,"PopUp","ModuleIsEnabled",1)) {
 		POPUPDATAT pd;
-		pd.colorBack = getByte( FACEBOOK_KEY_NOTIFICATIONS_COLBACK, DEFAULT_NOTIFICATIONS_COLBACK );
-		pd.colorText = getByte( FACEBOOK_KEY_NOTIFICATIONS_COLTEXT, DEFAULT_NOTIFICATIONS_COLTEXT );
+		pd.colorBack = getByte( FACEBOOK_KEY_EVENTS_COLBACK, DEFAULT_EVENTS_COLBACK );
+		pd.colorText = getByte( FACEBOOK_KEY_EVENTS_COLTEXT, DEFAULT_EVENTS_COLTEXT );
 		pd.iSeconds = timeout;
 		pd.lchContact = NULL;
 		pd.lchIcon = NULL;

@@ -34,7 +34,7 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	m_tszUserName  = mir_tstrdup( username );
 
 	this->facy.parent = this;
-	this->facy.last_notifications_update_ = getDword( "LastNotificationsUpdate", 0 );
+	this->facy.last_feeds_update_ = getDword( "LastNotificationsUpdate", 0 );
 
 	CreateProtoService(m_szModuleName, PS_CREATEACCMGRUI, &FacebookProto::SvcCreateAccMgrUI, this);
 	CreateProtoService(m_szModuleName, PS_GETNAME,        &FacebookProto::GetName,           this);
@@ -292,9 +292,9 @@ int FacebookProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.position = 271829;
 	if(ServiceExists(MS_POPUP_ADDPOPUPT))
 		odp.ptszGroup   = LPGENT("Popups");
-	odp.ptszTab     = LPGENT("Notifications");
-	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_NOTIFICATIONS);
-	odp.pfnDlgProc  = FBNotificationsProc;
+	odp.ptszTab     = LPGENT("Events");
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS_EVENTS);
+	odp.pfnDlgProc  = FBEventsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
 	return 0;
