@@ -304,9 +304,11 @@ int utils::debug::log(std::string file_name, std::string text)
 	path = path.substr( 0, path.rfind( "\\" ) );
 	path = path.substr( 0, path.rfind( "\\" ) + 1 );
 	path = path + file_name.c_str() + ".txt";
-	FILE* f = fopen( path.c_str(), "a" );
-	fprintf( f, "%s\n", text.c_str() );
-	fclose( f );
+
+	std::ofstream out( path.c_str(), std::ios_base::out | std::ios_base::app | std::ios_base::ate );
+	out << text << std::endl;
+	out.close( );
+
 	return EXIT_SUCCESS;
 }
 

@@ -133,25 +133,36 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 
 			const String& type = objMember["type"];
 
-			if ( type.Value( ) != "msg" )
+			if ( type.Value( ) == "msg" )
+			{
+				const Number& from = objMember["from"];
+				char was_id[32];
+				lltoa( from.Value(), was_id, 10 );
+				
+				const Object& messageContent = objMember["msg"];
+				const String& text = messageContent["text"];
+
+				facebook_message* message = new facebook_message( );
+				message->message_text= utils::text::slashu_to_utf8(
+					utils::text::special_expressions_decode( text.Value( ) ) );
+				message->time = ::time( NULL );
+				message->user_id = was_id;
+
+				messages->push_back( message );
+			}
+			else if ( type.Value( ) == "app_msg" )
+			{
+				const String& text = objMember["response"]["payload"]["title"];
+
+				facebook_notification* notification = new facebook_notification( );
+				notification->text = utils::text::slashu_to_utf8(
+					utils::text::special_expressions_decode(
+						utils::text::remove_html( text.Value( ) ) ) );
+
+				notifications->push_back( notification );
+			}
+			else
 				continue;
-
-			// TODO: case-switching to support notifications HERE
-
-			const Number& from = objMember["from"];
-			char was_id[32];
-			lltoa( from.Value(), was_id, 10 );
-			
-			const Object& messageContent = objMember["msg"];
-			const String& text = messageContent["text"];
-
-			facebook_message* message = new facebook_message( );
-			message->message_text= utils::text::slashu_to_utf8(
-			    utils::text::special_expressions_decode( text.Value( ) ) );
-			message->time = ::time( NULL );
-			message->user_id = was_id;
-
-			messages->push_back( message );
 		}
 	}
 	catch (Reader::ParseException& e)

@@ -127,6 +127,7 @@ bool FacebookProto::NegotiateConnection( )
 
 	bool success;
 	{
+		facy.api_check( );
 		success = facy.login( user, pass );
 		if (success) success = facy.home( );
 		if (success) success = facy.reconnect( );
@@ -173,7 +174,7 @@ void FacebookProto::UpdateLoop(void *)
 		if ( !isOnline( ) )
 			goto exit;
 		if ( i % 6 == 5 )
-			if ( !facy.live_feed( ) )
+			if ( !facy.feeds( ) )
 				goto exit;
 		if ( !isOnline( ) )
 			goto exit;
