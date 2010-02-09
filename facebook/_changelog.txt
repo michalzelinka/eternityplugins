@@ -1,3 +1,16 @@
+0.1.0.0
+-------
+
+- Replaced JSON_C by CAJUN JSON parser
+- Fixed minor avatar-related crash
+- Added support for a redesigned Facebook site
+- Minor buddy list thread-safety improvement
+- Minor code refactoring
+- Added Notifications
+- Added API version checking
+- Improved logging low-level process
+...
+
 0.0.0.7
 -------
 

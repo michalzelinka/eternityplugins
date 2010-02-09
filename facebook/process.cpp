@@ -115,7 +115,10 @@ void FacebookProto::ProcessMessages( void* data )
 	{
 		for(size_t i=0; i<notifications.size( ); i++)
 		{
-			// TODO: Showing notifications
+			TCHAR* szText = mir_a2t_cp(notifications[i]->text.c_str(), CP_UTF8);
+			ShowEvent( TEXT(""), szText );
+			// TODO: Clear szText?
+
 		}
 	}
 
@@ -142,8 +145,6 @@ void FacebookProto::ProcessFeeds( void* data )
 	LOG("***** Starting processing feeds");
 
 	std::vector< facebook_newsfeed* > news;
-
-	// PROCESSING INTO VECTOR
 
 	std::string::size_type pos = 0;
 	std::string::size_type end = 0;
@@ -180,8 +181,6 @@ void FacebookProto::ProcessFeeds( void* data )
 		pos++;
 		limit++;
 	}
-
-	// PROCESSING INTO VECTOR END
 
 	for(size_t i=0; i<news.size( ); i++)
 	{

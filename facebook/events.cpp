@@ -29,7 +29,7 @@ Last change on : $Date$
 
 int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 {
-	facy.live_feed( );
+	facy.feeds( );
 	return FALSE;
 }
 

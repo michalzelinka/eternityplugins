@@ -39,6 +39,7 @@ Last change on : $Date$
 #include <string>
 #include <cstring>
 #include <sstream>
+#include <fstream>
 #include <list>
 #include <map>
 #include <vector>

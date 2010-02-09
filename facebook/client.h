@@ -88,6 +88,7 @@ struct facebook_message
 
 struct facebook_notification
 {
+	std::string text;
 };
 
 struct facebook_newsfeed
@@ -141,6 +142,8 @@ public:
 	unsigned int    chat_sequence_num_;
 	bool    chat_first_touch_;
 	time_t  last_feeds_update_;
+
+	bool api_check( );
 
 	////////////////////////////////////////////////////////////
 
@@ -202,7 +205,7 @@ public:
 	HANDLE  buddies_lock_;
 
 	bool    buddy_list( );
-	bool    live_feed( );
+	bool    feeds( );
 
 	////////////////////////////////////////////////////////////
 

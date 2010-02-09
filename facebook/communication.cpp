@@ -141,6 +141,7 @@ DWORD facebook_client::choose_security_level( int request_type )
 	case FACEBOOK_REQUEST_LOGIN:
 		return NLHRF_SSL;
 
+	case FACEBOOK_REQUEST_API_CHECK:
 	case FACEBOOK_REQUEST_LOGOUT:
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
 	case FACEBOOK_REQUEST_HOME:
@@ -166,6 +167,7 @@ int facebook_client::choose_method( int request_type )
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
 		return REQUEST_POST;
 
+	case FACEBOOK_REQUEST_API_CHECK:
 	case FACEBOOK_REQUEST_LOGOUT:
 	case FACEBOOK_REQUEST_HOME:
 	case FACEBOOK_REQUEST_FEEDS:
@@ -180,6 +182,9 @@ std::string facebook_client::choose_server( int request_type, std::string* data 
 {
 	switch ( request_type )
 	{
+	case FACEBOOK_REQUEST_API_CHECK:
+		return "http://code.google.com/";
+
 	case FACEBOOK_REQUEST_LOGIN:
 		return FACEBOOK_SERVER_LOGIN;
 
@@ -209,6 +214,9 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 {
 	switch ( request_type )
 	{
+	case FACEBOOK_REQUEST_API_CHECK:
+		return "p/eternityplugins/wiki/FacebookProtocol_DevelopmentProgress";
+
 	case FACEBOOK_REQUEST_LOGIN:
 		return "login.php?login_attempt=1";
 
@@ -294,6 +302,9 @@ NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* h
 	default:
 		*headers_count = 6;
 		break;
+	case FACEBOOK_REQUEST_API_CHECK:
+		*headers_count = 5;
+		break;
 	}
 
 	NETLIBHTTPHEADER* headers = ( NETLIBHTTPHEADER* )utils::mem::allocate( sizeof( NETLIBHTTPHEADER )*( *headers_count ) );
@@ -312,12 +323,13 @@ NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* h
 	case FACEBOOK_REQUEST_RECONNECT:
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE:
 	default:
-		set_header( &headers[0], "Connection" );
-		set_header( &headers[1], "User-Agent" );
+		set_header( &headers[5], "Cookie" );
+	case FACEBOOK_REQUEST_API_CHECK:
+		set_header( &headers[4], "Connection" );
+		set_header( &headers[3], "User-Agent" );
 		set_header( &headers[2], "Accept" );
-		set_header( &headers[3], "Cookie" );
-		set_header( &headers[4], "Accept-Encoding" );
-		set_header( &headers[5], "Accept-Language" );
+		set_header( &headers[1], "Accept-Encoding" );
+		set_header( &headers[0], "Accept-Language" );
 		break;
 	}
 
@@ -336,8 +348,9 @@ void facebook_client::refresh_headers( )
 	{
 		this->headers["Connection"] = "close";
 		this->headers["Accept"] = "*/*";
-		this->headers["Accept-Encoding"] = "none";
-//		this->headers["Accept-Encoding"] = "deflate, gzip, x-gzip, identity, *;q=0";
+// TODO: Set Accept-Encoding: none as default for _DEBUG builds
+//		this->headers["Accept-Encoding"] = "none";
+		this->headers["Accept-Encoding"] = "deflate, gzip, x-gzip, identity, *;q=0";
 		this->headers["Accept-Language"] = "en,en-US;q=0.9";
 		this->headers["Content-Type"] = "application/x-www-form-urlencoded";
 	}
@@ -394,6 +407,31 @@ void facebook_client::clear_cookies( )
 }
 
 //////////////////////////////////////////////////////////////////////////////
+
+bool facebook_client::api_check( )
+{
+	handle_entry( "api_check" );
+
+	http::response resp = flap( FACEBOOK_REQUEST_API_CHECK );
+
+	// Process result
+
+	switch ( resp.code )
+	{
+
+	case HTTP_CODE_OK:
+		std::string key = "Latest API version</h1><p><var>";
+		std::string::size_type start = resp.data.find( key ) + key.length( );
+		std::string::size_type end = resp.data.find( "</var>", start );
+		std::string api_version_latest = resp.data.substr( start, end - start );
+
+		if ( start > 0 && end > 0 && std::string( __API_VERSION_STRING ) < api_version_latest )
+			client_notify( TEXT( "Facebook API version has changed, wait and watch for the Facebook protocol update." ) );
+
+	}
+
+	return handle_success( "api_check" );
+}
 
 bool facebook_client::login(const std::string &username,const std::string &password)
 {
@@ -691,9 +729,9 @@ bool facebook_client::buddy_list( )
 	}
 }
 
-bool facebook_client::live_feed( )
+bool facebook_client::feeds( )
 {
-	handle_entry( "live_feed" );
+	handle_entry( "feeds" );
 
 	// Get feeds
 
@@ -710,12 +748,12 @@ bool facebook_client::live_feed( )
 		if ( resp.data.find( "\"storyCount\":" ) != std::string::npos ) {
 			std::string* response_data = new std::string( resp.data );
 			ForkThreadEx( &FacebookProto::ProcessFeeds, this->parent, ( void* )response_data ); }
-		return handle_success( "live_feed" );
+		return handle_success( "feeds" );
 
 	case HTTP_CODE_FAKE_LOGGED_OUT:
 	case HTTP_CODE_FAKE_DISCONNECTED:
 	default:
-		return handle_error( "live_feed" );
+		return handle_error( "feeds" );
 
 	}
 }

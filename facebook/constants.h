@@ -86,6 +86,7 @@ Last change on : $Date$
 #define FACEBOOK_DEFAULT_AVATAR_URL "http://static.ak.fbcdn.net/pics/q_silhouette.gif"
 
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
+#define FACEBOOK_REQUEST_API_CHECK              50  // check latest API version
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically
 #define FACEBOOK_REQUEST_LOGOUT                 101 // disconnecting physically
 #define FACEBOOK_REQUEST_KEEP_ALIVE             102 // keeping online status alive without idle
