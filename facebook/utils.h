@@ -131,8 +131,6 @@ private:
 	HANDLE handle_;
 };
 
-bool save_url(HANDLE hNetlib,const std::string &url,const std::string &filename);
-
 static const struct
 {
 	char *ext;
