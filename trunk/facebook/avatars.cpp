@@ -51,21 +51,20 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 	ai.format = ext_to_format(ext);
 	strncpy(ai.filename,filename.c_str(),MAX_PATH);
 
+	ScopedLock s( avatar_lock_ );
 	LOG("***** Updating avatar: %s",data->url.c_str());
-	WaitForSingleObjectEx(avatar_lock_,INFINITE,true);
 	if(CallService(MS_SYSTEM_TERMINATED,0,0))
 	{
 		LOG("***** Terminating avatar update early: %s",data->url.c_str());
 		return;
 	}
 
-	if(save_url(this->m_hNetlibAvatar,new_url,filename))
+	if(facy.save_url(new_url,filename))
 		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
 			ACKRESULT_SUCCESS,&ai,0);
 	else
 		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
 			ACKRESULT_FAILED, &ai,0);
-	ReleaseMutex(avatar_lock_);
 	LOG("***** Done avatar: %s",data->url.c_str());
 }
 
