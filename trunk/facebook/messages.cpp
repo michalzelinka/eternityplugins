@@ -44,6 +44,7 @@ void FacebookProto::SendMsgWorker(void *p)
 {
 	if(p == 0)
 		return;
+
 	send_direct *data = static_cast<send_direct*>(p);
 
 	DBVARIANT dbv;
@@ -64,9 +65,12 @@ int FacebookProto::SendMsg(HANDLE hContact, int flags, const char *msg)
 	if ( !isOnline( ) )
 		return 0;
 
+	if ( DBGetContactSettingWord( hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
+		return 0;
+
 	ForkThread(&FacebookProto::SendMsgWorker, this,new send_direct(hContact,msg));
 
-	// TODO: free msg
+	// TODO: Free msg?
 
 	return 1;
 }

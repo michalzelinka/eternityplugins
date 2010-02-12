@@ -58,7 +58,7 @@ int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, DWORD flags)
 		case 1: timeout = getByte( FACEBOOK_KEY_EVENTS_TIMEOUT, DEFAULT_EVENTS_TIMEOUT ); break;
 		case 2: timeout = -1; }
 
-	if (ServiceExists(MS_POPUP_ADDPOPUP) && DBGetContactSettingByte(NULL,"PopUp","ModuleIsEnabled",1)) {
+	if (ServiceExists(MS_POPUP_ADDPOPUP)) {
 		POPUPDATAT pd;
 		pd.colorBack = getByte( FACEBOOK_KEY_EVENTS_COLBACK, DEFAULT_EVENTS_COLBACK );
 		pd.colorText = getByte( FACEBOOK_KEY_EVENTS_COLTEXT, DEFAULT_EVENTS_COLTEXT );

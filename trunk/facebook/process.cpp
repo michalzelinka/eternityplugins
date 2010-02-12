@@ -115,6 +115,7 @@ void FacebookProto::ProcessMessages( void* data )
 	{
 		for(size_t i=0; i<notifications.size( ); i++)
 		{
+			LOG("      Got notification: %s", notifications[i]->text.c_str());
 			TCHAR* szText = mir_a2t_cp(notifications[i]->text.c_str(), CP_UTF8);
 			ShowEvent( TEXT(""), szText );
 			// TODO: Clear szText?

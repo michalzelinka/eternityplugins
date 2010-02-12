@@ -173,12 +173,12 @@ void FacebookProto::UpdateLoop(void *)
 			goto exit;
 		if ( !isOnline( ) )
 			goto exit;
-		if ( i % 6 == 5 )
+		if ( i % 6 == 3 )
 			if ( !facy.feeds( ) )
 				goto exit;
 		if ( !isOnline( ) )
 			goto exit;
-		if ( i % 30 == 29 )
+		if ( i % 20 == 19 )
 			if ( !facy.keep_alive( ) )
 				goto exit;
 		if ( !isOnline( ) )
