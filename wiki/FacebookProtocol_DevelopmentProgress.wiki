@@ -22,10 +22,11 @@
  * _^DONE — Already Done^_
 
 = Known issues =
- * Unfortunately a high memory usage may occur after some time. To walk around this, Miranda restart is required.
+ * Setting Facebook status via Miranda's internal system is somehow broken, please don't use it when not needed. Please use the Mind dialog instead.
 
 = Not-Issues =
- * Status messages are not set properly when you set them to often - server limit requires captcha confirmation when you flood
+ * Status messages are not set properly when you set them to often — server limit requires captcha confirmation when it considers you are "flooding"
+ * Being disconnected sometimes — server fault, mostly caused by server time-out side to side with restrictive connection politics
  * Away status as is not applicable, FB doesn't support any active/controllable Away status, only server-driven Idle.
 
 = Latest API version =
