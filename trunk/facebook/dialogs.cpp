@@ -156,7 +156,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			_sntprintf( str, 4, TEXT( "%d" ), FACEBOOK_MIND_LIMIT-len );
 			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
 
-			SetDlgItemText(hwnd,IDOK, (len > 0) ? LPGENT("Share") : LPGENT("Clear"));
+			SetDlgItemText(hwnd,IDOK, (len > 0) ? LPGENT("Share") : LPGENT("Clear")); // TODO: Button translation
 			EnableWindow(GetDlgItem( hwnd, IDOK ), TRUE);
 
 			return TRUE;
