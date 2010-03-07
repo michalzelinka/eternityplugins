@@ -29,17 +29,18 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 0, 0)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 0, 1)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.1.0.0"
+#define __VERSION_STRING            "0.1.0.1"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,1,0,0
+#define __VERSION_VS_FILE           0,1,0,1
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 1, 0, 0"
+#define __VERSION_VS_FILE_STRING    "0, 1, 0, 1"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
-#define __API_VERSION_STRING        "2.0"
+#define __API_VERSION_STRING        "2.1"
 
 // API versions
+// 2.1 -- minor Facebook Chat server URLs change
 // 2.0 -- major Facebook redesign
 // 1.3 -- m.facebook.com profile change of syntax
 // 1.2 -- buddy_list updates allow non-cumulative update data
@@ -53,7 +54,7 @@ Last change on : $Date$
 // Connection
 #define FACEBOOK_SERVER_REGULAR     "http://www.facebook.com/"
 #define FACEBOOK_SERVER_MOBILE      "http://m.facebook.com/"
-#define FACEBOOK_SERVER_CHAT        "http://%s.channel%s.facebook.com/"
+#define FACEBOOK_SERVER_CHAT        "http://%s.%s.facebook.com/"
 #define FACEBOOK_SERVER_LOGIN       "https://login.facebook.com/"
 #define FACEBOOK_SERVER_APPS        "http://apps.facebook.com/"
 #define PLUGIN_HOSTING_URL          "http://code.google.com/p/eternityplugins/"

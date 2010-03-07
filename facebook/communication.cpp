@@ -109,14 +109,14 @@ bool facebook_client::handle_entry( std::string method )
 bool facebook_client::handle_success( std::string method )
 {
 	parent->Log("   << Quitting %s()", method.c_str());
-	decrement_error();
+	reset_error();
 	return true;
 }
 
 bool facebook_client::handle_error( std::string method, bool force_disconnect )
 {
 	bool result;
-	reset_error();
+	increment_error();
 	parent->Log("!!!!! %s(): Something with Facebook went wrong", method.c_str());
 
 	if ( force_disconnect )
@@ -191,7 +191,7 @@ std::string facebook_client::choose_server( int request_type, std::string* data 
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE: {
 		std::string server = FACEBOOK_SERVER_CHAT;
 		utils::text::replace_first( &server, "%s", "0" );
-		utils::text::replace_first( &server, "%s", this->chat_channel_num_ );
+		utils::text::replace_first( &server, "%s", this->chat_channel_host_ );
 		return server; }
 
 	case FACEBOOK_REQUEST_PROFILE_GET:
@@ -425,7 +425,7 @@ bool facebook_client::api_check( )
 		std::string::size_type end = resp.data.find( "</var>", start );
 		std::string api_version_latest = resp.data.substr( start, end - start );
 
-		if ( start > 0 && end > 0 && std::string( __API_VERSION_STRING ) < api_version_latest )
+		if ( start > 0 && end > 0 && std::string( __API_VERSION_STRING ) != api_version_latest )
 			client_notify( TEXT( "Facebook API version has changed, wait and watch for the Facebook protocol update." ) );
 
 	}
@@ -667,10 +667,10 @@ bool facebook_client::reconnect( )
 	{
 
 	case HTTP_CODE_OK: {
-		std::string channel_num = resp.data.substr( resp.data.find( "\"host\":" ) + 8 + 7, 16 );
+		std::string channel_num = resp.data.substr( resp.data.find( "\"host\":" ) + 8, 16 );
 		std::string::size_type end = channel_num.find( "\"" );
-		this->chat_channel_num_ = channel_num.substr( 0, end );
-		parent->Log("      Got self channel number: %s", this->chat_channel_num_.c_str());
+		this->chat_channel_host_ = channel_num.substr( 0, end );
+		parent->Log("      Got self channel host: %s", this->chat_channel_host_.c_str());
 
 		std::string sequence_num = resp.data.substr( resp.data.find( "\"seq\":" ) + 6, 16 );
 		end = sequence_num.find( "," );
