@@ -88,18 +88,21 @@ struct facebook_message
 
 struct facebook_notification
 {
+	std::string user_id;
 	std::string text;
+
+	facebook_notification( ) {
+		this->user_id = this->text = ""; }
 };
 
 struct facebook_newsfeed
 {
+	std::string user_id;
 	std::string title;
 	std::string text;
 
-	facebook_newsfeed( )
-	{
-		this->text = "";
-	}
+	facebook_newsfeed( ) {
+		this->user_id = this->title = this->text = ""; }
 };
 
 class facebook_client

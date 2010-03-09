@@ -44,7 +44,6 @@ http::response facebook_client::flap( const int request_type, std::string* reque
 	if ( request_data != NULL )
 	{
 		nlhr.pData = (char*)(*request_data).c_str();
-//		nlhr.dataLength = strlen( nlhr.pData );
 		nlhr.dataLength = request_data->length( );
 	}
 
@@ -876,8 +875,7 @@ bool facebook_client::get_profile(facebook_user* fbu)
 				std::string::size_type end = resp.data.find( "\"", start );
 				if ( end != std::string::npos ) {
 					fbu->image_url = resp.data.substr( start, end - start );
-					fbu->image_url = fbu->image_url.replace( fbu->image_url.rfind( "/s" ), 2, "/q" ); } }
-			else
+			} } else
 				fbu->image_url = FACEBOOK_DEFAULT_AVATAR_URL;
 		}
 		// TODO: More items?

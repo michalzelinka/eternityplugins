@@ -246,7 +246,7 @@ int FacebookProto::OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.ptszDescriptiveName = descr;
 	m_hNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
 	if(m_hNetlibUser == 0)
-		MessageBox(NULL,TEXT("Unable to get Netlib connection for Facebook"),m_tszUserName,MB_OK);
+		MessageBox(NULL,TranslateT("Unable to get Netlib connection for Facebook"),m_tszUserName,MB_OK);
 
 	// Create avatar network connection (TODO: probably remove this)
 	char module[512];
@@ -256,7 +256,7 @@ int FacebookProto::OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 	nlu.ptszDescriptiveName = descr;
 	m_hNetlibAvatar = (HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
 	if(m_hNetlibAvatar == 0)
-		MessageBox(NULL,TEXT("Unable to get Netlib Avatar connection for Facebook"),m_tszUserName,MB_OK);
+		MessageBox(NULL,TranslateT("Unable to get Netlib Avatar connection for Facebook"),m_tszUserName,MB_OK);
 
 	facy.set_handle(m_hNetlibUser);
 
