@@ -35,7 +35,7 @@ int FacebookProto::Test( WPARAM wparam, LPARAM lparam )
 
 int FacebookProto::Log(const char *fmt,...)
 {
-	if ( getByte( FACEBOOK_KEY_ENABLE_LOGGING, 0 ) != TRUE )
+	if ( getByte( FACEBOOK_KEY_LOGGING_ENABLE, 0 ) != TRUE )
 		return EXIT_SUCCESS;
 
 	va_list va;
@@ -49,7 +49,7 @@ int FacebookProto::Log(const char *fmt,...)
 	return utils::debug::log( m_szModuleName, text );
 }
 
-int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, DWORD flags)
+int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, HANDLE hContact, DWORD flags)
 {
 	int ret; BYTE timeout;
 
@@ -63,7 +63,7 @@ int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, DWORD flags)
 		pd.colorBack = getByte( FACEBOOK_KEY_EVENTS_COLBACK, DEFAULT_EVENTS_COLBACK );
 		pd.colorText = getByte( FACEBOOK_KEY_EVENTS_COLTEXT, DEFAULT_EVENTS_COLTEXT );
 		pd.iSeconds = timeout;
-		pd.lchContact = NULL;
+		pd.lchContact = hContact;
 		pd.lchIcon = NULL;
 		pd.PluginData = NULL;
 		pd.PluginWindowProc = NULL;

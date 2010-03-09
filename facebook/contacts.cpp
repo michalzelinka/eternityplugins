@@ -140,71 +140,66 @@ void FacebookProto::UpdateContactWorker(void *p)
 				DBWriteContactSettingWord(fbu->handle,m_szModuleName,"Status",ID_STATUS_ONLINE );
 		}
 
-		bool force_update = ContactNeedsUpdate( fbu );
-		bool update_required = false;
-		DBVARIANT dbv;
+		if ( ContactNeedsUpdate( fbu ) )
+		{
+			bool update_required = false;
+			DBVARIANT dbv;
 
-		// Update Real name
+			// Update Real name
 
-		if ( force_update )
-			update_required = true;
-		else if ( !DBGetContactSettingString(fbu->handle,m_szModuleName,FACEBOOK_KEY_ID,&dbv) ) {
-			update_required = strcmp( dbv.pszVal, fbu->real_name.c_str() ) != 0;
-			DBFreeVariant(&dbv); }
-		else update_required = true;
+			if ( !DBGetContactSettingString(fbu->handle,m_szModuleName,FACEBOOK_KEY_ID,&dbv) ) {
+				update_required = strcmp( dbv.pszVal, fbu->real_name.c_str() ) != 0;
+				DBFreeVariant(&dbv); }
+			else update_required = true;
 
-		if ( update_required ) {
-			DBWriteContactSettingUTF8String(fbu->handle,m_szModuleName,FACEBOOK_KEY_NAME,fbu->real_name.c_str());
-			DBWriteContactSettingUTF8String(fbu->handle,m_szModuleName,"Nick",fbu->real_name.c_str()); }
+			if ( update_required ) {
+				DBWriteContactSettingUTF8String(fbu->handle,m_szModuleName,FACEBOOK_KEY_NAME,fbu->real_name.c_str());
+				DBWriteContactSettingUTF8String(fbu->handle,m_szModuleName,"Nick",fbu->real_name.c_str()); }
 
-		// Update idle flag
+			// Update idle flag
 
-		if ( fbu->is_idle ) {
-			if ( !DBGetContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",0) )
-				DBWriteContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",(DWORD)time(NULL)); }
-		else {
-			if ( DBGetContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",0) )
-				DBWriteContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",0); }
+			if ( fbu->is_idle ) {
+				if ( !DBGetContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",0) )
+					DBWriteContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",(DWORD)time(NULL)); }
+			else {
+				if ( DBGetContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",0) )
+					DBWriteContactSettingDword(fbu->handle,m_szModuleName,"IdleTS",0); }
 
-		// Get Status message and Avatar URL if needed
+			// Get Status message and Avatar URL if needed
 
-		if ( force_update )
 			facy.get_profile( fbu );
 
-		// Update status message
+			// Update status message
 
-		if ( force_update )
-			update_required = true;
-		else if ( fbu->user_id == facy.self_.user_id )
-			update_required = true;
-		else if ( !DBGetContactSettingUTF8String(fbu->handle,"CList","StatusMsg",&dbv) ) {
-			update_required = strcmp( dbv.pszVal, fbu->status.c_str() ) != 0;
-			DBFreeVariant(&dbv); }
-		else update_required = true;
-
-		if ( update_required ) {
 			if ( fbu->user_id == facy.self_.user_id )
-				setU8String("StatusMsg",fbu->status.c_str());
-			else
-				DBWriteContactSettingUTF8String(fbu->handle,"CList","StatusMsg",fbu->status.c_str());
+				update_required = true;
+			else if ( !DBGetContactSettingUTF8String(fbu->handle,"CList","StatusMsg",&dbv) ) {
+				update_required = strcmp( dbv.pszVal, fbu->status.c_str() ) != 0;
+				DBFreeVariant(&dbv); }
+			else update_required = true;
+
+			if ( update_required ) {
+				if ( fbu->user_id == facy.self_.user_id )
+					setU8String("StatusMsg",fbu->status.c_str());
+				else
+					DBWriteContactSettingUTF8String(fbu->handle,"CList","StatusMsg",fbu->status.c_str());
+			}
+
+			// Update avatar
+
+			if ( !DBGetContactSettingString(fbu->handle,m_szModuleName,FACEBOOK_KEY_AV_URL,&dbv) ) {
+				update_required = strcmp( dbv.pszVal, fbu->image_url.c_str() ) != 0;
+				DBFreeVariant(&dbv); }
+			else update_required = true;
+
+			if ( update_required ) {
+				DBWriteContactSettingString(fbu->handle,m_szModuleName,FACEBOOK_KEY_AV_URL,fbu->image_url.c_str());
+				ProcessAvatar(fbu->handle,&fbu->image_url); }
+
+			// Update update timestamp
+
+			fbu->last_update = ::time( NULL );
 		}
-
-		// Update avatar
-
-		if ( force_update )
-			update_required = true;
-		else if ( !DBGetContactSettingString(fbu->handle,m_szModuleName,FACEBOOK_KEY_AV_URL,&dbv) ) {
-			update_required = strcmp( dbv.pszVal, fbu->image_url.c_str() ) != 0;
-			DBFreeVariant(&dbv); }
-		else update_required = true;
-
-		if ( update_required ) {
-			DBWriteContactSettingString(fbu->handle,m_szModuleName,FACEBOOK_KEY_AV_URL,fbu->image_url.c_str());
-			ProcessAvatar(fbu->handle,&fbu->image_url); }
-
-		// Update update timestamp
-
-		fbu->last_update = ::time( NULL );
 	}
 }
 

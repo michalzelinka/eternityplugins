@@ -183,5 +183,5 @@ public:
 
 	// Information providing
 	int Log(const char *fmt,...);
-	int ShowEvent(TCHAR* title, TCHAR* info, DWORD flags=NIIF_INFO);
+	int ShowEvent(TCHAR* title, TCHAR* info, HANDLE hContact=NULL, DWORD flags=NIIF_INFO);
 };

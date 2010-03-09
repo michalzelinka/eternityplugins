@@ -36,6 +36,7 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 
 	try
 	{
+		facebook_user* current = NULL;
 		std::string buddyData = static_cast< std::string* >( data )->substr( 9 );
 		std::istringstream sDocument( buddyData );
 		Object objDocument;
@@ -53,7 +54,7 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 			if ( buddy_list->empty() || iter == buddy_list->end() )
 				buddy_list->insert( std::make_pair( member.name, new facebook_user( ) ) );
 
-			facebook_user* current = (*buddy_list)[member.name];
+			current = (*buddy_list)[member.name];
 			const Object& objMember = member.element;
 			const Boolean idle = objMember["i"];
 
@@ -71,9 +72,10 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 			char was_id[32];
 			lltoa( member.Value(), was_id, 10 );
 
-			if ( (*buddy_list)[was_id]->status_id & ID_STATUS_ONLY_ONCE )
-				continue;
-			(*buddy_list)[was_id]->status_id = ID_STATUS_OFFLINE;
+			current = (*buddy_list)[was_id];
+			// work-around for idle change indicating user in both nowAvailable and wasAvailable
+			if ( current->status_id & ID_STATUS_ONLY_ONCE ) current->status_id &= ~(ID_STATUS_ONLY_ONCE);
+			else current->status_id = ID_STATUS_OFFLINE;
 		}
 
 		const Object& userInfosList = objRoot["payload"]["buddy_list"]["userInfos"];
@@ -91,7 +93,7 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 			const String& realName = objMember["name"];
 			const String& imageUrl = objMember["thumbSrc"];
 
-			facebook_user* current = (*buddy_list)[member.name];
+			current = (*buddy_list)[member.name];
 			current->real_name = utils::text::slashu_to_utf8(
 			    utils::text::special_expressions_decode( realName.Value( ) ) );
 			current->image_url = utils::text::slashu_to_utf8(

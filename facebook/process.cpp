@@ -51,7 +51,6 @@ void FacebookProto::ProcessBuddyList( void* data )
 
 		facebook_user* fu;
 
-		this_->second->status_id &= ~(ID_STATUS_ONLY_ONCE);
 		if ( this_->second->status_id == ID_STATUS_OFFLINE ) {
 			fu = new facebook_user(this_->second);
 			facy.buddies.erase( this_ ); }
@@ -119,7 +118,6 @@ void FacebookProto::ProcessMessages( void* data )
 			TCHAR* szText = mir_a2t_cp(notifications[i]->text.c_str(), CP_UTF8);
 			ShowEvent( TEXT(""), szText );
 			// TODO: Clear szText?
-
 		}
 	}
 

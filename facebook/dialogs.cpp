@@ -156,7 +156,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			_sntprintf( str, 4, TEXT( "%d" ), FACEBOOK_MIND_LIMIT-len );
 			SetDlgItemText(hwnd,IDC_CHARACTERS,str);
 
-			SetDlgItemText(hwnd,IDOK, (len > 0) ? LPGENT("Share") : LPGENT("Clear")); // TODO: Button translation
+			SetDlgItemText(hwnd,IDOK, (len > 0) ? TranslateT("Share") : TranslateT("Clear"));
 			EnableWindow(GetDlgItem( hwnd, IDOK ), TRUE);
 
 			return TRUE;
@@ -235,7 +235,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		SendDlgItemMessage(hwnd, IDC_AGENT, CB_SETCURSEL,
 		    DBGetContactSettingByte(NULL, proto->m_szModuleName, "UserAgent", 0), 0);
 
-		LoadDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING, 0);
+		LoadDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_LOGGING_ENABLE, 0);
 		LoadDBCheckState(proto, hwnd, IDC_SET_STATUS, FACEBOOK_KEY_SET_MIRANDA_STATUS, 0);
 
 		} return TRUE;
@@ -288,7 +288,7 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 			DBWriteContactSettingByte(NULL, proto->m_szModuleName, "UserAgent",
 			    SendDlgItemMessage(hwnd, IDC_AGENT, CB_GETCURSEL, 0, 0));
 
-			StoreDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_ENABLE_LOGGING);
+			StoreDBCheckState(proto, hwnd, IDC_LOGGING, FACEBOOK_KEY_LOGGING_ENABLE);
 			StoreDBCheckState(proto, hwnd, IDC_SET_STATUS, FACEBOOK_KEY_SET_MIRANDA_STATUS);
 
 			return TRUE;
@@ -323,7 +323,7 @@ INT_PTR CALLBACK FBEventsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 		case IDC_PREVIEW: {
 			TCHAR protoName[255];
 			lstrcpy( protoName, proto->m_tszUserName );
-			proto->ShowEvent( protoName, TEXT("Sample event") ); }
+			proto->ShowEvent( protoName, TranslateT("Sample event") ); }
 			break;
 
 		}

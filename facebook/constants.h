@@ -29,13 +29,13 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 0, 1)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 0, 2)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.1.0.1"
+#define __VERSION_STRING            "0.1.0.2"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,1,0,1
+#define __VERSION_VS_FILE           0,1,0,2
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 1, 0, 1"
+#define __VERSION_VS_FILE_STRING    "0, 1, 0, 2"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
 #define __API_VERSION_STRING        "2.1"
 
@@ -68,7 +68,7 @@ Last change on : $Date$
 #define FACEBOOK_GROUP_NAME_LIMIT   100
 
 // Fake status
-#define ID_STATUS_ONLY_ONCE         0x000F0000 // TODO: is it needed?
+#define ID_STATUS_ONLY_ONCE         0x000F0000
 
 // Defaults
 #define FACEBOOK_MINIMAL_POLL_RATE              10
