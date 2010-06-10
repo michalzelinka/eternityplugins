@@ -68,6 +68,11 @@ int FacebookProto::SendMsg(HANDLE hContact, int flags, const char *msg)
 	if ( DBGetContactSettingWord( hContact, m_szModuleName, "Status", ID_STATUS_OFFLINE ) == ID_STATUS_OFFLINE )
 		return 0;
 
+	// TODO: msg comes as Unicode (retyped wchar_t*), why should we convert it as ANSI to UTF-8? o_O
+	if ( flags & PREF_UNICODE )
+        msg = mir_utf8encode(msg);
+
+
 	ForkThread(&FacebookProto::SendMsgWorker, this,new send_direct(hContact,msg));
 
 	// TODO: Free msg?

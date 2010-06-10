@@ -83,6 +83,8 @@ HANDLE FacebookProto::AddToContactList(facebook_user* fbu)
 				DBWriteContactSettingTString(hContact,"CList","Group",dbv.ptszVal);
 				DBFreeVariant(&dbv);
 			}
+			if (getByte(FACEBOOK_KEY_DISABLE_STATUS_NOTIFY, 0))
+				CallService(MS_IGNORE_IGNORE, (WPARAM)hContact, (LPARAM)IGNOREEVENT_USERONLINE);
 			return hContact;
 		}
 		else

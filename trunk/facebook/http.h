@@ -96,6 +96,7 @@ namespace http
 	{
 		response() : code(0) {}
 		int code;
+		std::map< std::string, std::string > headers;
 		std::string data;
 	};
 }

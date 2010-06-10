@@ -86,7 +86,12 @@ void FacebookProto::SignOff(void*)
 	facy.clear_cookies( );
 	facy.buddies.clear( );
 
-	m_iStatus = m_iDesiredStatus = facy.self_.status_id = ID_STATUS_OFFLINE;
+	m_iDesiredStatus = ID_STATUS_OFFLINE;
+
+	ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
+		(HANDLE)m_iStatus,m_iDesiredStatus);
+
+	m_iStatus = facy.self_.status_id = m_iDesiredStatus;
 	ToggleStatusMenuItems(isOnline());
 
 	LOG("##### SignOff complete");
@@ -108,7 +113,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		ShowEvent(m_tszUserName,TranslateT("Please enter a username."));
+		NotifyEvent(m_tszUserName,TranslateT("Please enter a username."));
 		goto error;
 	}
 
@@ -121,7 +126,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		ShowEvent(m_tszUserName,TranslateT("Please enter a password."));
+		NotifyEvent(m_tszUserName,TranslateT("Please enter a password."));
 		goto error;
 	}
 

@@ -29,15 +29,15 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 0, 2)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 1, 0)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.1.0.2"
+#define __VERSION_STRING            "0.1.1.0"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,1,0,2
+#define __VERSION_VS_FILE           0,1,1,0
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 1, 0, 2"
+#define __VERSION_VS_FILE_STRING    "0, 1, 1, 0"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
-#define __API_VERSION_STRING        "2.1"
+#define __API_VERSION_STRING        "3.0"
 
 // API versions
 // 2.1 -- minor Facebook Chat server URLs change
@@ -64,7 +64,7 @@ Last change on : $Date$
 #define FACEBOOK_MESSAGE_LIMIT_TEXT "1024"
 #define FACEBOOK_MIND_LIMIT         420
 #define FACEBOOK_MIND_LIMIT_TEXT    "420"
-#define FACEBOOK_TIMEOUTS_LIMIT     5 // TODO: Maybe switch to time timeout limit? Failure retries? Mmm? x))
+#define FACEBOOK_TIMEOUTS_LIMIT     5
 #define FACEBOOK_GROUP_NAME_LIMIT   100
 
 // Fake status
@@ -89,8 +89,9 @@ Last change on : $Date$
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_API_CHECK              50  // check latest API version
 #define FACEBOOK_REQUEST_LOGIN                  100 // connecting physically
-#define FACEBOOK_REQUEST_LOGOUT                 101 // disconnecting physically
-#define FACEBOOK_REQUEST_KEEP_ALIVE             102 // keeping online status alive without idle
+#define FACEBOOK_REQUEST_SETUP_MACHINE          102 // setting machine name
+#define FACEBOOK_REQUEST_KEEP_ALIVE             104 // keeping online status alive without idle
+#define FACEBOOK_REQUEST_LOGOUT                 106 // disconnecting physically
 #define FACEBOOK_REQUEST_HOME                   110 // getting __post_form_id__ + __fb_dtsg__ + ...
 #define FACEBOOK_REQUEST_BUDDY_LIST             120 // getting regular updates (friends online, ...)
 #define FACEBOOK_REQUEST_FEEDS                  125 // getting feeds

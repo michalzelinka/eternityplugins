@@ -76,7 +76,7 @@ public:
 
 	virtual	DWORD_PTR __cdecl GetCaps( int type, HANDLE hContact = NULL );
 	virtual	HICON     __cdecl GetIcon( int iconIndex );
-	virtual	int       __cdecl GetInfo( HANDLE hContact, int infoType ) { return NULL; };
+	virtual	int       __cdecl GetInfo( HANDLE hContact, int infoType ) { return 1; }; // TODO: Most probably some ProtoAck should be here instead
 
 	virtual	HANDLE    __cdecl SearchBasic( const char* id ) { return NULL; };
 	virtual	HANDLE    __cdecl SearchByEmail( const char* email ) { return NULL; };
@@ -183,5 +183,5 @@ public:
 
 	// Information providing
 	int Log(const char *fmt,...);
-	int ShowEvent(TCHAR* title, TCHAR* info, HANDLE hContact=NULL, DWORD flags=NIIF_INFO);
+	int NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact=NULL, DWORD flags=NIIF_INFO);
 };

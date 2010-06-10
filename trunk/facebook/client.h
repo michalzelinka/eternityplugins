@@ -32,6 +32,7 @@ Last change on : $Date$
 struct facebook_user
 {
 	HANDLE handle;
+	HANDLE lock; // TODO: Use per-contact locking where required
 
 	std::string user_id;
 	std::string real_name;
@@ -164,7 +165,7 @@ public:
 	std::string get_user_agent( );
 
 	std::string load_cookies( );
-	void    store_cookies( NETLIBHTTPHEADER* headers, int headers_count );
+	void    store_headers( http::response* resp, NETLIBHTTPHEADER* headers, int headers_count );
 	void    clear_cookies( );
 
 	////////////////////////////////////////////////////////////
@@ -205,7 +206,7 @@ public:
 	// Updates handling
 
 	std::map< std::string, facebook_user* > buddies;
-	HANDLE  buddies_lock_;
+	HANDLE  buddies_lock_; // TODO: Use buddy list locking where required
 
 	bool    buddy_list( );
 	bool    feeds( );
