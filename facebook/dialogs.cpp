@@ -169,7 +169,7 @@ INT_PTR CALLBACK FBMindProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lpar
 			GetDlgItemText(hwnd,IDC_MINDMSG,mindMessage,SIZEOF(mindMessage));
 			ShowWindow(hwnd,SW_HIDE);
 
-			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8); // TODO: Move to another place to apply on Miranda API requests
+			char *narrow = mir_t2a_cp(mindMessage,CP_UTF8);
 			ForkThread(&FacebookProto::SetAwayMsgWorker, proto, narrow);
 
 			EndDialog(hwnd, wparam); 
@@ -323,7 +323,7 @@ INT_PTR CALLBACK FBEventsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM lp
 		case IDC_PREVIEW: {
 			TCHAR protoName[255];
 			lstrcpy( protoName, proto->m_tszUserName );
-			proto->ShowEvent( protoName, TranslateT("Sample event") ); }
+			proto->NotifyEvent( protoName, TranslateT("Sample event") ); }
 			break;
 
 		}

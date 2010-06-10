@@ -49,9 +49,11 @@ int FacebookProto::Log(const char *fmt,...)
 	return utils::debug::log( m_szModuleName, text );
 }
 
-int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, HANDLE hContact, DWORD flags)
+int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD flags)
 {
 	int ret; BYTE timeout;
+
+	SkinPlaySound( "NewNotification" );
 
 	switch ( getByte( FACEBOOK_KEY_EVENTS_TIMEOUT_TYPE, DEFAULT_EVENTS_TIMEOUT_TYPE ) ) {
 		case 0: timeout = 0; break;
@@ -63,8 +65,8 @@ int FacebookProto::ShowEvent(TCHAR* title, TCHAR* info, HANDLE hContact, DWORD f
 		pd.colorBack = getByte( FACEBOOK_KEY_EVENTS_COLBACK, DEFAULT_EVENTS_COLBACK );
 		pd.colorText = getByte( FACEBOOK_KEY_EVENTS_COLTEXT, DEFAULT_EVENTS_COLTEXT );
 		pd.iSeconds = timeout;
-		pd.lchContact = hContact;
-		pd.lchIcon = NULL;
+		pd.lchContact = contact;
+		pd.lchIcon = GetIcon(1); // TODO: Icon test
 		pd.PluginData = NULL;
 		pd.PluginWindowProc = NULL;
 		lstrcpy(pd.lptzContactName, title);

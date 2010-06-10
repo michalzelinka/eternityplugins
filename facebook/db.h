@@ -56,6 +56,7 @@ Last change on : $Date$
 #define FACEBOOK_KEY_SET_MIRANDA_STATUS "SetMirandaStatus"
 #define FACEBOOK_KEY_TIMEOUTS_LIMIT "TimeoutsLimit" // [HIDDEN]
 #define FACEBOOK_KEY_DISABLE_LOGOUT "DisableLogout" // [HIDDEN]
+#define FACEBOOK_KEY_DISABLE_STATUS_NOTIFY  "DisableStatusNotify" // [HIDDEN]
 
 #define FACEBOOK_KEY_NOTIFICATIONS_ENABLE   "NotificationsEnable"
 #define FACEBOOK_KEY_FEEDS_ENABLE           "FeedsEnable"

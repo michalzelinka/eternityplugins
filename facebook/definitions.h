@@ -35,6 +35,12 @@ Last change on : $Date$
 
 #define LOG Log
 
+#define LOG_NOTIFY              0
+#define LOG_WARNING             1
+#define LOG_ALERT               2
+#define LOG_FAILURE             3
+#define LOG_CRITICAL            4
+
 #if defined( _UNICODE )
 #define NIIF_INTERN_TCHAR NIIF_INTERN_UNICODE // m_clist.h
 #define mir_tstrdup mir_wstrdup // m_system.h

@@ -115,9 +115,10 @@ void FacebookProto::ProcessMessages( void* data )
 		for(size_t i=0; i<notifications.size( ); i++)
 		{
 			LOG("      Got notification: %s", notifications[i]->text.c_str());
+			TCHAR* szTitle = mir_a2t_cp(this->m_szModuleName, CP_UTF8);
 			TCHAR* szText = mir_a2t_cp(notifications[i]->text.c_str(), CP_UTF8);
-			ShowEvent( TEXT(""), szText );
-			// TODO: Clear szText?
+			NotifyEvent( szTitle, szText );
+			// TODO: Clear szTitle, szText?
 		}
 	}
 
@@ -150,11 +151,11 @@ void FacebookProto::ProcessFeeds( void* data )
 	UINT limit = 0;
 	std::string* resp = (std::string*)data;
 
-	while ( ( pos = resp->find( "<h3", pos ) ) != std::string::npos && limit <= 25 )
+	while ( ( pos = resp->find( "<h6", pos ) ) != std::string::npos && limit <= 25 )
 	{
 		facebook_newsfeed* nf = new facebook_newsfeed;
 
-		pos = resp->find( "GenericStory_Name", pos );
+		pos = resp->find( "uiStreamMessage", pos );
 		pos = resp->find( "\">", pos );
 		pos += 2;
 		end = resp->find( "<\\/a>", pos );
@@ -165,7 +166,7 @@ void FacebookProto::ProcessFeeds( void* data )
 		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
 
 		pos = end + 6;
-		end = resp->find( "<\\/h3>", pos );
+		end = resp->find( "<\\/h6>", pos );
 		if ( end == std::string::npos )
 			break;
 		nf->text = utils::text::slashu_to_utf8(
@@ -186,7 +187,7 @@ void FacebookProto::ProcessFeeds( void* data )
 		LOG("      Got newsfeed: %s %s", news[i]->title.c_str(), news[i]->text.c_str());
 		TCHAR* szTitle = mir_a2t_cp(news[i]->title.c_str(), CP_UTF8);
 		TCHAR* szText = mir_a2t_cp(news[i]->text.c_str(), CP_UTF8);
-		ShowEvent(szTitle,szText);
+		NotifyEvent(szTitle,szText);
 		// TODO: Clear szTitle, szText?
 	}
 

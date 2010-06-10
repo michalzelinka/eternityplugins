@@ -49,6 +49,8 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &FacebookProto::OnBuildContactMenu, this);
 	HookProtoEvent(ME_OPT_INITIALISE,            &FacebookProto::OnOptionsInit,      this);
 
+	SkinAddNewSoundEx( "NewNotification", m_szModuleName, Translate( "New notification" ) );
+
 	char *profile = Utils_ReplaceVars("%miranda_avatarcache%");
 	def_avatar_folder_ = std::string(profile)+"\\"+m_szModuleName;
 	mir_free(profile);
@@ -157,7 +159,7 @@ int FacebookProto::SetAwayMsg( int status, const char *msg )
 {
 	if ( !isOffline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
 	{
-		TCHAR *wide  = mir_a2t_cp((const char*)msg,CP_ACP);
+		TCHAR *wide  = mir_a2t((const char*)msg);
 		char *narrow = mir_t2a_cp((const TCHAR*)wide,CP_UTF8);
 		utils::mem::detract((void**)&wide);
 		ForkThread(&FacebookProto::SetAwayMsgWorker, this, narrow);
@@ -191,8 +193,7 @@ int FacebookProto::GetMyAwayMsg( WPARAM wParam, LPARAM lParam )
 	DBVARIANT dbv = { DBVT_TCHAR };
 	if ( !getTString( "StatusMsg", &dbv ) && lstrlen( dbv.ptszVal ) != 0 )
 	{
-		// TODO: Return casting in order of param
-		int res = ( int )mir_tstrdup( dbv.ptszVal );
+		int res = (lParam & SGMA_UNICODE) ? (INT_PTR)mir_t2u(dbv.ptszVal) : (INT_PTR)mir_t2a(dbv.ptszVal);
 		DBFreeVariant( &dbv );
 		return res;
 	}

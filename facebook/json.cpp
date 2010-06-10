@@ -163,6 +163,13 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 
 				notifications->push_back( notification );
 			}
+			else if ( type.Value( ) == "inbox" )
+			{
+/*				const Number& unseen = objMember["unseen"];
+
+				TCHAR* info = TranslateT("You have %d unseen messages");
+				proto->ShowEvent( TranslateT("Unseen messages"), TC );
+*/			}
 			else
 				continue;
 		}

@@ -99,15 +99,15 @@ BEGIN
     CONTROL         "Create a new Facebook account",IDC_NEWACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,106,57,142,12
     GROUPBOX        "Advanced Settings",IDC_STATIC,51,80,204,130,WS_DISABLED
-    LTEXT           "Default group for newly added contacts:",IDC_STATIC,59,99,189,8
-    EDITTEXT        IDC_GROUP,106,111,142,13,ES_AUTOHSCROLL
-    LTEXT           "User-Agent:",IDC_STATIC,59,133,44,8
-    COMBOBOX        IDC_AGENT,106,131,142,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
-    CONTROL         "Set Facebook status through Miranda status",IDC_SET_STATUS,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,153,189,10
+    LTEXT           "Default group for newly added contacts:",IDC_STATIC,59,95,189,8
+    EDITTEXT        IDC_GROUP,106,106,142,13,ES_AUTOHSCROLL
+    LTEXT           "User-Agent:",IDC_STATIC,59,128,44,8
+    COMBOBOX        IDC_AGENT,106,126,142,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Set Facebook ""What's on my mind"" status through Miranda status",IDC_SET_STATUS,
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,59,147,189,18
     CONTROL         "Enable logging for debugging purposes",IDC_LOGGING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,167,189,10
-    PUSHBUTTON      "Show cookies",IDC_COOKIES,106,184,93,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,168,189,10
+    PUSHBUTTON      "Show cookies",IDC_COOKIES,87,185,131,14
 END
 
 IDD_OPTIONS_EVENTS DIALOGEX 0, 0, 305, 217
