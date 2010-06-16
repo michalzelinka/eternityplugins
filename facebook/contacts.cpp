@@ -142,7 +142,7 @@ void FacebookProto::UpdateContactWorker(void *p)
 				DBWriteContactSettingWord(fbu->handle,m_szModuleName,"Status",ID_STATUS_ONLINE );
 		}
 
-		if ( ContactNeedsUpdate( fbu ) )
+		if ( fbu->user_id == facy.self_.user_id || ContactNeedsUpdate( fbu ) )
 		{
 			bool update_required = false;
 			DBVARIANT dbv;

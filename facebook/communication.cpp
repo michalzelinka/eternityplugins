@@ -472,7 +472,7 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 	validate_response(&resp);
 
 	// Check whether setting Machine name is required
-	if ( resp.code == HTTP_CODE_SEE_OTHER && resp.headers.find("Location") != resp.headers.end() && resp.headers["Location"].find("loginnotify/setup_machine.php") != std::string::npos ) {
+	if ( resp.code == HTTP_CODE_FOUND && resp.headers.find("Location") != resp.headers.end() && resp.headers["Location"].find("loginnotify/setup_machine.php") != std::string::npos ) {
 		data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&machinename=";
 		data += g_strUserAgent;
 		flap( FACEBOOK_REQUEST_SETUP_MACHINE, &data ); }
@@ -488,7 +488,6 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 		return handle_error( "login", FORCE_DISCONNECT );
 
 	case HTTP_CODE_FOUND: // Found and redirected to Home, Logged in, everything is OK
-	case HTTP_CODE_SEE_OTHER: // Redirection to Machine setup page, probably OK after flapping
 		if ( cookies.find("c_user") != cookies.end() ) {
 			this->self_.user_id = cookies.find("c_user")->second;
 			DBWriteContactSettingString(NULL,parent->m_szModuleName,FACEBOOK_KEY_ID,this->self_.user_id.c_str());
@@ -841,14 +840,16 @@ bool facebook_client::get_profile(facebook_user* fbu)
 		{
 			std::string::size_type start = resp.data.find( "<div class=\"section_title\">" );
 			start = resp.data.find( "<div id=\"anchor_fbid_", start );
-			start = resp.data.find( "\">", start );
 			if ( start != std::string::npos ) {
+				start = resp.data.find( "\">", start );
 				start += 2;
 				std::string::size_type end = resp.data.find( "&nbsp;<small>", start );
 				if ( end != std::string::npos ) {
-					if ( (BYTE)resp.data.at(end-1) == (BYTE)'.' ) end--; // This will hopefuly remove the "evil" dot ^^.
+					if ( (BYTE)resp.data.at(end-1) == (BYTE)'.' ) end--; // This will hopefuly remove the "evil" dot ^^. ..Oh, no!. Stop!. Stop it!. .. Okay, you won :(               . (fuck, again!).
 					fbu->status = resp.data.substr( start, end - start );
-					fbu->status = utils::text::special_expressions_decode( fbu->status ); } }
+					fbu->status = utils::text::special_expressions_decode( fbu->status ); }
+			}
+			else fbu->status = "";
 		}
 		{
 			std::string::size_type start = resp.data.find( "http://profile.ak.fbcdn.net" );
@@ -875,20 +876,22 @@ bool facebook_client::set_status(const std::string &status_text)
 {
 	handle_entry( "set_status" );
 
-	std::string data = "action=HOME_UPDATE&home_tab_id=1&profile_id=";
+	std::string data = "post_form_id_source=AsyncRequest&post_form_id=";
+	data += ( this->post_form_id_.length( ) ) ? this->post_form_id_ : "0";
+	data += "&fb_dtsg=";
+	data += ( this->dtsg_.length( ) ) ? this->dtsg_ : "0";
+	data += "&target_id=";
 	data += this->self_.user_id;
+
 	if ( status_text.length( ) )
 	{
-		data += "&status=";
+		data += "&action=PROFILE_UPDATE&app_id=&hey_kid_im_a_composer=true&display_context=profile&_log_display_context=profile&ajax_log=1&status=";
 		data += utils::url::encode( status_text );
+		data += "&profile_id=";
+		data += this->self_.user_id;
 	}
 	else
-	{
-		data += "&clear=1";
-	}
-	data += "&post_form_id=";
-	data += ( post_form_id_.length( ) ) ? post_form_id_ : "0";
-	data += "&target_id=0&app_id=&post_form_id_source=AsyncRequest";
+		data += "&clear=1&nctr[_mod]=pagelet_top_bar";
 
 	http::response resp = flap( FACEBOOK_REQUEST_STATUS_SET, &data );
 
