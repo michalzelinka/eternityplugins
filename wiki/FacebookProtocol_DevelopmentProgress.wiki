@@ -9,8 +9,8 @@
  * <font color="green">Getting/setting own "What's on my mind" status // DONE/DONE</font>
  * <font color="green">Getting & viewing friends' status messages // DONE</font>
  * <font color="green">Sending/receiving instant messages (not regular inbox/sent messages) // DONE/DONE</font>
- * <font color="orange">Getting notifications and feeds // CAPABLE/DONE</font>
- * <font color="orange">Popup plugin support // CAPABLE</font>
+ * <font color="green">Getting notifications and feeds // DONE/DONE</font>
+ * <font color="green">Popup plugin support // DONE</font>
  * <font color="green">Updater plugin support // DONE</font>
  * <font color="green">Avatars // DONE</font>
  * <font color="orange">Users' info // CAPABLE</font>
