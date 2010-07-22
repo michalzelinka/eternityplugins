@@ -23,6 +23,7 @@
 
 = Known issues =
  * Setting Facebook status via Miranda's internal system is somehow broken, please don't use it when not needed. Please use the Mind dialog instead.
+ * More possibly listed in Issues
 
 = Not-Issues =
  * Status messages are not set properly when you set them to often — server limit requires captcha confirmation when it considers you are "flooding"
@@ -31,8 +32,9 @@
 
 = Latest API version =
 
-<var>3.0</var>
+<var>3.1</var>
 
+ * 3.1 — minor change in Logout procedure
  * 3.0 — lots of source changes on Facebook site
  * 2.1 — minor change in Facebook Chat server URLs
  * 2.0 — major Facebook redesign
