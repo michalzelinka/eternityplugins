@@ -223,10 +223,8 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 	case FACEBOOK_REQUEST_SETUP_MACHINE:
 		return "loginnotify/setup_machine.php";
 
-	case FACEBOOK_REQUEST_LOGOUT: {
-		std::string action = "logout.php%s";
-		utils::text::replace_first( &action, "%s", this->logout_action_ );
-		return action; }
+	case FACEBOOK_REQUEST_LOGOUT:
+		return "logout.php";
 
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
 		return "ajax/presence/update.php";
@@ -593,12 +591,6 @@ bool facebook_client::home( )
 			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,"Nick",this->self_.real_name.c_str());
 			parent->Log("      Got self real name: %s", this->self_.real_name.c_str());
 
-			// Get logout action
-			this->logout_action_ = resp.data.substr( resp.data.find( "http://www.facebook.com/logout.php" ), 256 );
-			end = this->logout_action_.find( "\">" );
-			this->logout_action_ = this->logout_action_.substr( 0, end );
-			utils::text::replace_all( &this->logout_action_, "&amp;", "&" );
-
 			// Get post_form_id
 			this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 32 );
 			parent->Log("      Got self post form id: %s", this->post_form_id_.c_str());
@@ -612,14 +604,40 @@ bool facebook_client::home( )
 			this->dtsg_ = this->dtsg_.substr( 0, this->dtsg_.find( "\"" ) );
 			parent->Log("      Got self dtsg: %s", this->dtsg_.c_str());
 
-			/*// Get requests count and notify it:
-			start = resp.data.find( "DOM.setContent($(\\\"jewelRequestCount\\\")," );
-			if ( start != std::string::npos ) {
-				start += 41;
-				end = resp.data.find( ")", start );
-				std::string title = "";
-				this->parent->ShowEvent
-			}*/
+			// Get friend requests count and messages count and notify it
+			if ( DBGetContactSettingByte( NULL, parent->m_szModuleName, FACEBOOK_KEY_NOTIFICATIONS_ENABLE, 0 ) ) {
+				start = resp.data.find( "<span id=\"jewelRequestCount\">" );
+				if ( start != std::string::npos ) {
+					start += 29;
+					end = resp.data.find( "</span>", start );
+					std::string str_count = resp.data.substr(start, end-start);
+					if ( str_count != std::string( "0" ) ) {
+						TCHAR* message = TranslateT( "Got new friend requests: " );
+						TCHAR* count = mir_a2t_cp( str_count.c_str( ), CP_UTF8 );
+						TCHAR* info = ( TCHAR* )malloc( ( lstrlen( message ) + lstrlen( count ) ) * sizeof( TCHAR ) );
+						lstrcpy( info, message );
+						lstrcat( info, count );
+						this->parent->NotifyEvent( this->parent->m_tszUserName, info );
+						mir_free( message );
+						mir_free( count );
+						mir_free( info ); } }
+
+				start = resp.data.find( "<span id=\"jewelInnerUnseenCount\">" );
+				if ( start != std::string::npos ) {
+					start += 33;
+					end = resp.data.find( "</span>", start );
+					std::string str_count = resp.data.substr(start, end-start);
+					if ( str_count != std::string( "0" ) ) {
+						TCHAR* message = TranslateT( "Got new messages: " );
+						TCHAR* count = mir_a2t_cp( str_count.c_str( ), CP_UTF8 );
+						TCHAR* info = ( TCHAR* )malloc( ( lstrlen( message ) + lstrlen( count ) ) * sizeof( TCHAR ) );
+						lstrcpy( info, message );
+						lstrcat( info, count );
+						this->parent->NotifyEvent( this->parent->m_tszUserName, info );
+						mir_free( message );
+						mir_free( count );
+						mir_free( info ); } }
+			}
 
 			// Set first touch flag
 			this->chat_first_touch_ = true;
