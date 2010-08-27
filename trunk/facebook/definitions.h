@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -26,6 +26,12 @@ Last change on : $Date$
 */
 
 #pragma once
+
+// Verbose allocation functions (detection of memory leaks)
+#if defined _DEBUG
+#define _CRTDBG_MAP_ALLOC
+#define _CRTDBG_MAPALLOC
+#endif
 
 #define CODE_BLOCK_BEGIN        {
 #define CODE_BLOCK_TRY          try {

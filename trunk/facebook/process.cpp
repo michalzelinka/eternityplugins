@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -29,8 +29,12 @@ Last change on : $Date$
 
 void FacebookProto::ProcessBuddyList( void* data )
 {
-	if (isOffline())
-		return;
+	if ( data == NULL ) return;
+
+	std::string* resp = (std::string*)data;
+
+	if ( isOffline( ) )
+		goto exit;
 
 	CODE_BLOCK_TRY
 
@@ -42,22 +46,22 @@ void FacebookProto::ProcessBuddyList( void* data )
 	p->parse_buddy_list( data, &facy.buddies );
 	delete p;
 
-	for(std::map<std::string, facebook_user*>::iterator i=facy.buddies.begin(); i!=facy.buddies.end();)
+	for ( List::Item< facebook_user >* i = facy.buddies.begin( ); i != NULL; )
 	{
-		std::map< std::string, facebook_user*>::iterator this_ = i;
-		++i;
-
-		LOG("      Now %s%s: %s", (this_->second->status_id==ID_STATUS_ONLINE)?"online":"offline",this_->second->is_idle?" (idle)":"", this_->second->real_name.c_str());
+		LOG("      Now %s%s: %s", (i->data->status_id==ID_STATUS_ONLINE?"online":"offline"),(i->data->is_idle?" (idle)":""), i->data->real_name.c_str());
 
 		facebook_user* fu;
 
-		if ( this_->second->status_id == ID_STATUS_OFFLINE ) {
-			fu = new facebook_user(this_->second);
-			facy.buddies.erase( this_ ); }
-		else
-			fu = this_->second;
+		if ( i->data->status_id == ID_STATUS_OFFLINE ) {
+			fu = new facebook_user(i->data);
+			std::string to_delete( i->key );
+			i = i->next;
+			facy.buddies.erase( to_delete ); }
+		else {
+			fu = i->data;
+			i = i->next; }
 
-		ForkThreadEx(&FacebookProto::UpdateContactWorker, this, (void*)fu);
+		ForkThread(&FacebookProto::UpdateContactWorker, this, (void*)fu);
 	}
 
 	LOG("***** Buddy list processed");
@@ -67,12 +71,19 @@ void FacebookProto::ProcessBuddyList( void* data )
 	LOG("***** Error processing buddy list: %s", e.what());
 
 	CODE_BLOCK_END
+
+exit:
+	delete resp;
 }
 
 void FacebookProto::ProcessMessages( void* data )
 {
+	if ( data == NULL ) return;
+
+	std::string* resp = (std::string*)data;
+
 	if (!isOnline())
-		return;
+		goto exit;
 
 	CODE_BLOCK_TRY
 
@@ -85,7 +96,7 @@ void FacebookProto::ProcessMessages( void* data )
 	p->parse_messages( data, &messages, &notifications );
 	delete p;
 
-	for(size_t i=0; i<messages.size( ); i++)
+	for(std::vector<facebook_message*>::size_type i=0; i<messages.size( ); i++)
 	{
 		if ( messages[i]->user_id == facy.self_.user_id )
 			continue;
@@ -113,7 +124,7 @@ void FacebookProto::ProcessMessages( void* data )
 
 	if ( getByte( FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE ) )
 	{
-		for(size_t i=0; i<notifications.size( ); i++)
+		for(std::vector<facebook_notification*>::size_type i=0; i<notifications.size( ); i++)
 		{
 			LOG("      Got notification: %s", notifications[i]->text.c_str());
 			TCHAR* szTitle = mir_a2t_cp(this->m_szModuleName, CP_UTF8);
@@ -131,15 +142,19 @@ void FacebookProto::ProcessMessages( void* data )
 	LOG("***** Error processing messages: %s", e.what());
 
 	CODE_BLOCK_END
+
+exit:
+	delete resp;
 }
 
 void FacebookProto::ProcessFeeds( void* data )
 {
-	if (!isOnline())
-		return;
+	if ( data == NULL ) return;
 
-	if ( !getByte( FACEBOOK_KEY_FEEDS_ENABLE, DEFAULT_FEEDS_ENABLE ) )
-		return;
+	std::string* resp = (std::string*)data;
+
+	if (!isOnline())
+		goto exit;
 
 	CODE_BLOCK_TRY
 
@@ -150,7 +165,6 @@ void FacebookProto::ProcessFeeds( void* data )
 	std::string::size_type pos = 0;
 	std::string::size_type end = 0;
 	UINT limit = 0;
-	std::string* resp = (std::string*)data;
 
 	while ( ( pos = resp->find( "<h6", pos ) ) != std::string::npos && limit <= 25 )
 	{
@@ -160,16 +174,16 @@ void FacebookProto::ProcessFeeds( void* data )
 		pos = resp->find( "\">", pos );
 		pos += 2;
 		end = resp->find( "<\\/a>", pos );
-		if ( end == std::string::npos )
-			break;
+		if ( end == std::string::npos ){
+			delete nf; break;}
 		nf->title = utils::text::slashu_to_utf8(
 		    utils::text::special_expressions_decode(
 		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
 
 		pos = end + 6;
 		end = resp->find( "<\\/h6>", pos );
-		if ( end == std::string::npos )
-			break;
+		if ( end == std::string::npos ){
+			delete nf; break;}
 		nf->text = utils::text::slashu_to_utf8(
 		    utils::text::special_expressions_decode(
 		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
@@ -183,14 +197,17 @@ void FacebookProto::ProcessFeeds( void* data )
 		limit++;
 	}
 
-	for(size_t i=0; i<news.size( ); i++)
+	for(std::vector<facebook_newsfeed*>::size_type i=0; i<news.size( ); i++)
 	{
 		LOG("      Got newsfeed: %s %s", news[i]->title.c_str(), news[i]->text.c_str());
 		TCHAR* szTitle = mir_a2t_cp(news[i]->title.c_str(), CP_UTF8);
 		TCHAR* szText = mir_a2t_cp(news[i]->text.c_str(), CP_UTF8);
 		NotifyEvent(szTitle,szText);
-		// TODO: Clear szTitle, szText?
+		mir_free(szTitle);
+		mir_free(szText);
+		delete news[i];
 	}
+	news.clear();
 
 	this->facy.last_feeds_update_ = ::time( NULL );
 	setDword( "LastNotificationsUpdate", this->facy.last_feeds_update_ );
@@ -202,10 +219,16 @@ void FacebookProto::ProcessFeeds( void* data )
 	LOG("***** Error processing feeds: %s", e.what());
 
 	CODE_BLOCK_END
+
+exit:
+	delete resp;
 }
 
 void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
 {
+	if ( !isOnline( ) )
+		return;
+
 	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
 	    new update_avatar(hContact,(*url)));
 }

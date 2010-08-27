@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -29,13 +29,13 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 1, 2)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 2, 0)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.1.1.2"
+#define __VERSION_STRING            "0.1.2.0"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,1,1,2
+#define __VERSION_VS_FILE           0,1,2,0
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 1, 1, 2"
+#define __VERSION_VS_FILE_STRING    "0, 1, 2, 0"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
 #define __API_VERSION_STRING        "3.1"
 
@@ -69,15 +69,12 @@ Last change on : $Date$
 #define FACEBOOK_TIMEOUTS_LIMIT     5
 #define FACEBOOK_GROUP_NAME_LIMIT   100
 
-// Fake status
-#define ID_STATUS_ONLY_ONCE         0x000F0000
-
 // Defaults
 #define FACEBOOK_MINIMAL_POLL_RATE              10
 #define FACEBOOK_DEFAULT_POLL_RATE              24 // in seconds
 #define FACEBOOK_MAXIMAL_POLL_RATE              60
 
-#define FACEBOOK_USER_UPDATE_RATE               1800 // in seconds
+#define FACEBOOK_USER_UPDATE_RATE               7200 // in seconds
 
 #define DEFAULT_NOTIFICATIONS_ENABLE    1
 #define DEFAULT_FEEDS_ENABLE            1
@@ -108,7 +105,7 @@ Last change on : $Date$
 #define FACEBOOK_RECONNECT_KEEP_ALIVE   "0" // After a period, used to keep session alive
 
 // User-Agents
-static char* user_agents[] = {
+static const char* user_agents[] = {
 	"Miranda IM (default)",
 	"FacebookTouch2.5",
 	"Facebook/2.5 CFNetwork/342.1 Darwin/9.4.1",

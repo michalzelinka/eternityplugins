@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -29,44 +29,41 @@ Last change on : $Date$
 
 void FacebookProto::UpdateAvatarWorker(void *p)
 {
-	if(p == 0)
-		return;
-	std::auto_ptr<update_avatar> data( static_cast<update_avatar*>(p) );
+	if(p == NULL) return;
+
+	update_avatar* ua = static_cast<update_avatar*>(p);
+	std::auto_ptr<update_avatar> data( ua );
 	DBVARIANT dbv;
 
-	if(DBGetContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv))
-		return;
-
-	std::string new_url = data->url;
-	std::string ext = new_url.substr(new_url.rfind('.'));
-	if ( new_url == FACEBOOK_DEFAULT_AVATAR_URL )
-		new_url = new_url.replace( new_url.rfind( "/q" ), 2, "/d" );
-// TODO: Remove? Buddy list URL is fuzzy and User profile URL is proper and big
-//	else
-//		new_url = new_url.replace( new_url.rfind( "/q" ), 2, "/n" );
-	std::string filename = GetAvatarFolder() + '\\' + dbv.pszVal + ext;
-	DBFreeVariant(&dbv);
-
-	PROTO_AVATAR_INFORMATION ai = {sizeof(ai)};
-	ai.hContact = data->hContact;
-	ai.format = ext_to_format(ext);
-	strncpy(ai.filename,filename.c_str(),MAX_PATH);
-
-	ScopedLock s( avatar_lock_ );
-	LOG("***** Updating avatar: %s",data->url.c_str());
-	if(CallService(MS_SYSTEM_TERMINATED,0,0))
+	if(!DBGetContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv))
 	{
-		LOG("***** Terminating avatar update early: %s",data->url.c_str());
-		return;
-	}
+		std::string new_url = data->url;
+		std::string ext = new_url.substr(new_url.rfind('.'));
+		if ( new_url == FACEBOOK_DEFAULT_AVATAR_URL )
+			new_url = new_url.replace( new_url.rfind( "/q" ), 2, "/d" );
+		std::string filename = GetAvatarFolder() + '\\' + dbv.pszVal + ext;
+		DBFreeVariant(&dbv);
 
-	if(facy.save_url(new_url,filename))
-		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
-			ACKRESULT_SUCCESS,&ai,0);
-	else
-		ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
-			ACKRESULT_FAILED, &ai,0);
-	LOG("***** Done avatar: %s",data->url.c_str());
+		PROTO_AVATAR_INFORMATION ai = {sizeof(ai)};
+		ai.hContact = data->hContact;
+		ai.format = ext_to_format(ext);
+		strncpy(ai.filename,filename.c_str(),MAX_PATH);
+
+		ScopedLock s( avatar_lock_ );
+		LOG("***** Updating avatar: %s",data->url.c_str());
+		if (CallService(MS_SYSTEM_TERMINATED,0,0))
+			LOG("***** Terminating avatar update early: %s",data->url.c_str());
+		else
+		{
+			if(facy.save_url(new_url,filename))
+				ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
+					ACKRESULT_SUCCESS,&ai,0);
+			else
+				ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_AVATAR,
+					ACKRESULT_FAILED, &ai,0);
+			LOG("***** Done avatar: %s",data->url.c_str());
+		}
+	}
 }
 
 std::string FacebookProto::GetAvatarFolder()

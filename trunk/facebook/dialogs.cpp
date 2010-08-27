@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright © 2009-10 Michal Zelinka
+Copyright ï¿½ 2009-10 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -251,10 +251,16 @@ INT_PTR CALLBACK FBOptionsProc( HWND hwnd, UINT message, WPARAM wparam, LPARAM l
 		if ( LOWORD( wparam ) == IDC_COOKIES )
 		{
 			std::string cookie_content = "";
-			for ( std::map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
-				cookie_content += i->first + ":\r\n" + i->second + "\r\n";
+			{
+				ScopedLock s( proto->facy.cookies_lock_ );
+				for ( std::map< std::string, std::string >::iterator i = proto->facy.cookies.begin(); i != proto->facy.cookies.end(); ++i )
+					cookie_content += i->first + ":\r\n" + i->second + "\r\n";
+			}
 			utils::debug::info(cookie_content.c_str(),hwnd);
 		}
+
+		if ( LOWORD( wparam ) == IDC_SET_STATUS )
+			MessageBox( hwnd, TranslateT("Note: This option requires restart of Miranda IM to work properly."), proto->m_tszUserName, MB_OK );
 
 		if ((LOWORD(wparam)==IDC_UN || LOWORD(wparam)==IDC_PW || LOWORD(wparam)==IDC_GROUP || LOWORD(wparam)==IDC_COOKIES) &&
 		    (HIWORD(wparam)!=EN_CHANGE || (HWND)lparam!=GetFocus()))

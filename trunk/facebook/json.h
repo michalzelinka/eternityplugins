@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -35,7 +35,7 @@ class facebook_json_parser
 {
 public:
 	FacebookProto* proto;
-	int parse_buddy_list( void*, std::map< std::string, facebook_user* >* );
+	int parse_buddy_list( void*, List::List< facebook_user >* );
 	int parse_messages( void*, std::vector< facebook_message* >*, std::vector< facebook_notification* >* );
 
 	facebook_json_parser( FacebookProto* proto )

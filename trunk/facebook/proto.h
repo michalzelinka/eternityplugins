@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -172,7 +172,6 @@ public:
 	HANDLE  log_lock_;
 
 	HANDLE  m_hNetlibUser;
-	HANDLE  m_hNetlibAvatar;
 	HANDLE  m_hUpdLoop;
 	HANDLE  m_hMsgLoop;
 

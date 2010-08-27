@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -53,7 +53,7 @@ http::response facebook_client::flap( const int request_type, std::string* reque
 
 	http::response resp;
 
-	if ( pnlhr )
+	if ( pnlhr != NULL )
 	{
 		parent->Log("@@@@@ Got response with code %d", pnlhr->resultCode);
 		store_headers( &resp, pnlhr->headers, pnlhr->headersCount );
@@ -81,7 +81,7 @@ bool facebook_client::validate_response( http::response* resp )
 
 	if ( resp->data.find( "{\"error\":" ) != std::string::npos ) try
 	{
-		std::string error = resp->data.substr( resp->data.find( "{\"error\":" ) + 9, 64 );
+		std::string error = resp->data.substr( resp->data.find( "{\"error\":" ) + 9, 128 );
 		int error_num = atoi( error.substr( 0, error.find( "," ) ).c_str() );
 		if ( error_num != 0 )
 		{
@@ -287,6 +287,8 @@ std::string facebook_client::choose_request_url( int request_type, std::string* 
 
 NETLIBHTTPHEADER* facebook_client::get_request_headers( int request_type, int* headers_count )
 {
+	ScopedLock s( headers_lock_ );
+
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_LOGIN:
@@ -347,13 +349,17 @@ void facebook_client::set_header( NETLIBHTTPHEADER* header, char* name )
 
 void facebook_client::refresh_headers( )
 {
+	ScopedLock s( headers_lock_ );
+
 	if ( headers.size() < 5 )
 	{
 		this->headers["Connection"] = "close";
 		this->headers["Accept"] = "*/*";
-// TODO: Set Accept-Encoding: none as default for _DEBUG builds
-//		this->headers["Accept-Encoding"] = "none";
+#ifdef _DEBUG
+		this->headers["Accept-Encoding"] = "none";
+#else
 		this->headers["Accept-Encoding"] = "deflate, gzip, x-gzip, identity, *;q=0";
+#endif
 		this->headers["Accept-Language"] = "en,en-US;q=0.9";
 		this->headers["Content-Type"] = "application/x-www-form-urlencoded";
 	}
@@ -371,39 +377,41 @@ std::string facebook_client::get_user_agent( )
 
 std::string facebook_client::load_cookies( )
 {
+	ScopedLock s( cookies_lock_ );
+
 	std::string cookieString = "isfbe=false;";
 
-	if ( cookies.size() )
+	if ( !cookies.empty( ) )
 		for ( std::map< std::string, std::string >::iterator iter = cookies.begin(); iter != cookies.end(); ++iter ) {
 			cookieString.append( iter->first );
-			cookieString.append( "=" );
+			cookieString.append( 1, '=' );
 			cookieString.append( iter->second );
-			cookieString.append( ";" ); }
-
+			cookieString.append( 1, ';' ); }
 	return cookieString;
 }
 
 void facebook_client::store_headers( http::response* resp, NETLIBHTTPHEADER* headers, int headersCount )
 {
+	ScopedLock h( headers_lock_ );
+	ScopedLock c( cookies_lock_ );
+
 	for ( int i = 0; i < headersCount; i++ )
 	{
 		std::string header_name = headers[i].szName; // TODO: Casting?
 		std::string header_value = headers[i].szValue; // TODO: Casting?
 
-		if ( header_name == std::string( "Set-Cookie" ) ) // TODO: Is casting needed?
+		if ( header_name == "Set-Cookie" )
 		{
 			std::string cookie_name = header_value.substr( 0, header_value.find( "=" ) );
 			std::string cookie_value = header_value.substr( header_value.find( "=" ) + 1, header_value.find( ";" ) - header_value.find( "=" ) - 1 );
-			if ( cookie_value == std::string( "deleted" ) ) {
+			if ( cookie_value == "deleted" ) {
 				parent->Log("      Deleted cookie '%s'", cookie_name.c_str());
 				cookies.erase( cookie_name ); }
 			else {
 				parent->Log("      New cookie '%s': %s", cookie_name.c_str(), cookie_value.c_str());
-				// TODO: append+set?
 				cookies[cookie_name] = cookie_value; }
 		}
-		else
-		{
+		else {
 			parent->Log("----- Got header '%s': %s", header_name.c_str(), header_value.c_str() );
 			resp->headers[header_name] = header_value;
 		}
@@ -412,7 +420,9 @@ void facebook_client::store_headers( http::response* resp, NETLIBHTTPHEADER* hea
 
 void facebook_client::clear_cookies( )
 {
-	if ( cookies.size() )
+	ScopedLock s( cookies_lock_ );
+
+	if ( !cookies.empty( ) )
 		cookies.clear( );
 }
 
@@ -471,9 +481,9 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 
 	// Check whether setting Machine name is required
 	if ( resp.code == HTTP_CODE_FOUND && resp.headers.find("Location") != resp.headers.end() && resp.headers["Location"].find("loginnotify/setup_machine.php") != std::string::npos ) {
-		data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&machinename=";
-		data += g_strUserAgent;
-		flap( FACEBOOK_REQUEST_SETUP_MACHINE, &data ); }
+		std::string inner_data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&machinename=";
+		inner_data += g_strUserAgent;
+		flap( FACEBOOK_REQUEST_SETUP_MACHINE, &inner_data ); }
 
 	switch ( resp.code )
 	{
@@ -490,8 +500,7 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 			this->self_.user_id = cookies.find("c_user")->second;
 			DBWriteContactSettingString(NULL,parent->m_szModuleName,FACEBOOK_KEY_ID,this->self_.user_id.c_str());
 			parent->Log("      Got self user id: %s", this->self_.user_id.c_str());
-			return handle_success( "login" );
-		}
+			return handle_success( "login" ); }
 		else {
 			client_notify(TranslateT("Login error, probably bad login credentials."));
 			return handle_error( "login", FORCE_DISCONNECT );
@@ -536,15 +545,14 @@ bool facebook_client::keep_alive( )
 
 	std::string data = "user=" + this->self_.user_id + "&popped_out=false&force_render=true&buddy_list=1&notifications=0&post_form_id=" + this->post_form_id_ + "&fb_dtsg=" + this->dtsg_ + "&post_form_id_source=AsyncRequest&__a=1&nctr[n]=1";
 
-	ScopedLock s(buddies_lock_);
-
-	for (std::map< std::string, facebook_user* >::iterator i = buddies.begin(); i != buddies.end(); ++i )
 	{
-		data += "&available_list[";
-		data += i->first;
-		data += "][i]=";
-		data += ( i->second->is_idle ) ? "1" : "0";
-	}
+		ScopedLock s(buddies_lock_);
+
+		for (List::Item< facebook_user >* i = buddies.begin(); i != buddies.end(); i = i->next ) {
+			data += "&available_list[";
+			data += i->data->user_id;
+			data += "][i]=";
+			data += ( i->data->is_idle ) ? "1" : "0"; } }
 
 	http::response resp = flap( FACEBOOK_REQUEST_KEEP_ALIVE, &data );
 
@@ -643,7 +651,7 @@ bool facebook_client::home( )
 			this->chat_first_touch_ = true;
 
 			// Update self-contact
-			ForkThreadEx(&FacebookProto::UpdateContactWorker, this->parent, (void*)&this->self_);
+			ForkThread(&FacebookProto::UpdateContactWorker, this->parent, (void*)&this->self_);
 
 			return handle_success( "home" );
 		}
@@ -699,17 +707,16 @@ bool facebook_client::buddy_list( )
 	handle_entry( "buddy_list" );
 
 	// Prepare update data
-	ScopedLock s(buddies_lock_);
-
 	std::string data = "user=" + this->self_.user_id + "&popped_out=false&force_render=true&buddy_list=1&notifications=0&post_form_id=" + this->post_form_id_ + "&fb_dtsg=" + this->dtsg_ + "&post_form_id_source=AsyncRequest&__a=1&nctr[n]=1";
 
-	for (std::map< std::string, facebook_user* >::iterator i = buddies.begin(); i != buddies.end(); ++i )
 	{
-		data += "&available_list[";
-		data += i->first;
-		data += "][i]=";
-		data += ( i->second->is_idle ) ? "1" : "0";
-	}
+		ScopedLock s(buddies_lock_);
+
+		for (List::Item< facebook_user >* i = buddies.begin(); i != NULL; i = i->next ) {
+			data += "&available_list[";
+			data += i->data->user_id;
+			data += "][i]=";
+			data += ( i->data->is_idle ) ? "1" : "0"; } }
 
 	// Get buddy list
 	http::response resp = flap( FACEBOOK_REQUEST_BUDDY_LIST, &data );
@@ -723,7 +730,7 @@ bool facebook_client::buddy_list( )
 	case HTTP_CODE_OK:
 		if ( resp.data.find( "\"listChanged\":true" ) != std::string::npos ) {
 			std::string* response_data = new std::string( resp.data );
-			ForkThreadEx( &FacebookProto::ProcessBuddyList, this->parent, ( void* )response_data ); }
+			ForkThread( &FacebookProto::ProcessBuddyList, this->parent, ( void* )response_data ); }
 		return handle_success( "buddy_list" );
 
 	case HTTP_CODE_FAKE_LOGGED_OUT:
@@ -750,7 +757,7 @@ bool facebook_client::feeds( )
 	case HTTP_CODE_OK:
 		if ( resp.data.find( "\"storyCount\":" ) != std::string::npos ) {
 			std::string* response_data = new std::string( resp.data );
-			ForkThreadEx( &FacebookProto::ProcessFeeds, this->parent, ( void* )response_data ); }
+			ForkThread( &FacebookProto::ProcessFeeds, this->parent, ( void* )response_data ); }
 		return handle_success( "feeds" );
 
 	case HTTP_CODE_FAKE_LOGGED_OUT:
@@ -788,7 +795,7 @@ bool facebook_client::channel( )
 	{
 		// Something has been received, throw to new thread to process
 		std::string* response_data = new std::string( resp.data );
-		ForkThreadEx( &FacebookProto::ProcessMessages, this->parent, ( void* )response_data );
+		ForkThread( &FacebookProto::ProcessMessages, this->parent, ( void* )response_data );
 
 		// Increment sequence number
 		this->chat_sequence_num_ += utils::text::count_all( &resp.data, "\"type\":\"" );
@@ -901,13 +908,11 @@ bool facebook_client::set_status(const std::string &status_text)
 	data += "&target_id=";
 	data += this->self_.user_id;
 
-	if ( status_text.length( ) )
-	{
+	if ( status_text.length( ) ) {
 		data += "&action=PROFILE_UPDATE&app_id=&hey_kid_im_a_composer=true&display_context=profile&_log_display_context=profile&ajax_log=1&status=";
 		data += utils::url::encode( status_text );
 		data += "&profile_id=";
-		data += this->self_.user_id;
-	}
+		data += this->self_.user_id; }
 	else
 		data += "&clear=1&nctr[_mod]=pagelet_top_bar";
 
@@ -933,16 +938,15 @@ bool facebook_client::set_status(const std::string &status_text)
 
 bool facebook_client::save_url(const std::string &url,const std::string &filename)
 {
-	HANDLE hNetlib = this->parent->m_hNetlibAvatar;
 	NETLIBHTTPREQUEST req = {sizeof(req)};
 	NETLIBHTTPREQUEST *resp;
 	req.requestType = REQUEST_GET;
 	req.szUrl = const_cast<char*>(url.c_str());
 
 	resp = reinterpret_cast<NETLIBHTTPREQUEST*>(CallService( MS_NETLIB_HTTPTRANSACTION,
-		reinterpret_cast<WPARAM>(hNetlib), reinterpret_cast<LPARAM>(&req) ));
+		reinterpret_cast<WPARAM>(this->parent->m_hNetlibUser), reinterpret_cast<LPARAM>(&req) ));
 
-	if(resp)
+	if ( resp )
 	{
 		parent->Log( "@@@@@ Saving avatar URL %s to path %s", url.c_str(), filename.c_str() );
 

@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -81,8 +81,6 @@ namespace utils
 	};
 
 	namespace text {
-		unsigned int find_matching_bracket( std::string msg, unsigned int start_bracket_position );
-		unsigned int find_matching_quote( std::string msg, unsigned int start_quote_position );
 		void replace_first( std::string* data, std::string from, std::string to );
 		void replace_all( std::string* data, std::string from, std::string to );
 		unsigned int count_all( std::string* data, std::string term );

@@ -44,7 +44,7 @@
 				Optimization="0"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="../../include;."
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;FACEBOOK_EXPORTS;_CRT_SECURE_NO_WARNINGS;NOMINMAX"
+				PreprocessorDefinitions="WIN32;_DEBUG;_WINDOWS;_USRDLL;FACEBOOK_EXPORTS;_CRT_SECURE_NO_WARNINGS;NOMINMAX"
 				MinimalRebuild="false"
 				RuntimeLibrary="3"
 				EnableFunctionLevelLinking="true"
@@ -68,9 +68,11 @@
 				Name="VCLinkerTool"
 				OutputFile="$(OutDir)\mim\plugins\$(ProjectName).dll"
 				LinkIncremental="2"
+				IgnoreAllDefaultLibraries="false"
+				IgnoreDefaultLibraryNames="MSVCRT"
 				GenerateDebugInformation="true"
-				AssemblyDebug="0"
-				GenerateMapFile="false"
+				AssemblyDebug="1"
+				GenerateMapFile="true"
 				MapFileName="$(TargetDir)$(TargetName).map"
 				MapExports="false"
 				SubSystem="2"
@@ -344,11 +346,19 @@
 				>
 			</File>
 			<File
+				RelativePath=".\entities.h"
+				>
+			</File>
+			<File
 				RelativePath=".\http.h"
 				>
 			</File>
 			<File
 				RelativePath=".\json.h"
+				>
+			</File>
+			<File
+				RelativePath=".\list.hpp"
 				>
 			</File>
 			<File

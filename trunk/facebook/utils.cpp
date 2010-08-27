@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -78,92 +78,6 @@ std::string utils::conversion::to_string( void* data, WORD type )
 	}
 
 	return out.str( );
-}
-
-unsigned int utils::text::find_matching_bracket( std::string msg, unsigned int start_bracket_position )
-{
-	std::string beginBracket = msg.substr( start_bracket_position, 1 );
-	std::string endBracket = "";
-	std::string textIdentifier = "";
-	bool   insideText = false;
-
-	if      ( beginBracket == "(" ) endBracket = ")";
-	else if ( beginBracket == "[" ) endBracket = "]";
-	else if ( beginBracket == "{" ) endBracket = "}";
-	else if ( beginBracket == "<" ) endBracket = ">";
-	else return 0;
-
-	int depthLevel = 1;
-
-	for ( unsigned int i = start_bracket_position + 1; i < msg.length( ); i++ )
-	{
-		std::string currChar = msg.substr( i, 1 );
-		std::string prevChar = msg.substr( i - 1, 1 );
-
-		if ( currChar == "\"" || currChar == "'" )
-		{
-			if ( prevChar == "\\" )
-				continue;
-			else
-			{
-				if ( !insideText )
-				{
-					textIdentifier = currChar;
-					insideText = !insideText;
-				}
-				else
-				{
-					if ( currChar == textIdentifier )
-					{
-						textIdentifier = "";
-						insideText = !insideText;
-					}
-				}
-				continue;
-			}
-		}
-		else if ( currChar == beginBracket )
-		{
-			if ( insideText || prevChar == "\\" )
-				continue;
-			else
-				depthLevel++;
-		}
-		else if ( currChar == endBracket )
-		{
-			if ( insideText || prevChar == "\\" )
-				continue;
-			else
-				depthLevel--;
-		}
-
-		if ( depthLevel == 0 )
-			return i;
-	}
-	return 0;
-}
-
-unsigned int utils::text::find_matching_quote( std::string msg, unsigned int start_quote_position )
-{
-	std::string beginEndQuote = msg.substr( start_quote_position, 1 );
-
-	if ( beginEndQuote != "\"" && beginEndQuote != "'" )
-		return 0;
-
-	for ( unsigned int i = start_quote_position + 1; i < msg.length( ); i++ )
-	{
-		std::string currChar = msg.substr( i, 1 );
-
-		if ( currChar == "\"" || currChar == "'" )
-		{
-			if ( msg.substr( i - 1, 1 ) == "\\" )
-				continue;
-
-			else if ( currChar == beginEndQuote )
-				return i;
-		}
-	}
-	return 0;
 }
 
 void utils::text::replace_first( std::string* data, std::string from, std::string to )
@@ -305,8 +219,11 @@ int utils::debug::log(std::string file_name, std::string text)
 	path = path.substr( 0, path.rfind( "\\" ) + 1 );
 	path = path + file_name.c_str() + ".txt";
 
+	SYSTEMTIME time;
+	GetSystemTime( &time );
+
 	std::ofstream out( path.c_str(), std::ios_base::out | std::ios_base::app | std::ios_base::ate );
-	out << text << std::endl;
+	out << "[" << time.wHour << ":" << time.wMinute << ":" << time.wSecond << "] " << text << std::endl;
 	out.close( );
 
 	return EXIT_SUCCESS;
