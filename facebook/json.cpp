@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -30,7 +30,7 @@ Last change on : $Date$
 #include "JSON_CAJUN/writer.h"
 #include "JSON_CAJUN/elements.h"
 
-int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, facebook_user* >* buddy_list )
+int facebook_json_parser::parse_buddy_list( void* data, List::List< facebook_user >* buddy_list )
 {
 	using namespace json;
 
@@ -43,26 +43,6 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 		Reader::Read(objDocument, sDocument);
 
 		const Object& objRoot = objDocument;
-		const Object& nowAvailableList = objRoot["payload"]["buddy_list"]["nowAvailableList"];
-
-		for (Object::const_iterator itAvailable(nowAvailableList.Begin());
-			itAvailable != nowAvailableList.End(); ++itAvailable)
-		{
-			const Object::Member& member = *itAvailable;
-
-			std::map<std::string,facebook_user*>::iterator iter = buddy_list->find( member.name );
-			if ( buddy_list->empty() || iter == buddy_list->end() )
-				buddy_list->insert( std::make_pair( member.name, new facebook_user( ) ) );
-
-			current = (*buddy_list)[member.name];
-			const Object& objMember = member.element;
-			const Boolean idle = objMember["i"];
-
-			current->user_id = current->real_name = member.name;
-			current->status_id = ID_STATUS_ONLINE | ID_STATUS_ONLY_ONCE;
-			current->is_idle = ( idle.Value( ) == 1 );
-		}
-
 		const Array& wasAvailableIDs = objRoot["payload"]["buddy_list"]["wasAvailableIDs"];
 
 		for ( Array::const_iterator itWasAvailable( wasAvailableIDs.Begin() );
@@ -72,10 +52,29 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 			char was_id[32];
 			lltoa( member.Value(), was_id, 10 );
 
-			current = (*buddy_list)[was_id];
-			// work-around for idle change indicating user in both nowAvailable and wasAvailable
-			if ( current->status_id & ID_STATUS_ONLY_ONCE ) current->status_id &= ~(ID_STATUS_ONLY_ONCE);
-			else current->status_id = ID_STATUS_OFFLINE;
+			current = buddy_list->find( std::string( was_id ) );
+			if ( current != NULL )
+				current->status_id = ID_STATUS_OFFLINE;
+		}
+
+		const Object& nowAvailableList = objRoot["payload"]["buddy_list"]["nowAvailableList"];
+
+		for (Object::const_iterator itAvailable(nowAvailableList.Begin());
+			itAvailable != nowAvailableList.End(); ++itAvailable)
+		{
+			const Object::Member& member = *itAvailable;
+
+			current = buddy_list->find( member.name );
+			if ( current == NULL )
+				buddy_list->insert( std::make_pair( member.name, new facebook_user( ) ) );
+
+			current = buddy_list->find( member.name );
+			const Object& objMember = member.element;
+			const Boolean idle = objMember["i"];
+
+			current->user_id = current->real_name = member.name;
+			current->status_id = ID_STATUS_ONLINE;
+			current->is_idle = ( idle.Value( ) == 1 );
 		}
 
 		const Object& userInfosList = objRoot["payload"]["buddy_list"]["userInfos"];
@@ -85,20 +84,18 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 		{
 			const Object::Member& member = *itUserInfo;
 
-			std::map<std::string,facebook_user*>::iterator iter = buddy_list->find( member.name );
-			if ( iter == buddy_list->end() )
+			current = buddy_list->find( member.name );
+			if ( current == NULL )
 				continue;
 
 			const Object& objMember = member.element;
 			const String& realName = objMember["name"];
 			const String& imageUrl = objMember["thumbSrc"];
 
-			current = (*buddy_list)[member.name];
 			current->real_name = utils::text::slashu_to_utf8(
 			    utils::text::special_expressions_decode( realName.Value( ) ) );
 			current->image_url = utils::text::slashu_to_utf8(
 			    utils::text::special_expressions_decode( imageUrl.Value( ) ) );
-
 		}
 	}
 	catch (Reader::ParseException& e)
@@ -108,7 +105,11 @@ int facebook_json_parser::parse_buddy_list( void* data, std::map< std::string, f
 	}
 	catch (const Exception& e)
 	{
-		proto->Log ( "!!!!! Caught json::Exception: %s", e.what() );
+		proto->Log( "!!!!! Caught json::Exception: %s", e.what() );
+	}
+	catch (const std::exception& e)
+	{
+		proto->Log( "!!!!! Caught std::exception: %s", e.what() );
 	}
 
 	return EXIT_SUCCESS;

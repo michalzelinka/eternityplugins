@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright © 2009-10 Michal Zelinka
+Copyright Â© 2009-10 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -27,9 +27,9 @@ Last change on : $Date$
 
 #include "common.h"
 
-void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
-{
-}
+//void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
+//{
+//}
 
 void FacebookProto::KillThreads( )
 {
@@ -37,16 +37,12 @@ void FacebookProto::KillThreads( )
 	if(m_hMsgLoop)
 	{
 		LOG("***** Requesting MessageLoop to exit");
-		QueueUserAPC(APC_callback,m_hMsgLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old MessageLoop to exit");
 		WaitForSingleObject(m_hMsgLoop,IGNORE);
 		ReleaseMutex(m_hMsgLoop);
 	}
 	if(m_hUpdLoop)
 	{
 		LOG("***** Requesting UpdateLoop to exit");
-		QueueUserAPC(APC_callback,m_hUpdLoop,(ULONG_PTR)this);
-		LOG("***** Waiting for old UpdateLoop to exit");
 		WaitForSingleObject(m_hUpdLoop,IGNORE);
 		ReleaseMutex(m_hUpdLoop);
 	}
@@ -68,7 +64,6 @@ void FacebookProto::SignOn(void*)
 	ToggleStatusMenuItems(isOnline());
 
 	LOG("***** SignOn complete");
-	ReleaseMutex(signon_lock_);
 }
 
 void FacebookProto::SignOff(void*)
@@ -86,16 +81,15 @@ void FacebookProto::SignOff(void*)
 	facy.clear_cookies( );
 	facy.buddies.clear( );
 
-	m_iDesiredStatus = ID_STATUS_OFFLINE;
+	int old_status = m_iStatus;
+	m_iStatus = facy.self_.status_id = ID_STATUS_OFFLINE;
 
 	ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
-		(HANDLE)m_iStatus,m_iDesiredStatus);
+		(HANDLE)old_status,m_iStatus);
 
-	m_iStatus = facy.self_.status_id = m_iDesiredStatus;
 	ToggleStatusMenuItems(isOnline());
 
 	LOG("##### SignOff complete");
-	ReleaseMutex(signon_lock_);
 }
 
 bool FacebookProto::NegotiateConnection( )
@@ -170,15 +164,16 @@ void FacebookProto::UpdateLoop(void *)
 {
 	LOG( ">>>>> Entering Facebook::UpdateLoop" );
 
-	for ( WORD i = 0; ; i++ )
+	for ( DWORD i = 0; ; i++ )
 	{
 		if ( !isOnline( ) )
 			goto exit;
-		if ( !facy.buddy_list( ) )
-			goto exit;
+		if ( i != 0 )
+			if ( !facy.buddy_list( ) )
+				goto exit;
 		if ( !isOnline( ) )
 			goto exit;
-		if ( i % 6 == 3 )
+		if ( i % 6 == 3 && getByte( FACEBOOK_KEY_FEEDS_ENABLE, DEFAULT_FEEDS_ENABLE ) )
 			if ( !facy.feeds( ) )
 				goto exit;
 		if ( !isOnline( ) )
@@ -202,13 +197,12 @@ void FacebookProto::MessageLoop(void *)
 {
 	LOG( ">>>>> Entering Facebook::MessageLoop" );
 
-	for ( WORD i = 0; ; i++ )
+	for ( DWORD i = 0; ; i++ )
 	{
 		if ( !isOnline( ) )
 			goto exit;
 		if ( !facy.channel( ) )
 			goto exit;
-
 		LOG( "***** FacebookProto::MessageLoop refreshing..." );
 	}
 

@@ -1,3 +1,59 @@
+
+0.1.2.0
+-------
+
+- Fixed thread forking causing enormous number of dead handles being unclosed as they should
+- New enhanced storage for buddy list during runtime (mainly solves data leaks with previous solution)
+- Thread synchronization & data locking revision (may prevent crashes, buffer overflows etc.)
+- Optimized code flow on various places (prevents data leaks, prettier code etc.)
+- Revised Debug build & its settings (f.e. memory leaks logging)
+- Fixed proper core notification of Offline status when signing off (no clist redraw required)
+
+0.1.1.2
+-------
+
+- Quick fix for change in Logout procedure/bug when receiving logout action
+- Introducing new friend requests and new messages notifications when logging in (working when notifications enabled)
+
+0.1.1.1
+-------
+
+- Quick fix for change in machine security response code
+- Quick fix for changes in setting and clearing Mind status
+- Contact is marked as online when receiving a message before Buddy list update loop makes him online
+
+0.1.1.0
+-------
+
+- Added per-user lock for future usage
+- Added storing of all headers for requests -- store_cookies( ) refactored to store_headers( )
+- Added notification sound -- ShowEvent( ) refactored to NotifyEvent( )
+- Added work-around to work with Machine security feature
+- Fixed API check required due to Google Code wiki changes
+- Dropped old Home page support
+- Added code to support notifying about new messages
+- Added code to support notifying about new friend requests
+- Fixed getting away message to proper differentiate ANSI/Unicode requests
+- Fixed NSL on Contact info page
+- Fixed global Offline status when signing off Facebook
+- Fixed (probably) missing conversion of messages between ANSI/Unicode/UTF-8
+- Fixed processing Feeds
+- Added hidden feature to set Ignore Online notification by default
+
+0.1.0.2
+-------
+
+- (Hopefully) fixed avatar issue (own avatar bundled with some contacts)
+- Preparation for PopUp linking with contacts
+- Revision of contact update rules
+- Translation improvements
+
+0.1.0.1
+-------
+
+- Instant fix for changed URLs of Facebook Chat servers
+- Fix for a high CPU usage issue caused by mistake in handling connection errors
+
 0.1.0.0
 -------
 

@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -88,10 +88,12 @@ Last change on : $Date$
 class FacebookProto;
 
 #include "definitions.h"
+#include "entities.h"
 #include "avatars.h"
 #include "http.h"
-#include "client.h"
+#include "list.hpp"
 #include "utils.h"
+#include "client.h"
 #include "proto.h"
 #include "json.h"
 #include "db.h"
@@ -99,6 +101,11 @@ class FacebookProto;
 #include "dialogs.h"
 #include "theme.h"
 #include "resource.h"
+
+#if defined _DEBUG
+#include <stdlib.h>
+#include <crtdbg.h>
+#endif
 
 //#pragma warning(pop)
 

@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright © 2009-10 Michal Zelinka
+Copyright Â© 2009-10 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -36,6 +36,17 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	this->facy.parent = this;
 	this->facy.last_feeds_update_ = getDword( "LastNotificationsUpdate", 0 );
 
+// TODO: Is this really explicitly needed?
+//	this->signon_lock_ = CreateMutex( NULL, FALSE, TEXT("signon_lock_") );
+//	this->avatar_lock_ = CreateMutex( NULL, FALSE, TEXT("avatar_lock_") );
+//	this->log_lock_ = CreateMutex( NULL, FALSE, TEXT("log_lock_") );
+//	this->facy.buddies_lock_ = CreateMutex( NULL, FALSE, TEXT("facy.buddies_lock_") );
+
+//	ReleaseMutex( this->signon_lock_ );
+//	ReleaseMutex( this->avatar_lock_ );
+//	ReleaseMutex( this->log_lock_ );
+//	ReleaseMutex( this->facy.buddies_lock_ );
+
 	CreateProtoService(m_szModuleName, PS_CREATEACCMGRUI, &FacebookProto::SvcCreateAccMgrUI, this);
 	CreateProtoService(m_szModuleName, PS_GETNAME,        &FacebookProto::GetName,           this);
 	CreateProtoService(m_szModuleName, PS_GETSTATUS,      &FacebookProto::GetStatus,         this);
@@ -48,6 +59,22 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU,  &FacebookProto::OnBuildStatusMenu,  this);
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &FacebookProto::OnBuildContactMenu, this);
 	HookProtoEvent(ME_OPT_INITIALISE,            &FacebookProto::OnOptionsInit,      this);
+
+	// Create standard network connection
+	TCHAR descr[512];
+    NETLIBUSER nlu = {sizeof(nlu)};
+    nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
+    nlu.szSettingsModule = m_szModuleName;
+	char module[512];
+	mir_snprintf(module,SIZEOF(module),"%sAv",m_szModuleName);
+	nlu.szSettingsModule = module;
+	mir_sntprintf(descr,SIZEOF(descr),TranslateT("%s server connection"),m_tszUserName);
+	nlu.ptszDescriptiveName = descr;
+	m_hNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
+	if(m_hNetlibUser == NULL)
+		MessageBox(NULL,TranslateT("Unable to get Netlib connection for Facebook"),m_tszUserName,MB_OK);
+
+	facy.set_handle(m_hNetlibUser);
 
 	SkinAddNewSoundEx( "NewNotification", m_szModuleName, Translate( "New notification" ) );
 
@@ -68,12 +95,20 @@ FacebookProto::~FacebookProto( )
 	if ( !isOffline() )
 		SetStatus( ID_STATUS_OFFLINE );
 
-	if ( m_hNetlibUser )
-		Netlib_Shutdown( m_hNetlibUser );
-	if ( m_hNetlibAvatar )
-		Netlib_Shutdown( m_hNetlibAvatar );
+	Netlib_CloseHandle( m_hNetlibUser );
 
 	KillThreads( );
+
+// TODO: Is this really explicitly needed?
+//	WaitForSingleObject( this->signon_lock_, IGNORE );
+//	WaitForSingleObject( this->avatar_lock_, IGNORE );
+//	WaitForSingleObject( this->log_lock_, IGNORE );
+//	WaitForSingleObject( this->facy.buddies_lock_, IGNORE );
+
+	CloseHandle( this->signon_lock_ );
+	CloseHandle( this->avatar_lock_ );
+	CloseHandle( this->log_lock_ );
+	CloseHandle( this->facy.buddies_lock_ );
 
 	mir_free( m_tszUserName );
 	mir_free( m_szModuleName );
@@ -86,8 +121,11 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 {
 	switch(type)
 	{
-	case PFLAGNUM_1:
-		return PF1_IM | PF1_MODEMSG; // | PF1_BASICSEARCH | PF1_SEARCHBYEMAIL; // TODO?
+	case PFLAGNUM_1: // TODO: Other caps available: PF1_BASICSEARCH, PF1_SEARCHBYEMAIL
+		if ( getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
+			return PF1_IM | PF1_MODEMSG;
+		else
+			return PF1_IM | PF1_MODEMSGRECV;
 	case PFLAGNUM_2:
 		return PF2_ONLINE;
 	case PFLAGNUM_3:
@@ -159,7 +197,7 @@ int FacebookProto::SetAwayMsg( int status, const char *msg )
 {
 	if ( !isOffline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
 	{
-		TCHAR *wide  = mir_a2t((const char*)msg);
+		TCHAR *wide  = mir_a2t(msg); // TODO: Why?
 		char *narrow = mir_t2a_cp((const TCHAR*)wide,CP_UTF8);
 		utils::mem::detract((void**)&wide);
 		ForkThread(&FacebookProto::SetAwayMsgWorker, this, narrow);
@@ -172,7 +210,7 @@ void FacebookProto::SetAwayMsgWorker(void * data)
 	std::string new_status = ( char* )data;
 	facy.set_status( new_status );
 	utils::mem::detract( ( void** )&data );
-	ForkThreadEx(&FacebookProto::UpdateContactWorker, this, (void*)&facy.self_);
+	ForkThread(&FacebookProto::UpdateContactWorker, this, (void*)&facy.self_);
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -237,41 +275,12 @@ int FacebookProto::SvcCreateAccMgrUI(WPARAM wParam,LPARAM lParam)
 
 int FacebookProto::OnModulesLoaded(WPARAM wParam,LPARAM lParam)
 {
-	TCHAR descr[512];
-    NETLIBUSER nlu = {sizeof(nlu)};
-    nlu.flags = NUF_INCOMING | NUF_OUTGOING | NUF_HTTPCONNS | NUF_TCHAR;
-    nlu.szSettingsModule = m_szModuleName;
-
-	// Create standard network connection
-	mir_sntprintf(descr,SIZEOF(descr),TranslateT("%s server connection"),m_tszUserName);
-	nlu.ptszDescriptiveName = descr;
-	m_hNetlibUser = (HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
-	if(m_hNetlibUser == 0)
-		MessageBox(NULL,TranslateT("Unable to get Netlib connection for Facebook"),m_tszUserName,MB_OK);
-
-	// Create avatar network connection (TODO: probably remove this)
-	char module[512];
-	mir_snprintf(module,SIZEOF(module),"%sAv",m_szModuleName);
-	nlu.szSettingsModule = module;
-	mir_sntprintf(descr,SIZEOF(descr),TranslateT("%s avatar connection"),m_tszUserName);
-	nlu.ptszDescriptiveName = descr;
-	m_hNetlibAvatar = (HANDLE)CallService(MS_NETLIB_REGISTERUSER,0,(LPARAM)&nlu);
-	if(m_hNetlibAvatar == 0)
-		MessageBox(NULL,TranslateT("Unable to get Netlib Avatar connection for Facebook"),m_tszUserName,MB_OK);
-
-	facy.set_handle(m_hNetlibUser);
-
 	return 0;
 }
 
 int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 {
 	SetStatus( ID_STATUS_OFFLINE );
-	if ( m_hNetlibUser )
-		Netlib_CloseHandle( m_hNetlibUser );
-	if ( m_hNetlibAvatar )
-		Netlib_CloseHandle( m_hNetlibAvatar );
-
 	return 0;
 }
 
@@ -286,11 +295,11 @@ int FacebookProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 	odp.position    = 271828;
 	odp.ptszGroup   = LPGENT("Network");
 	odp.ptszTab     = LPGENT("Account && Integration");
-    odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS);
+	odp.pszTemplate = MAKEINTRESOURCEA(IDD_OPTIONS);
 	odp.pfnDlgProc  = FBOptionsProc;
 	CallService(MS_OPT_ADDPAGE,wParam,(LPARAM)&odp);
 
-	odp.position = 271829;
+	odp.position    = 271829;
 	if(ServiceExists(MS_POPUP_ADDPOPUPT))
 		odp.ptszGroup   = LPGENT("Popups");
 	odp.ptszTab     = LPGENT("Events");

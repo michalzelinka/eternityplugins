@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -42,7 +42,7 @@ struct send_direct
 
 void FacebookProto::SendMsgWorker(void *p)
 {
-	if(p == 0)
+	if(p == NULL)
 		return;
 
 	send_direct *data = static_cast<send_direct*>(p);
@@ -74,8 +74,6 @@ int FacebookProto::SendMsg(HANDLE hContact, int flags, const char *msg)
 
 
 	ForkThread(&FacebookProto::SendMsgWorker, this,new send_direct(hContact,msg));
-
-	// TODO: Free msg?
 
 	return 1;
 }

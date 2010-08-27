@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -120,16 +120,18 @@ void FacebookProto::SetAllContactStatuses(int status)
 
 void FacebookProto::UpdateContactWorker(void *p)
 {
-	if ( this->isOffline( ) )
-		return;
+	if ( p == NULL ) return;
 
 	facebook_user* fbu = ( facebook_user* )p;
+
+	if ( this->isOffline( ) )
+		goto exit;
 
 	if ( fbu->status_id == ID_STATUS_OFFLINE )
 	{
 		DBWriteContactSettingWord(fbu->handle,m_szModuleName,"Status",ID_STATUS_OFFLINE );
 		DBDeleteContactSetting(fbu->handle,m_szModuleName,"IdleTS");
-		delete fbu;
+		goto exit;
 	}
 	else // ID_STATUS_ONLINE + _CONNECTING for self-contact
 	{
@@ -203,12 +205,15 @@ void FacebookProto::UpdateContactWorker(void *p)
 			fbu->last_update = ::time( NULL );
 		}
 	}
+
+exit:
+	if ( fbu->status_id == ID_STATUS_OFFLINE && fbu->user_id != this->facy.self_.user_id )
+		delete fbu;
 }
 
 void FacebookProto::GetAwayMsgWorker(void *hContact)
 {
-	if(hContact == 0)
-		return;
+	if(hContact == 0) return;
 
 	DBVARIANT dbv;
 	if( !DBGetContactSettingString(hContact,"CList","StatusMsg",&dbv) )
@@ -241,9 +246,9 @@ int FacebookProto::OnContactDeleted(WPARAM wparam,LPARAM)
 
 	ScopedLock s(facy.buddies_lock_);
 
-	for (std::map< std::string, facebook_user* >::iterator i = facy.buddies.begin(); i != facy.buddies.end(); ++i)
-		if (hContact == i->second->handle) {
-			facy.buddies.erase(i); break; }
+	for (List::Item< facebook_user >* i = facy.buddies.begin( ); i != NULL; i = i->next )
+		if (hContact == i->data->handle) {
+			facy.buddies.erase(i->key); break; }
 
 	return NULL;
 }

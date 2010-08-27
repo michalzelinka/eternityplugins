@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -56,7 +56,7 @@ int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD 
 	SkinPlaySound( "NewNotification" );
 
 	switch ( getByte( FACEBOOK_KEY_EVENTS_TIMEOUT_TYPE, DEFAULT_EVENTS_TIMEOUT_TYPE ) ) {
-		case 0: timeout = 0; break;
+		case 0: default: timeout = 0; break;
 		case 1: timeout = getByte( FACEBOOK_KEY_EVENTS_TIMEOUT, DEFAULT_EVENTS_TIMEOUT ); break;
 		case 2: timeout = -1; }
 

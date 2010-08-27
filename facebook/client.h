@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -28,83 +28,6 @@ Last change on : $Date$
 #pragma once
 
 #define FORCE_DISCONNECT true
-
-struct facebook_user
-{
-	HANDLE handle;
-	HANDLE lock; // TODO: Use per-contact locking where required
-
-	std::string user_id;
-	std::string real_name;
-
-	unsigned int status_id;
-	std::string status;
-	bool is_idle;
-
-	std::string image_url;
-
-	time_t last_update;
-
-	facebook_user( )
-	{
-		this->handle = NULL;
-		this->user_id = this->real_name = this->status = this->image_url = "";
-		this->is_idle = false;
-		this->status_id = ID_STATUS_OFFLINE;
-		this->last_update = 0;
-	}
-
-	facebook_user( facebook_user* fu )
-	{
-		this->handle = fu->handle;
-		this->image_url = fu->image_url;
-		this->is_idle = fu->is_idle;
-		this->last_update = fu->last_update;
-		this->real_name = fu->real_name;
-		this->status = fu->status;
-		this->status_id = fu->status_id;
-		this->user_id = fu->user_id;
-	}
-};
-
-struct facebook_message
-{
-	std::string user_id;
-	std::string message_text;
-	time_t time;
-
-	facebook_message( )
-	{
-		this->user_id = this->message_text = "";
-		this->time = 0;
-	}
-
-	facebook_message( const facebook_message& msg )
-	{
-		this->user_id = msg.user_id;
-		this->message_text = msg.message_text;
-		this->time = msg.time;
-	}
-};
-
-struct facebook_notification
-{
-	std::string user_id;
-	std::string text;
-
-	facebook_notification( ) {
-		this->user_id = this->text = ""; }
-};
-
-struct facebook_newsfeed
-{
-	std::string user_id;
-	std::string title;
-	std::string text;
-
-	facebook_newsfeed( ) {
-		this->user_id = this->title = this->text = ""; }
-};
 
 class facebook_client
 {
@@ -158,6 +81,9 @@ public:
 
 	// Cookies, Data storage
 
+	HANDLE cookies_lock_;
+	HANDLE headers_lock_;
+
 	std::map< std::string, std::string >    cookies;
 	std::map< std::string, std::string >    headers;
 
@@ -204,8 +130,8 @@ public:
 
 	// Updates handling
 
-	std::map< std::string, facebook_user* > buddies;
-	HANDLE  buddies_lock_; // TODO: Use buddy list locking where required
+	List::List< facebook_user > buddies;
+	HANDLE  buddies_lock_;
 
 	bool    buddy_list( );
 	bool    feeds( );

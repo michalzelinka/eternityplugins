@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright © 2009-10 Michal Zelinka
+Copyright Â© 2009-10 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -18,7 +18,7 @@ GNU General Public License for more details.
 You should have received a copy of the GNU General Public License
 along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
-File name      : $URL$
+File name      : $HeadURL$
 Revision       : $Revision$
 Last change by : $Author$
 Last change on : $Date$
@@ -39,14 +39,14 @@ HINSTANCE g_hInstance;
 std::string g_strUserAgent;
 DWORD g_mirandaVersion;
 
-PLUGININFOEX pluginInfo={
+PLUGININFOEX pluginInfo = {
 	sizeof(PLUGININFOEX),
 	"Facebook Protocol",
 	__VERSION_DWORD,
 	"Provides basic support for Facebook Chat protocol. [Built: "__DATE__" "__TIME__"]",
 	"Michal Zelinka",
 	"jarvis@jabber.cz",
-	"© 2009-10 Michal Zelinka",
+	"Â© 2009-10 Michal Zelinka",
 	"http://dev.miranda.im/~jarvis/",
 	UNICODE_AWARE, //not transient
 	0,             //doesn't replace anything built-in
@@ -76,7 +76,7 @@ extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD miranda
 	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,8,0,34))
 	{
 		MessageBox(0,_T("The Facebook protocol plugin cannot be loaded. ")
-			_T("It requires Miranda IM 0.8.0.34 or later."),_T("Miranda"),
+			_T("It requires Miranda IM 0.8 alpha build #34 or later."),_T("Miranda"),
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
 		return NULL;
 	}
@@ -89,7 +89,7 @@ extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVers
 {
 	// TODO: Make product version controlled via definitions
 	MessageBox(0,_T("The Facebook protocol plugin cannot be loaded. ")
-		_T("It requires Miranda IM 0.8.0.34 or later."),_T("Miranda"),
+		_T("It requires Miranda IM 0.8 alpha build #34 or later."),_T("Miranda"),
 		MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
 	return NULL;
 }
@@ -109,14 +109,13 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 static PROTO_INTERFACE* protoInit(const char *proto_name,const TCHAR *username )
 {
 	FacebookProto *proto = new FacebookProto(proto_name,username);
-//	g_Instances.insert(proto); // TODO: Why does it crash??
+	g_Instances.insert(proto); // TODO: Why does it crash??
 	return proto;
 }
 
 static int protoUninit(PROTO_INTERFACE *proto)
 {
-//	g_Instances.remove(static_cast<FacebookProto*>(proto));
-	delete proto;
+	g_Instances.remove(static_cast<FacebookProto*>(proto));
 	return 0;
 }
 
@@ -145,6 +144,9 @@ int OnModulesLoaded(WPARAM,LPARAM)
 
 extern "C" int __declspec(dllexport) Load(PLUGINLINK *link)
 {
+#if defined _DEBUG
+	_CrtDumpMemoryLeaks( );
+#endif
 	pluginLink = link;
 	mir_getMMI(&mmi);
 	mir_getLI(&li);
