@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright © 2009-10 Michal Zelinka
+Copyright Â© 2009-10 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -99,6 +99,8 @@ Last change on : $Date$
 #define FACEBOOK_REQUEST_STATUS_SET             251 // setting my "What's on my mind?"
 #define FACEBOOK_REQUEST_MESSAGE_SEND           300 // sending message
 #define FACEBOOK_REQUEST_MESSAGES_RECEIVE       301 // receiving messages
+#define FACEBOOK_REQUEST_TYPING_SEND            304 // typing notification
+#define FACEBOOK_REQUEST_CHAT_WINDOW_CLOSE      305 // closing message window
 
 // Reconnect flags
 #define FACEBOOK_RECONNECT_LOGIN        "6" // When logging in
@@ -107,24 +109,24 @@ Last change on : $Date$
 // User-Agents
 static const char* user_agents[] = {
 	"Miranda IM (default)",
-	"FacebookTouch2.5",
-	"Facebook/2.5 CFNetwork/342.1 Darwin/9.4.1",
-	"Lynx/2.8.4rel.1 libwww-FM/2.14",
+//	"FacebookTouch2.5",
+//	"Facebook/2.5 CFNetwork/342.1 Darwin/9.4.1",
+//	"Lynx/2.8.4rel.1 libwww-FM/2.14",
 	"Mozilla/4.0 (compatible; MSIE 6.0; Windows NT 5.2; SV1; .NET CLR 1.1.4322)",
 	"Mozilla/4.0 (compatible; MSIE 7.0; Windows NT 6.0)",
-	"Mozilla/4.08 [en] (WinNT; U ;Nav)",
+//	"Mozilla/4.08 [en] (WinNT; U ;Nav)",
 	"Mozilla/5.0 (compatible; Konqueror/3.5; Linux 2.6.21-rc1; x86_64; cs, en_US) KHTML/3.5.6 (like Gecko)",
 	"Mozilla/5.0 (Windows; U; Windows NT 5.1; ru; rv:1.8.1.9) Gecko/20071025 Firefox/2.0.0.9",
-	"Opera/8.01 (J2ME/MIDP; Opera Mini/3.0.6306/1528; nb; U; ssr)",
-	"Opera/9.27 (Windows NT 5.1; U; en)",
-	"Opera/9.64 (Windows NT 5.1; U; en)",
+//	"Opera/8.01 (J2ME/MIDP; Opera Mini/3.0.6306/1528; nb; U; ssr)",
+//	"Opera/9.27 (Windows NT 5.1; U; en)",
+//	"Opera/9.64 (Windows NT 5.1; U; en)",
 	"Opera/9.80 (Windows NT 5.1; U; en) Presto/2.2.15 Version/10.00",
 	"Opera/9.80 (Macintosh; Intel Mac OS X; U; en) Presto/2.2.15 Version/10.00",
 	"Mozilla/5.0 (Macintosh; U; Intel Mac OS X 10_5_7; en-US) AppleWebKit/531.0 (KHTML, like Gecko) Chrome/3.0.183 Safari/531.0",
-	"Mozilla/5.0 (iPod; U; CPU iPhone OS 2_2_1 like Mac OS X; en-us) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5H11a Safari/525.20",
-	"HTC-8900/1.2 Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; IEMobile 7.6) UP.Link/6.3.0.0.0",
-	"BlackBerry8320/4.3.1 Profile/MIDP-2.0 Configuration/CLDC-1.1",
-	"Opera/9.60 (J2ME/MIDP; Opera Mini/4.2.13337/504; U; en) Presto/2.2.0",
-	"Nokia6230/2.0+(04.43)+Profile/MIDP-2.0+Configuration/CLDC-1.1+UP.Link/6.3.0.0.0",
-	"Mozilla/5.0 (webOS/1.0; U; en-US) AppleWebKit/525.27.1 (KHTML, like Gecko) Version/1.0 Safari/525.27.1 Pre/1.0",
+//	"Mozilla/5.0 (iPod; U; CPU iPhone OS 2_2_1 like Mac OS X; en-us) AppleWebKit/525.18.1 (KHTML, like Gecko) Version/3.1.1 Mobile/5H11a Safari/525.20",
+//	"HTC-8900/1.2 Mozilla/4.0 (compatible; MSIE 6.0; Windows CE; IEMobile 7.6) UP.Link/6.3.0.0.0",
+//	"BlackBerry8320/4.3.1 Profile/MIDP-2.0 Configuration/CLDC-1.1",
+//	"Opera/9.60 (J2ME/MIDP; Opera Mini/4.2.13337/504; U; en) Presto/2.2.0",
+//	"Nokia6230/2.0+(04.43)+Profile/MIDP-2.0+Configuration/CLDC-1.1+UP.Link/6.3.0.0.0",
+//	"Mozilla/5.0 (webOS/1.0; U; en-US) AppleWebKit/525.27.1 (KHTML, like Gecko) Version/1.0 Safari/525.27.1 Pre/1.0",
 };

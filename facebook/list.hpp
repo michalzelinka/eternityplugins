@@ -116,10 +116,12 @@ namespace List
 			if ( help != NULL ) {
 				if ( help == this->first ) {
 					this->first = help->next;
-					if ( this->first != NULL ) this->first->prev = NULL; }
+					if ( this->first != NULL ) this->first->prev = NULL;
+					else this->last = NULL; }
 				else if ( help == this->last ) {
 					this->last = help->prev;
-					if ( this->last !=NULL ) this->last->next = NULL; }
+					if ( this->last != NULL ) this->last->next = NULL;
+					else this->first = NULL; }
 				else {
 					help->prev->next = help->next;
 					help->next->prev = help->prev; }

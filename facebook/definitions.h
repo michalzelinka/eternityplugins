@@ -47,6 +47,9 @@ Last change on : $Date$
 #define LOG_FAILURE             3
 #define LOG_CRITICAL            4
 
+#define MS_CLIST_ADDSTATUSPROTOMENUITEM ( g_mirandaVersion >= 0x0009000A ? \
+        MS_CLIST_ADDPROTOMENUITEM : MS_CLIST_ADDSTATUSMENUITEM )
+
 #if defined( _UNICODE )
 #define NIIF_INTERN_TCHAR NIIF_INTERN_UNICODE // m_clist.h
 #define mir_tstrdup mir_wstrdup // m_system.h

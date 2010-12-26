@@ -156,13 +156,34 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 			else if ( type.Value( ) == "app_msg" )
 			{
 				const String& text = objMember["response"]["payload"]["title"];
+				const String& link = objMember["response"]["payload"]["link"];
 
 				facebook_notification* notification = new facebook_notification( );
 				notification->text = utils::text::slashu_to_utf8(
 					utils::text::special_expressions_decode(
 						utils::text::remove_html( text.Value( ) ) ) );
 
+				notification->link = utils::text::special_expressions_decode( link.Value( ) );
+
 				notifications->push_back( notification );
+			}
+			else if ( type.Value( ) == "typ" )
+			{
+				const Number& from = objMember["from"];
+				char user_id[32];
+				lltoa( from.Value(), user_id, 10 );
+
+				facebook_user fbu;
+				fbu.user_id = user_id;
+
+				HANDLE hContact = proto->AddToContactList(&fbu);
+				DBWriteContactSettingDword(hContact,proto->m_szModuleName,"Status",ID_STATUS_ONLINE);
+
+				const Number& state = objMember["st"];
+				if (state.Value() == 1)
+					CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)60);
+				else
+					CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)PROTOTYPE_CONTACTTYPING_OFF);
 			}
 			else if ( type.Value( ) == "inbox" )
 			{
