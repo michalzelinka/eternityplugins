@@ -1,13 +1,19 @@
 
+TRUNK
+-----
+
+- Rewritten status menu items creation code to work properly with new Miranda 0.9 feature to move them into main menu
+- Fixed memory leak when processing messages and notifications
+
 0.1.2.0
 -------
 
-- Fixed thread forking causing enormous number of dead handles being unclosed as they should
+- Fixed thread forking causing enormous number of dead handles being not closed as they should
 - New enhanced storage for buddy list during runtime (mainly solves data leaks with previous solution)
 - Thread synchronization & data locking revision (may prevent crashes, buffer overflows etc.)
 - Optimized code flow on various places (prevents data leaks, prettier code etc.)
 - Revised Debug build & its settings (f.e. memory leaks logging)
-- Fixed proper core notification of Offline status when signing off (no clist redraw required)
+- Fixed proper acknowledge of Offline status to core when signing off (no clist redraw required)
 
 0.1.1.2
 -------
