@@ -164,7 +164,7 @@ public:
 	void ToggleStatusMenuItems( BOOL bEnable );
 
 	// Handles, Locks
-	HANDLE  m_hMenuRoot;
+	HGENMENU    m_hMenuRoot;
 	HANDLE  m_hStatusMind;
 
 	HANDLE  signon_lock_;
