@@ -88,9 +88,10 @@ struct facebook_notification
 {
 	std::string user_id;
 	std::string text;
+	std::string link;
 
 	facebook_notification( ) {
-		this->user_id = this->text = ""; }
+		this->user_id = this->text = this->link = ""; }
 };
 
 struct facebook_newsfeed
@@ -98,7 +99,8 @@ struct facebook_newsfeed
 	std::string user_id;
 	std::string title;
 	std::string text;
+	std::string link;
 
 	facebook_newsfeed( ) {
-		this->user_id = this->title = this->text = ""; }
+		this->user_id = this->title = this->text = this->link = ""; }
 };
