@@ -31,8 +31,7 @@ void FacebookProto::UpdateAvatarWorker(void *p)
 {
 	if(p == NULL) return;
 
-	update_avatar* ua = static_cast<update_avatar*>(p);
-	std::auto_ptr<update_avatar> data( ua );
+	std::auto_ptr<update_avatar> data( static_cast<update_avatar*>(p) );
 	DBVARIANT dbv;
 
 	if(!DBGetContactSettingString(data->hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv))

@@ -27,9 +27,9 @@ Last change on : $Date$
 
 #include "common.h"
 
-void facebook_client::client_notify( TCHAR* message )
+void facebook_client::client_notify( TCHAR* message, DWORD flags )
 {
-	parent->NotifyEvent( parent->m_tszUserName, message );
+	parent->NotifyEvent( parent->m_tszUserName, message, NULL, flags );
 }
 
 http::response facebook_client::flap( const int request_type, std::string* request_data )
@@ -446,7 +446,7 @@ bool facebook_client::api_check( )
 		std::string api_version_latest = resp.data.substr( start, end - start );
 
 		if ( start > 0 && end > 0 && std::string( __API_VERSION_STRING ) != api_version_latest )
-			client_notify( TEXT( "Facebook API version has changed, wait and watch for the Facebook protocol update." ) );
+			client_notify( TranslateT( "Facebook API version has changed, wait and watch for the Facebook protocol update." ) );
 
 	}
 

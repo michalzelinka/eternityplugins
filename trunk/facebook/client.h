@@ -75,7 +75,7 @@ public:
 
 	// Client vs protocol communication
 
-	void    client_notify( TCHAR* message );
+	void    client_notify( TCHAR* message, DWORD flag = NIIF_INFO );
 
 	////////////////////////////////////////////////////////////
 
