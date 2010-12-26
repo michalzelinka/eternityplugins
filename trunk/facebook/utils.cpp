@@ -193,6 +193,15 @@ std::string utils::text::slashu_to_utf8( std::string data )
 	return new_string;
 }
 
+std::string utils::text::trim( std::string data )
+{
+	std::string spaces = " \t"; // TODO: include "nbsp"
+	std::string::size_type begin = data.find_first_not_of( spaces );
+	std::string::size_type end = data.find_last_not_of( spaces ) + 1;
+
+	return (begin != std::string::npos) ? data.substr( begin, end - begin ) : "";
+}
+
 int utils::number::random( )
 {
 	srand( ::time( NULL ) );

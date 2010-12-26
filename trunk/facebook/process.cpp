@@ -98,42 +98,43 @@ void FacebookProto::ProcessMessages( void* data )
 
 	for(std::vector<facebook_message*>::size_type i=0; i<messages.size( ); i++)
 	{
-		if ( messages[i]->user_id == facy.self_.user_id )
-			continue;
+		if ( messages[i]->user_id != facy.self_.user_id ) {
+			LOG("      Got message: %s", messages[i]->message_text.c_str());
+			facebook_user fbu;
+			fbu.user_id = messages[i]->user_id;
 
-		LOG("      Got message: %s", messages[i]->message_text.c_str());
-		facebook_user fbu;
-		fbu.user_id = messages[i]->user_id;
+			HANDLE hContact = AddToContactList(&fbu);
+			DBWriteContactSettingDword(hContact,m_szModuleName,"Status",ID_STATUS_ONLINE);
 
-		HANDLE hContact = AddToContactList(&fbu);
-		DBWriteContactSettingDword(hContact,m_szModuleName,"Status",ID_STATUS_ONLINE);
+			PROTORECVEVENT recv = {};
+			CCSDATA ccs = {};
 
-		PROTORECVEVENT recv = {};
-		CCSDATA ccs = {};
+			recv.flags = PREF_UTF;
+			recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
+			recv.timestamp = static_cast<DWORD>(messages[i]->time);
 
-		recv.flags = PREF_UTF;
-		recv.szMessage = const_cast<char*>(messages[i]->message_text.c_str());
-		recv.timestamp = static_cast<DWORD>(messages[i]->time);
-
-		ccs.hContact = hContact;
-		ccs.szProtoService = PSR_MESSAGE;
-		ccs.wParam = ID_STATUS_ONLINE;
-		ccs.lParam = reinterpret_cast<LPARAM>(&recv);
-		CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
+			ccs.hContact = hContact;
+			ccs.szProtoService = PSR_MESSAGE;
+			ccs.wParam = ID_STATUS_ONLINE;
+			ccs.lParam = reinterpret_cast<LPARAM>(&recv);
+			CallService(MS_PROTO_CHAINRECV,0,reinterpret_cast<LPARAM>(&ccs));
+		}
+		delete messages[i];
 	}
 
-	if ( getByte( FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE ) )
+	BYTE notify = getByte( FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE );
+	for(std::vector<facebook_notification*>::size_type i=0; i<notifications.size( ); i++)
 	{
-		for(std::vector<facebook_notification*>::size_type i=0; i<notifications.size( ); i++)
-		{
+		if ( notify ) {
 			LOG("      Got notification: %s", notifications[i]->text.c_str());
 			TCHAR* szTitle = mir_a2t_cp(this->m_szModuleName, CP_UTF8);
 			TCHAR* szText = mir_a2t_cp(notifications[i]->text.c_str(), CP_UTF8);
 			NotifyEvent( szTitle, szText );
-			// TODO: Clear szTitle, szText?
+			mir_free( szTitle );
+			mir_free( szText );
 		}
+		delete notifications[i];
 	}
-
 
 	LOG("***** Messages processed");
 

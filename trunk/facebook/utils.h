@@ -87,6 +87,7 @@ namespace utils
 		std::string special_expressions_decode( std::string data );
 		std::string remove_html( std::string data );
 		std::string slashu_to_utf8( std::string data );
+		std::string trim( std::string data );
 	};
 
 	namespace conversion {
