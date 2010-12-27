@@ -86,7 +86,7 @@ BEGIN
     PUSHBUTTON      "Cancel",IDCANCEL,159,44,50,14
 END
 
-IDD_OPTIONS DIALOGEX 0, 0, 305, 217
+IDD_OPTIONS DIALOGEX 0, 0, 305, 227
 STYLE DS_SETFONT | DS_FIXEDSYS | WS_CHILD
 EXSTYLE WS_EX_CONTROLPARENT
 FONT 8, "MS Shell Dlg", 400, 0, 0x1
@@ -98,16 +98,17 @@ BEGIN
     EDITTEXT        IDC_PW,106,39,142,13,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "Create a new Facebook account",IDC_NEWACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,106,57,142,12
-    GROUPBOX        "Advanced Settings",IDC_STATIC,51,80,204,130,WS_DISABLED
+    GROUPBOX        "Advanced Settings",IDC_STATIC,51,90,204,130,WS_DISABLED
     LTEXT           "Default group for newly added contacts:",IDC_STATIC,59,95,189,8
     EDITTEXT        IDC_GROUP,106,106,142,13,ES_AUTOHSCROLL
     LTEXT           "User-Agent:",IDC_STATIC,59,128,44,8
     COMBOBOX        IDC_AGENT,106,126,142,59,CBS_DROPDOWNLIST | WS_VSCROLL | WS_TABSTOP
+    CONTROL         "Force secure (HTTPS) connection",IDC_SECURE,"Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,147,189,10
     CONTROL         "Set Facebook ""What's on my mind"" status through Miranda status",IDC_SET_STATUS,
-                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,59,147,189,18
+                    "Button",BS_AUTOCHECKBOX | BS_TOP | BS_MULTILINE | WS_TABSTOP,59,161,189,18
     CONTROL         "Enable logging for debugging purposes",IDC_LOGGING,
-                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,168,189,10
-    PUSHBUTTON      "Show cookies",IDC_COOKIES,87,185,131,14
+                    "Button",BS_AUTOCHECKBOX | WS_TABSTOP,59,182,189,10
+    PUSHBUTTON      "Show cookies",IDC_COOKIES,87,198,131,14
 END
 
 IDD_OPTIONS_EVENTS DIALOGEX 0, 0, 305, 217
@@ -176,7 +177,7 @@ BEGIN
         VERTGUIDE, 248
         VERTGUIDE, 255
         TOPMARGIN, 7
-        BOTTOMMARGIN, 210
+        BOTTOMMARGIN, 220
     END
 
     IDD_OPTIONS_EVENTS, DIALOG
