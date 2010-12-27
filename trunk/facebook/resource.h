@@ -18,9 +18,10 @@
 #define IDC_GROUP                       1021
 #define IDC_AGENT                       1022
 #define IDC_POLLRATE                    1023
-#define IDC_SET_STATUS                  1124
-#define IDC_LOGGING                     1025
-#define IDC_COOKIES                     1026
+#define IDC_SECURE                      1024
+#define IDC_SET_STATUS                  1125
+#define IDC_LOGGING                     1026
+#define IDC_COOKIES                     1027
 #define IDC_DEBUGINFO                   1041
 #define IDC_NOTIFICATIONS_ENABLE        1051
 #define IDC_FEEDS_ENABLE                1052

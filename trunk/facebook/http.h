@@ -27,6 +27,9 @@ Last change on : $Date$
 
 #pragma once
 
+#define HTTP_PROTO_REGULAR          "http://"
+#define HTTP_PROTO_SECURE           "https://"
+
 #define HTTP_CODE_CONTINUE          100
 #define HTTP_CODE_SWITCHING_PROTOCOLS   101
 #define HTTP_CODE_PROCESSING        102

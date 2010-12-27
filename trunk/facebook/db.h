@@ -52,8 +52,9 @@ Last change on : $Date$
 #define FACEBOOK_KEY_AV_URL         "AvatarURL"
 #define FACEBOOK_KEY_POLL_RATE      "PollRate"
 #define FACEBOOK_KEY_USER_AGENT     "UserAgent"
-#define FACEBOOK_KEY_LOGGING_ENABLE "LoggingEnable"
+#define FACEBOOK_KEY_FORCE_HTTPS    "ForceHTTPS"
 #define FACEBOOK_KEY_SET_MIRANDA_STATUS "SetMirandaStatus"
+#define FACEBOOK_KEY_LOGGING_ENABLE "LoggingEnable"
 #define FACEBOOK_KEY_TIMEOUTS_LIMIT "TimeoutsLimit" // [HIDDEN]
 #define FACEBOOK_KEY_DISABLE_LOGOUT "DisableLogout" // [HIDDEN]
 #define FACEBOOK_KEY_DISABLE_STATUS_NOTIFY  "DisableStatusNotify" // [HIDDEN]

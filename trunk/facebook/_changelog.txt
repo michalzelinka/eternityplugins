@@ -1,9 +1,11 @@
 
-TRUNK
------
+0.1.2.1
+-------
 
 - Rewritten status menu items creation code to work properly with new Miranda 0.9 feature to move them into main menu
 - Fixed memory leak when processing messages and notifications
+- Fixed a crash caused by internal list implementation
+- Work-around fix for disconnecting issues due to core time-out handling changes
 
 0.1.2.0
 -------

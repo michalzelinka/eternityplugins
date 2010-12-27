@@ -38,7 +38,7 @@ http::response facebook_client::flap( const int request_type, std::string* reque
 	nlhr.requestType = choose_method( request_type );
 	std::string url = choose_request_url( request_type, request_data );
 	nlhr.szUrl = (char*)url.c_str( );
-	nlhr.flags = NLHRF_NODUMP | choose_security_level( request_type ) | NLHRF_GENERATEHOST;
+	nlhr.flags = NLHRF_HTTP11 | NLHRF_NODUMP | choose_security_level( request_type ) | NLHRF_GENERATEHOST;
 	nlhr.headers = get_request_headers( request_type, &nlhr.headersCount );
 
 	if ( request_data != NULL )
@@ -177,12 +177,38 @@ int facebook_client::choose_method( int request_type )
 	}
 }
 
+std::string facebook_client::choose_proto( int request_type )
+{
+	if ( DBGetContactSettingByte( NULL, parent->m_szProtoName, FACEBOOK_KEY_FORCE_HTTPS, 0 ) )
+		return HTTP_PROTO_SECURE;
+
+	switch ( request_type )
+	{
+	case FACEBOOK_REQUEST_API_CHECK:
+	case FACEBOOK_REQUEST_LOGOUT:
+	case FACEBOOK_REQUEST_HOME:
+	case FACEBOOK_REQUEST_FEEDS:
+	case FACEBOOK_REQUEST_RECONNECT:
+	case FACEBOOK_REQUEST_PROFILE_GET:
+	case FACEBOOK_REQUEST_SETUP_MACHINE:
+	case FACEBOOK_REQUEST_KEEP_ALIVE:
+	case FACEBOOK_REQUEST_BUDDY_LIST:
+	case FACEBOOK_REQUEST_STATUS_SET:
+	case FACEBOOK_REQUEST_MESSAGE_SEND:
+	default:
+		return HTTP_PROTO_REGULAR;
+
+	case FACEBOOK_REQUEST_LOGIN:
+		return HTTP_PROTO_SECURE;
+	}
+}
+
 std::string facebook_client::choose_server( int request_type, std::string* data )
 {
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_API_CHECK:
-		return "http://code.google.com/";
+		return "code.google.com";
 
 	case FACEBOOK_REQUEST_LOGIN:
 	case FACEBOOK_REQUEST_SETUP_MACHINE:
@@ -215,54 +241,54 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 	switch ( request_type )
 	{
 	case FACEBOOK_REQUEST_API_CHECK:
-		return "p/eternityplugins/wiki/FacebookProtocol_DevelopmentProgress";
+		return "/p/eternityplugins/wiki/FacebookProtocol_DevelopmentProgress";
 
 	case FACEBOOK_REQUEST_LOGIN:
-		return "login.php?login_attempt=1";
+		return "/login.php?login_attempt=1";
 
 	case FACEBOOK_REQUEST_SETUP_MACHINE:
-		return "loginnotify/setup_machine.php";
+		return "/loginnotify/setup_machine.php";
 
 	case FACEBOOK_REQUEST_LOGOUT:
-		return "logout.php";
+		return "/logout.php";
 
 	case FACEBOOK_REQUEST_KEEP_ALIVE:
-		return "ajax/presence/update.php";
+		return "/ajax/presence/update.php";
 
 	case FACEBOOK_REQUEST_HOME:
-		return "home.php?";
+		return "/home.php?";
 
 	case FACEBOOK_REQUEST_BUDDY_LIST:
-		return "ajax/chat/buddy_list.php";
+		return "/ajax/chat/buddy_list.php";
 
 	case FACEBOOK_REQUEST_FEEDS: {
 		// Filters: lf = live feed, h = news feed
 		// TODO: Make filter selection customizable?
-		std::string action = "ajax/intent.php?filter=lf&request_type=1&__a=1&newest=%s&ignore_self=true";
+		std::string action = "/ajax/intent.php?filter=lf&request_type=1&__a=1&newest=%s&ignore_self=true";
 		std::string newest = utils::conversion::to_string((void*)&this->last_feeds_update_, UTILS_CONV_TIME_T);
 		utils::text::replace_first( &action, "%s", newest );
 		return action; }
 
 	case FACEBOOK_REQUEST_RECONNECT: {
-		std::string action = "ajax/presence/reconnect.php?reason=%s&iframe_loaded=false&post_form_id=%s&__a=1&nctr[n]=1";
+		std::string action = "/ajax/presence/reconnect.php?reason=%s&iframe_loaded=false&post_form_id=%s&__a=1&nctr[n]=1";
 		std::string reason = ( this->chat_first_touch_ ) ? FACEBOOK_RECONNECT_LOGIN : FACEBOOK_RECONNECT_KEEP_ALIVE;
 		utils::text::replace_first( &action, "%s", reason );
 		utils::text::replace_first( &action, "%s", this->post_form_id_ );
 		return action; }
 
 	case FACEBOOK_REQUEST_PROFILE_GET: {
-		std::string action = "profile.php?id=%s&v=info";
+		std::string action = "/profile.php?id=%s&v=info";
 		utils::text::replace_first( &action, "%s", (*data) );
 		return action; }
 
 	case FACEBOOK_REQUEST_STATUS_SET:
-		return "ajax/updatestatus.php";
+		return "/ajax/updatestatus.php";
 
 	case FACEBOOK_REQUEST_MESSAGE_SEND:
-		return "ajax/chat/send.php";
+		return "/ajax/chat/send.php";
 
 	case FACEBOOK_REQUEST_MESSAGES_RECEIVE: {
-		std::string action = "x/%s/%s/p_%s=%d";
+		std::string action = "/x/%s/%s/p_%s=%d";
 		std::string first_time;
 		if ( this->chat_first_touch_ ) { first_time = "true"; this->chat_first_touch_ = false; }
 		else first_time = "false";
@@ -273,13 +299,14 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 		return action; }
 
 	default:
-		return "";
+		return "/";
 	}
 }
 
 std::string facebook_client::choose_request_url( int request_type, std::string* data )
 {
-	std::string url = choose_server( request_type, data );
+	std::string url = choose_proto( request_type );
+	url.append( choose_server( request_type, data ) );
 	url.append( choose_action( request_type, data ) );
 	return url;
 }
@@ -811,7 +838,14 @@ bool facebook_client::channel( )
 	case HTTP_CODE_FAKE_LOGGED_OUT:
 	case HTTP_CODE_FAKE_DISCONNECTED:
 	default:
-		return handle_error( "channel" );
+		return true;
+		// return handle_error( "channel" );
+		//
+		// Temporarily  (at least for this moment)  disabled due
+		// to core/NetLib  time-out  limit.  Because of the fact
+		// most  COMET transactions  are momentarily  marked  as
+		// timed-out before they can be returned back  or REALLY
+		// trully indicated as a time-out.
 
 	}
 }
