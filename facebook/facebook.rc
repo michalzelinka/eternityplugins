@@ -98,7 +98,7 @@ BEGIN
     EDITTEXT        IDC_PW,106,39,142,13,ES_PASSWORD | ES_AUTOHSCROLL
     CONTROL         "Create a new Facebook account",IDC_NEWACCOUNTLINK,
                     "Hyperlink",WS_TABSTOP,106,57,142,12
-    GROUPBOX        "Advanced Settings",IDC_STATIC,51,90,204,130,WS_DISABLED
+    GROUPBOX        "Advanced Settings",IDC_STATIC,51,79,204,141,WS_DISABLED
     LTEXT           "Default group for newly added contacts:",IDC_STATIC,59,95,189,8
     EDITTEXT        IDC_GROUP,106,106,142,13,ES_AUTOHSCROLL
     LTEXT           "User-Agent:",IDC_STATIC,59,128,44,8
@@ -209,8 +209,8 @@ END
 //
 
 VS_VERSION_INFO VERSIONINFO
- FILEVERSION __VERSION_VS_FILE
- PRODUCTVERSION __VERSION_VS_PROD
+ FILEVERSION 0,1,2,0
+ PRODUCTVERSION 0,8,0,34
  FILEFLAGSMASK 0x17L
 #ifdef _DEBUG
  FILEFLAGS 0x1L
@@ -226,12 +226,12 @@ BEGIN
         BLOCK "040904b0"
         BEGIN
             VALUE "FileDescription", "Facebook protocol plugin for Miranda IM"
-            VALUE "FileVersion", __VERSION_VS_FILE_STRING
+            VALUE "FileVersion", "0, 1, 2, 0"
             VALUE "InternalName", "Facebook"
             VALUE "LegalCopyright", "Copyright © 2009-2010 Michal Zelinka"
             VALUE "OriginalFilename", "facebook.dll"
             VALUE "ProductName", "Facebook Protocol"
-            VALUE "ProductVersion", __VERSION_VS_PROD_STRING
+            VALUE "ProductVersion", "0, 8, 0, 34"
         END
     END
     BLOCK "VarFileInfo"
