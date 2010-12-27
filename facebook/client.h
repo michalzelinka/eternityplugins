@@ -164,6 +164,7 @@ public:
 
 	DWORD   choose_security_level( int );
 	int     choose_method( int );
+	std::string choose_proto( int );
 	std::string choose_server( int, std::string* data = NULL );
 	std::string choose_action( int, std::string* data = NULL );
 	std::string choose_request_url( int, std::string* data = NULL );

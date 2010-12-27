@@ -29,13 +29,13 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 2, 0)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 2, 1)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.1.2.0"
+#define __VERSION_STRING            "0.1.2.1"
 #define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,1,2,0
+#define __VERSION_VS_FILE           0,1,2,1
 #define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 1, 2, 0"
+#define __VERSION_VS_FILE_STRING    "0, 1, 2, 1"
 #define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
 #define __API_VERSION_STRING        "3.1"
 
@@ -52,14 +52,14 @@ Last change on : $Date$
 // Product management
 #define FACEBOOK_NAME               "Facebook"
 #define FACEBOOK_URL_HOMEPAGE       "http://www.facebook.com/"
+#define PLUGIN_HOSTING_URL          "http://code.google.com/p/eternityplugins/"
 
 // Connection
-#define FACEBOOK_SERVER_REGULAR     "http://www.facebook.com/"
-#define FACEBOOK_SERVER_MOBILE      "http://m.facebook.com/"
-#define FACEBOOK_SERVER_CHAT        "http://%s.%s.facebook.com/"
-#define FACEBOOK_SERVER_LOGIN       "https://login.facebook.com/"
-#define FACEBOOK_SERVER_APPS        "http://apps.facebook.com/"
-#define PLUGIN_HOSTING_URL          "http://code.google.com/p/eternityplugins/"
+#define FACEBOOK_SERVER_REGULAR     "www.facebook.com"
+#define FACEBOOK_SERVER_MOBILE      "m.facebook.com"
+#define FACEBOOK_SERVER_CHAT        "%s.%s.facebook.com"
+#define FACEBOOK_SERVER_LOGIN       "login.facebook.com"
+#define FACEBOOK_SERVER_APPS        "apps.facebook.com"
 
 // Limits
 #define FACEBOOK_MESSAGE_LIMIT      1024
