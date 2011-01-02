@@ -59,6 +59,7 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 	HookProtoEvent(ME_CLIST_PREBUILDSTATUSMENU,  &FacebookProto::OnBuildStatusMenu,  this);
 	HookProtoEvent(ME_CLIST_PREBUILDCONTACTMENU, &FacebookProto::OnBuildContactMenu, this);
 	HookProtoEvent(ME_OPT_INITIALISE,            &FacebookProto::OnOptionsInit,      this);
+	HookProtoEvent(ME_IDLE_CHANGED,              &FacebookProto::OnIdleChanged,      this);
 
 	// Create standard network connection
 	TCHAR descr[512];
@@ -76,9 +77,9 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 
 	facy.set_handle(m_hNetlibUser);
 
-	SkinAddNewSoundEx( "NewNotification", m_szModuleName, Translate( "New notification" ) );
-	SkinAddNewSoundEx( "NewsFeed", m_szModuleName, Translate( "News feed" ) );
-	SkinAddNewSoundEx( "OtherEvent", m_szModuleName, Translate( "Other information" ) );
+	SkinAddNewSoundEx( "Notification", m_szModuleName, Translate( "Notification" ) );
+	SkinAddNewSoundEx( "NewsFeed", m_szModuleName, Translate( "News Feed" ) );
+	SkinAddNewSoundEx( "OtherEvent", m_szModuleName, Translate( "Other Event" ) );
 
 	char *profile = Utils_ReplaceVars("%miranda_avatarcache%");
 	def_avatar_folder_ = std::string(profile)+"\\"+m_szModuleName;
@@ -111,6 +112,9 @@ FacebookProto::~FacebookProto( )
 	CloseHandle( this->avatar_lock_ );
 	CloseHandle( this->log_lock_ );
 	CloseHandle( this->facy.buddies_lock_ );
+// TODO: Required?
+//	CloseHandle( this->update_loop_lock_ );
+//	CloseHandle( this->message_loop_lock_ );
 
 	mir_free( m_tszUserName );
 	mir_free( m_szModuleName );
@@ -133,7 +137,7 @@ DWORD FacebookProto::GetCaps( int type, HANDLE hContact )
 	case PFLAGNUM_3:
 		return PF2_ONLINE;
 	case PFLAGNUM_4:
-		return PF4_NOCUSTOMAUTH | PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_AVATARS | PF4_SUPPORTTYPING;
+		return PF4_FORCEAUTH | PF4_NOCUSTOMAUTH | PF4_SUPPORTIDLE | PF4_IMSENDUTF | PF4_AVATARS | PF4_SUPPORTTYPING | PF4_NOAUTHDENYREASON | PF4_IMSENDOFFLINE;
 	case PFLAG_MAXLENOFMESSAGE:
 		return FACEBOOK_MESSAGE_LIMIT;
 	case PFLAG_UNIQUEIDTEXT:
@@ -195,11 +199,11 @@ int FacebookProto::SetStatus( int new_status )
 	return 0;
 }
 
-int FacebookProto::SetAwayMsg( int status, const char *msg )
+int FacebookProto::SetAwayMsg( int status, const PROTOCHAR *msg )
 {
 	if ( !isOffline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
 	{
-		TCHAR *wide  = mir_a2t(msg); // TODO: Why?
+		TCHAR *wide  = mir_a2t((const char*)msg); // TODO: Why?
 		char *narrow = mir_t2a_cp((const TCHAR*)wide,CP_UTF8);
 		utils::mem::detract((void**)&wide);
 		ForkThread(&FacebookProto::SetAwayMsgWorker, this, narrow);
@@ -243,7 +247,7 @@ int FacebookProto::GetMyAwayMsg( WPARAM wParam, LPARAM lParam )
 
 int FacebookProto::SetMyAwayMsg( WPARAM wParam, LPARAM lParam )
 {
-	return SetAwayMsg( (int)wParam, (const char*)lParam );
+	return SetAwayMsg( (int)wParam, (const TCHAR*)lParam );
 }
 
 //////////////////////////////////////////////////////////////////////////////
@@ -286,6 +290,20 @@ int FacebookProto::OnPreShutdown(WPARAM wParam,LPARAM lParam)
 	return 0;
 }
 
+int FacebookProto::OnIdleChanged(WPARAM wParam,LPARAM lParam)
+{
+	// Actually, is this ever called?
+	if (!(lParam & IDF_PRIVACY) && (lParam & IDF_ISIDLE)) {
+		facy.idle_ = true;
+		Log("Swiched self to Idle");
+	} else {
+		facy.idle_ = false;
+		Log("Swiched self back from Idle");
+		facy.reconnect(); // "reconnect" into online state
+	}
+	return 0;
+}
+
 int FacebookProto::OnOptionsInit(WPARAM wParam,LPARAM lParam)
 {
 	OPTIONSDIALOGPAGE odp = {sizeof(odp)};
@@ -322,36 +340,21 @@ int FacebookProto::OnBuildStatusMenu(WPARAM wParam,LPARAM lParam)
 	CLISTMENUITEM mi = {sizeof(mi)};
 	mi.pszService = text;
 
-	if ( g_mirandaVersion >= 0x0009000A ) {
-		hRoot = MO_GetProtoRootMenu(m_szModuleName);
-		if (hRoot == NULL) {
-			mi.popupPosition = 500085000;
-			mi.hParentMenu = HGENMENU_ROOT;
-			mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED | ( this->isOnline() ? 0 : CMIF_HIDDEN );
-			mi.icolibItem = GetIconHandle( "facebook" );
-			mi.ptszName = m_tszUserName;
-			hRoot = m_hMenuRoot = reinterpret_cast<HGENMENU>( CallService(
-				MS_CLIST_ADDPROTOMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) ); }
-		else {
-			if ( m_hMenuRoot ) CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )m_hMenuRoot, 0 );
-			m_hMenuRoot = NULL; }
-	} else {
-		hRoot = pcli->pfnGetProtocolMenu(m_szModuleName);
-		if (hRoot == NULL) return 0;
-		else {
-			mi.hParentMenu = hRoot;
-			mi.flags = CMIF_ICONFROMICOLIB|CMIF_ROOTHANDLE| ( this->isOnline() ? 0 : CMIF_HIDDEN );
-			mi.position = 1001;
-			m_hMenuRoot = reinterpret_cast<HGENMENU>( CallService(
-			    MS_CLIST_ADDSTATUSMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) ); }
-	}
-
-	if ( g_mirandaVersion >= 0x0009000A ) {
-		mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP | ( this->isOnline() ? 0 : CMIF_HIDDEN );
-		mi.position = 201001; }
+	hRoot = MO_GetProtoRootMenu(m_szModuleName);
+	if (hRoot == NULL) {
+		mi.popupPosition = 500085000;
+		mi.hParentMenu = HGENMENU_ROOT;
+		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTPOPUP | CMIF_TCHAR | CMIF_KEEPUNTRANSLATED | ( this->isOnline() ? 0 : CMIF_HIDDEN );
+		mi.icolibItem = GetIconHandle( "facebook" );
+		mi.ptszName = m_tszUserName;
+		hRoot = m_hMenuRoot = reinterpret_cast<HGENMENU>( CallService(
+			MS_CLIST_ADDPROTOMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) ); }
 	else {
-		mi.flags = CMIF_ICONFROMICOLIB | CMIF_ROOTHANDLE | ( this->isOnline() ? 0 : CMIF_HIDDEN );
-		mi.popupPosition = 200001; }
+		if ( m_hMenuRoot ) CallService( MS_CLIST_REMOVEMAINMENUITEM, ( WPARAM )m_hMenuRoot, 0 );
+		m_hMenuRoot = NULL; }
+
+	mi.flags = CMIF_ICONFROMICOLIB | CMIF_CHILDPOPUP | ( this->isOnline() ? 0 : CMIF_HIDDEN );
+	mi.position = 201001;
 
 	CreateProtoService(m_szModuleName,"/Mind",&FacebookProto::OnMind,this);
 	strcpy(tDest,"/Mind");
@@ -359,7 +362,7 @@ int FacebookProto::OnBuildStatusMenu(WPARAM wParam,LPARAM lParam)
 	mi.pszName = LPGEN("Mind...");
 	mi.icolibItem = GetIconHandle("mind");
 	m_hStatusMind = reinterpret_cast<HGENMENU>( CallService(
-		MS_CLIST_ADDSTATUSPROTOMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) );
+		MS_CLIST_ADDPROTOMENUITEM,0,reinterpret_cast<LPARAM>(&mi)) );
 
 	return 0;
 }

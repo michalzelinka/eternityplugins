@@ -121,20 +121,24 @@ void FacebookProto::ProcessMessages( void* data )
 		}
 		delete messages[i];
 	}
+	messages.clear();
 
-	BYTE notify = getByte( FACEBOOK_KEY_NOTIFICATIONS_ENABLE, DEFAULT_NOTIFICATIONS_ENABLE );
+	BYTE notify = getByte( FACEBOOK_KEY_EVENT_NOTIFICATIONS_ENABLE, DEFAULT_EVENT_NOTIFICATIONS_ENABLE );
 	for(std::vector<facebook_notification*>::size_type i=0; i<notifications.size( ); i++)
 	{
 		if ( notify ) {
 			LOG("      Got notification: %s", notifications[i]->text.c_str());
 			TCHAR* szTitle = mir_a2t_cp(this->m_szModuleName, CP_UTF8);
 			TCHAR* szText = mir_a2t_cp(notifications[i]->text.c_str(), CP_UTF8);
-			NotifyEvent( szTitle, szText );
+			TCHAR* szUrl = mir_a2t_cp(notifications[i]->link.c_str(), CP_UTF8);
+			NotifyEvent( szTitle, szText, ContactIDToHContact(notifications[i]->user_id), FACEBOOK_EVENT_NOTIFICATION, szUrl );
 			mir_free( szTitle );
 			mir_free( szText );
+			mir_free( szUrl );
 		}
 		delete notifications[i];
 	}
+	notifications.clear();
 
 	LOG("***** Messages processed");
 
@@ -164,6 +168,7 @@ void FacebookProto::ProcessFeeds( void* data )
 	std::vector< facebook_newsfeed* > news;
 
 	std::string::size_type pos = 0;
+	std::string::size_type inpos = 0;
 	std::string::size_type end = 0;
 	UINT limit = 0;
 
@@ -177,17 +182,27 @@ void FacebookProto::ProcessFeeds( void* data )
 		end = resp->find( "<\\/a>", pos );
 		if ( end == std::string::npos ){
 			delete nf; break;}
-		nf->title = utils::text::slashu_to_utf8(
-		    utils::text::special_expressions_decode(
-		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
+		nf->title = utils::text::trim(
+			utils::text::slashu_to_utf8(
+				utils::text::special_expressions_decode(
+					utils::text::remove_html( resp->substr( pos, end-pos ) ) ) ) );
 
-		pos = end + 6;
+		pos = end + 5;
 		end = resp->find( "<\\/h6>", pos );
 		if ( end == std::string::npos ){
 			delete nf; break;}
-		nf->text = utils::text::slashu_to_utf8(
-		    utils::text::special_expressions_decode(
-		        utils::text::remove_html( resp->substr( pos, end-pos ) ) ) );
+		nf->text = utils::text::trim(
+			utils::text::slashu_to_utf8(
+				utils::text::special_expressions_decode(
+					utils::text::remove_html( resp->substr( pos, end-pos ) ) ) ) );
+
+		inpos = resp->find( "uiStreamSource", pos );
+		inpos = resp->find( "href=", inpos );
+		if ( inpos != std::string::npos ){
+			inpos += 7;
+			end = resp->find( "\">", inpos ) - 1;
+			nf->link = utils::text::special_expressions_decode(  resp->substr( inpos, end-inpos ) );
+		}
 
 		if ( nf->text.length( ) > 0 )
 			news.push_back( nf );
@@ -203,9 +218,11 @@ void FacebookProto::ProcessFeeds( void* data )
 		LOG("      Got newsfeed: %s %s", news[i]->title.c_str(), news[i]->text.c_str());
 		TCHAR* szTitle = mir_a2t_cp(news[i]->title.c_str(), CP_UTF8);
 		TCHAR* szText = mir_a2t_cp(news[i]->text.c_str(), CP_UTF8);
-		NotifyEvent(szTitle,szText);
+		TCHAR* szUrl = mir_a2t_cp(news[i]->link.c_str(), CP_UTF8);
+		NotifyEvent(szTitle,szText,this->ContactIDToHContact(news[i]->user_id),FACEBOOK_EVENT_NEWSFEED, szUrl);
 		mir_free(szTitle);
 		mir_free(szText);
+		mir_free(szUrl);
 		delete news[i];
 	}
 	news.clear();

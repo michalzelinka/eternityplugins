@@ -73,10 +73,10 @@ DWORD WINAPI DllMain(HINSTANCE hInstance,DWORD,LPVOID)
 extern "C" __declspec(dllexport) PLUGININFOEX* MirandaPluginInfoEx(DWORD mirandaVersion)
 {
 	// TODO: Make product version controlled via definitions
-	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,8,0,34))
+	if(mirandaVersion < PLUGIN_MAKE_VERSION(0,9,14,0))
 	{
 		MessageBox(0,_T("The Facebook protocol plugin cannot be loaded. ")
-			_T("It requires Miranda IM 0.8 alpha build #34 or later."),_T("Miranda"),
+			_T("It requires Miranda IM 0.9.14 or later."),_T("Miranda"),
 			MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
 		return NULL;
 	}
@@ -89,7 +89,7 @@ extern "C" __declspec(dllexport) PLUGININFO* MirandaPluginInfo(DWORD mirandaVers
 {
 	// TODO: Make product version controlled via definitions
 	MessageBox(0,_T("The Facebook protocol plugin cannot be loaded. ")
-		_T("It requires Miranda IM 0.8 alpha build #34 or later."),_T("Miranda"),
+		_T("It requires Miranda IM 0.9.14 or later."),_T("Miranda"),
 		MB_OK|MB_ICONWARNING|MB_SETFOREGROUND|MB_TOPMOST);
 	return NULL;
 }

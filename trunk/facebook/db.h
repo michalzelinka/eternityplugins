@@ -48,20 +48,44 @@ Last change on : $Date$
 #define FACEBOOK_KEY_NAME           "RealName"
 #define FACEBOOK_KEY_UPD_NAMES      "UpdateNames"
 #define FACEBOOK_KEY_PASS           "Password"
-#define FACEBOOK_KEY_DEF_GROUP      "DefaultGroup"
 #define FACEBOOK_KEY_AV_URL         "AvatarURL"
-#define FACEBOOK_KEY_POLL_RATE      "PollRate"
+
+#define FACEBOOK_KEY_DEF_GROUP      "DefaultGroup"
 #define FACEBOOK_KEY_USER_AGENT     "UserAgent"
 #define FACEBOOK_KEY_FORCE_HTTPS    "ForceHTTPS"
+#define FACEBOOK_KEY_CLOSE_WINDOWS_ENABLE   "CloseChatEnable"
 #define FACEBOOK_KEY_SET_MIRANDA_STATUS "SetMirandaStatus"
 #define FACEBOOK_KEY_LOGGING_ENABLE "LoggingEnable"
+
+#define FACEBOOK_KEY_POLL_RATE      "PollRate" // [HIDDEN]
 #define FACEBOOK_KEY_TIMEOUTS_LIMIT "TimeoutsLimit" // [HIDDEN]
 #define FACEBOOK_KEY_DISABLE_LOGOUT "DisableLogout" // [HIDDEN]
 #define FACEBOOK_KEY_DISABLE_STATUS_NOTIFY  "DisableStatusNotify" // [HIDDEN]
+#define FACEBOOK_KEY_SHOW_OLD_FEEDS "ShowOldFeeds" // [HIDDEN]
 
-#define FACEBOOK_KEY_NOTIFICATIONS_ENABLE   "NotificationsEnable"
-#define FACEBOOK_KEY_FEEDS_ENABLE           "FeedsEnable"
-#define FACEBOOK_KEY_EVENTS_COLBACK         "EventsColorBack"
-#define FACEBOOK_KEY_EVENTS_COLTEXT         "EventsColorText"
-#define FACEBOOK_KEY_EVENTS_TIMEOUT_TYPE    "EventsTimeoutType"
-#define FACEBOOK_KEY_EVENTS_TIMEOUT         "EventsTimeout"
+#define FACEBOOK_KEY_EVENT_NOTIFICATIONS_ENABLE     "EventNotificationsEnable"
+#define FACEBOOK_KEY_EVENT_FEEDS_ENABLE             "EventFeedsEnable"
+#define FACEBOOK_KEY_EVENT_OTHER_ENABLE             "EventOtherEnable"
+#define FACEBOOK_KEY_EVENT_CLIENT_ENABLE            "EventClientEnable"
+
+#define FACEBOOK_KEY_EVENT_NOTIFICATIONS_COLBACK    "PopupNotificationsColorBack"
+#define FACEBOOK_KEY_EVENT_NOTIFICATIONS_COLTEXT    "PopupNotificationsColorText"
+#define FACEBOOK_KEY_EVENT_NOTIFICATIONS_TIMEOUT    "PopupNotificationsTimeout"
+#define FACEBOOK_KEY_EVENT_NOTIFICATIONS_DEFAULT    "PopupNotificationsColorDefault"
+
+#define FACEBOOK_KEY_EVENT_FEEDS_COLBACK            "PopupFeedsColorBack"
+#define FACEBOOK_KEY_EVENT_FEEDS_COLTEXT            "PopupFeedsColorText"
+#define FACEBOOK_KEY_EVENT_FEEDS_TIMEOUT            "PopupFeedsTimeout"
+#define FACEBOOK_KEY_EVENT_FEEDS_DEFAULT            "PopupFeedsColorDefault"
+
+#define FACEBOOK_KEY_EVENT_OTHER_COLBACK            "PopupOtherColorBack"
+#define FACEBOOK_KEY_EVENT_OTHER_COLTEXT            "PopupOtherColorText"
+#define FACEBOOK_KEY_EVENT_OTHER_TIMEOUT            "PopupOtherTimeout"
+#define FACEBOOK_KEY_EVENT_OTHER_DEFAULT            "PopupOtherColorDefault"
+
+#define FACEBOOK_KEY_EVENT_CLIENT_COLBACK           "PopupClientColorBack"
+#define FACEBOOK_KEY_EVENT_CLIENT_COLTEXT           "PopupClientColorText"
+#define FACEBOOK_KEY_EVENT_CLIENT_TIMEOUT           "PopupClientTimeout"
+#define FACEBOOK_KEY_EVENT_CLIENT_DEFAULT           "PopupClientColorDefault"
+
+#define FACEBOOK_KEY_SYSTRAY_NOTIFY                 "UseSystrayNotify"

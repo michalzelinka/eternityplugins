@@ -29,14 +29,14 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 2, 1)
-#define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 8, 0, 34)
-#define __VERSION_STRING            "0.1.2.1"
-#define __PRODUCT_STRING            "0.8.0.34"
-#define __VERSION_VS_FILE           0,1,2,1
-#define __VERSION_VS_PROD           0,8,0,34
-#define __VERSION_VS_FILE_STRING    "0, 1, 2, 1"
-#define __VERSION_VS_PROD_STRING    "0, 8, 0, 34"
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 3, 0)
+#define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 9, 14, 0)
+#define __VERSION_STRING            "0.1.3.0"
+#define __PRODUCT_STRING            "0.9.14.0"
+#define __VERSION_VS_FILE           0,1,3,0
+#define __VERSION_VS_PROD           0,9,14,0
+#define __VERSION_VS_FILE_STRING    "0, 1, 3, 0"
+#define __VERSION_VS_PROD_STRING    "0, 9, 14, 0"
 #define __API_VERSION_STRING        "3.1"
 
 // API versions
@@ -52,6 +52,8 @@ Last change on : $Date$
 // Product management
 #define FACEBOOK_NAME               "Facebook"
 #define FACEBOOK_URL_HOMEPAGE       "http://www.facebook.com/"
+#define FACEBOOK_URL_REQUESTS       "http://www.facebook.com/reqs.php"
+#define FACEBOOK_URL_MESSAGES       "http://www.facebook.com/?sk=messages"
 #define PLUGIN_HOSTING_URL          "http://code.google.com/p/eternityplugins/"
 
 // Connection
@@ -73,17 +75,30 @@ Last change on : $Date$
 #define FACEBOOK_MINIMAL_POLL_RATE              10
 #define FACEBOOK_DEFAULT_POLL_RATE              24 // in seconds
 #define FACEBOOK_MAXIMAL_POLL_RATE              60
-
 #define FACEBOOK_USER_UPDATE_RATE               7200 // in seconds
 
-#define DEFAULT_NOTIFICATIONS_ENABLE    1
-#define DEFAULT_FEEDS_ENABLE            1
-#define DEFAULT_EVENTS_COLBACK          0x00ffffff
-#define DEFAULT_EVENTS_COLTEXT          0x00000000
-#define DEFAULT_EVENTS_TIMEOUT_TYPE     0
-#define DEFAULT_EVENTS_TIMEOUT          20
+#define DEFAULT_FORCE_HTTPS             0
+#define DEFAULT_CLOSE_WINDOWS_ENABLE    0
+#define DEFAULT_SET_MIRANDA_STATUS      0
+#define DEFAULT_LOGGING_ENABLE          0
+#define DEFAULT_EVENT_NOTIFICATIONS_ENABLE  1
+#define DEFAULT_EVENT_FEEDS_ENABLE          1
+#define DEFAULT_EVENT_OTHER_ENABLE          1
+#define DEFAULT_EVENT_CLIENT_ENABLE         1
+#define DEFAULT_EVENT_COLBACK           0x00ffffff
+#define DEFAULT_EVENT_COLTEXT           0x00000000
+#define DEFAULT_EVENT_TIMEOUT_TYPE      0
+#define DEFAULT_EVENT_TIMEOUT           20
+#define DEFAULT_SYSTRAY_NOTIFY          0
+#define DEFAULT_SHOW_OLD_FEEDS          0
 
-#define FACEBOOK_DEFAULT_AVATAR_URL "http://static.ak.fbcdn.net/pics/q_silhouette.gif"
+#define FACEBOOK_DEFAULT_AVATAR_URL     "http://static.ak.fbcdn.net/pics/q_silhouette.gif"
+
+// Event flags
+#define FACEBOOK_EVENT_CLIENT          10 // Facebook error or info message
+#define FACEBOOK_EVENT_NEWSFEED        20 // Facebook newsfeed (wall) message
+#define FACEBOOK_EVENT_NOTIFICATION    30 // Facebook new notification
+#define FACEBOOK_EVENT_OTHER           40 // Facebook other event - friend requests/new messages
 
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_API_CHECK              50  // check latest API version
@@ -99,12 +114,13 @@ Last change on : $Date$
 #define FACEBOOK_REQUEST_STATUS_SET             251 // setting my "What's on my mind?"
 #define FACEBOOK_REQUEST_MESSAGE_SEND           300 // sending message
 #define FACEBOOK_REQUEST_MESSAGES_RECEIVE       301 // receiving messages
-#define FACEBOOK_REQUEST_TYPING_SEND            304 // typing notification
-#define FACEBOOK_REQUEST_CHAT_WINDOW_CLOSE      305 // closing message window
+#define FACEBOOK_REQUEST_TYPING_SEND            304 // sending typing notification
+#define FACEBOOK_REQUEST_SETTINGS               305 // closing message window, setting chat visibility
 
 // Reconnect flags
-#define FACEBOOK_RECONNECT_LOGIN        "6" // When logging in
-#define FACEBOOK_RECONNECT_KEEP_ALIVE   "0" // After a period, used to keep session alive
+#define FACEBOOK_RECONNECT_LOGIN        "6" // When logging in // TODO: 5?
+#define FACEBOOK_RECONNECT_KEEP_ALIVE   "0" // After a period, used to keep session alive // TODO: 6?
+// TODO: And what about 7? :))
 
 // User-Agents
 static const char* user_agents[] = {

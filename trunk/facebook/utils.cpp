@@ -232,7 +232,7 @@ int utils::debug::log(std::string file_name, std::string text)
 	GetSystemTime( &time );
 
 	std::ofstream out( path.c_str(), std::ios_base::out | std::ios_base::app | std::ios_base::ate );
-	out << "[" << time.wHour << ":" << time.wMinute << ":" << time.wSecond << "] " << text << std::endl;
+	out << "[" << (time.wHour < 10 ? "0" : "") << time.wHour << ":" << (time.wMinute < 10 ? "0" : "") << time.wMinute << ":" << (time.wSecond < 10 ? "0" : "") << time.wSecond << "] " << text << std::endl;
 	out.close( );
 
 	return EXIT_SUCCESS;

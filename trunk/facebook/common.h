@@ -31,7 +31,7 @@ Last change on : $Date$
 //#pragma warning(disable:4312)
 #pragma warning(disable:4996)
 
-#define MIRANDA_VER    0x0800
+#define MIRANDA_VER    0x090E
 #define _WIN32_WINNT   0x0500
 #define _WIN32_WINDOWS 0x0500
 
@@ -49,9 +49,11 @@ Last change on : $Date$
 #include <io.h>
 
 #include <windows.h>
+#include <win2k.h>
+#include <commctrl.h>
 
 #include <newpluginapi.h>
-#include <win2k.h>
+#include <m_version.h>
 #include <m_system.h>
 #include <m_system_cpp.h>
 #include <m_avatars.h>
