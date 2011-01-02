@@ -49,48 +49,125 @@ int FacebookProto::Log(const char *fmt,...)
 	return utils::debug::log( m_szModuleName, text );
 }
 
-int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD flags)
+LRESULT CALLBACK PopupDlgProc(HWND hwnd, UINT message, WPARAM wParam, LPARAM lParam)
 {
-	int ret; BYTE timeout;
+	switch(message) {
 
-	SkinPlaySound( "NewNotification" );
+	case WM_COMMAND: {
+		//Get the plugin data (we need the PopUp service to do it)
+		TCHAR* data = (TCHAR*)PUGetPluginData(hwnd);
+		if (data != NULL) {
+//			char *url = mir_t2a_cp(data,CP_UTF8);
+			std::string url2 = mir_t2a_cp(data,CP_UTF8);
+			std::string url = "http://www.facebook.com";
+			if ( url2.substr(0,4) != "http" ) {
+				url.append(url2);
+				CallService(MS_UTILS_OPENURL, (WPARAM) 1, (LPARAM) url.c_str() );
+			} else
+				CallService(MS_UTILS_OPENURL, (WPARAM) 1, (LPARAM) url2.c_str() );
+		}
 
-	switch ( getByte( FACEBOOK_KEY_EVENTS_TIMEOUT_TYPE, DEFAULT_EVENTS_TIMEOUT_TYPE ) ) {
-		case 0: default: timeout = 0; break;
-		case 1: timeout = getByte( FACEBOOK_KEY_EVENTS_TIMEOUT, DEFAULT_EVENTS_TIMEOUT ); break;
-		case 2: timeout = -1; }
+		// After a click, destroy popup
+		PUDeletePopUp(hwnd);
+		} break;
 
-	if (ServiceExists(MS_POPUP_ADDPOPUP)) {
-		POPUPDATAT pd;
-		pd.colorBack = getByte( FACEBOOK_KEY_EVENTS_COLBACK, DEFAULT_EVENTS_COLBACK );
-		pd.colorText = getByte( FACEBOOK_KEY_EVENTS_COLTEXT, DEFAULT_EVENTS_COLTEXT );
-		pd.iSeconds = timeout;
-		pd.lchContact = contact;
-		pd.lchIcon = GetIcon(1); // TODO: Icon test
-		pd.PluginData = NULL;
-		pd.PluginWindowProc = NULL;
-		lstrcpy(pd.lptzContactName, title);
-		lstrcpy(pd.lptzText, info);
-		ret = PUAddPopUpT(&pd);
+	case WM_CONTEXTMENU: 
+		PUDeletePopUp(hwnd);
+		break;
 
-		if (ret == 0)
-			return 1;
+	case UM_FREEPLUGINDATA: {
+		// After close, free
+		TCHAR* url = (TCHAR*)PUGetPluginData(hwnd);
+		if (url != NULL)
+			mir_free(url);
+		} return FALSE;
+
+	default:
+		break; 
+
 	}
 
-	if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
-		MIRANDASYSTRAYNOTIFY err;
-		err.szProto = m_szModuleName;
-		err.cbSize = sizeof(err);
-		err.dwInfoFlags = NIIF_INTERN_TCHAR | flags;
-		err.tszInfoTitle = title;
-		err.tszInfo = info;
-		err.uTimeout = 1000 * timeout;
-		ret = CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & err);
+	return DefWindowProc(hwnd, message, wParam, lParam);
+};
 
-		if (ret == 0)
-			return 1;
-	} 
+int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD flags, TCHAR* szUrl)
+{
+	int ret; int timeout; COLORREF colorBack = 0; COLORREF colorText = 0;
 
-//	MessageBox(NULL, info, title, MB_OK | MB_ICONINFORMATION);
-	return 0;
+	switch ( flags ) {
+
+	case FACEBOOK_EVENT_CLIENT:
+		if ( getByte( FACEBOOK_KEY_EVENT_CLIENT_DEFAULT, 0 ) != TRUE ) {
+			colorBack = getDword( FACEBOOK_KEY_EVENT_CLIENT_COLBACK, DEFAULT_EVENT_COLBACK );
+			colorText = getDword( FACEBOOK_KEY_EVENT_CLIENT_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
+		timeout = getDword( FACEBOOK_KEY_EVENT_CLIENT_TIMEOUT, 0 );
+		flags |= NIIF_WARNING;
+		break;
+
+	case FACEBOOK_EVENT_NEWSFEED:
+		if ( getByte( FACEBOOK_KEY_EVENT_FEEDS_DEFAULT, 0 ) != TRUE ) {
+			colorBack = getDword( FACEBOOK_KEY_EVENT_FEEDS_COLBACK, DEFAULT_EVENT_COLBACK );
+			colorText = getDword( FACEBOOK_KEY_EVENT_FEEDS_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
+		timeout = getDword( FACEBOOK_KEY_EVENT_FEEDS_TIMEOUT, 0 );
+		SkinPlaySound( "NewsFeed" );
+		flags |= NIIF_INFO;
+		break;
+
+	case FACEBOOK_EVENT_NOTIFICATION:
+		if ( getByte( FACEBOOK_KEY_EVENT_NOTIFICATIONS_DEFAULT, 0 ) != TRUE ) {
+			colorBack = getDword( FACEBOOK_KEY_EVENT_NOTIFICATIONS_COLBACK, DEFAULT_EVENT_COLBACK );
+			colorText = getDword( FACEBOOK_KEY_EVENT_NOTIFICATIONS_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
+		timeout = getDword( FACEBOOK_KEY_EVENT_NOTIFICATIONS_TIMEOUT, 0 );
+		SkinPlaySound( "Notification" );
+		flags |= NIIF_INFO;
+		break;
+
+	case FACEBOOK_EVENT_OTHER:
+		if ( getByte( FACEBOOK_KEY_EVENT_OTHER_DEFAULT, 0 ) != TRUE ) {
+			colorBack = getDword( FACEBOOK_KEY_EVENT_OTHER_COLBACK, DEFAULT_EVENT_COLBACK );
+			colorText = getDword( FACEBOOK_KEY_EVENT_OTHER_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
+		timeout = getDword( FACEBOOK_KEY_EVENT_OTHER_TIMEOUT, 0 );
+		SkinPlaySound( "OtherEvent" );
+		flags |= NIIF_INFO;
+		break;
+
+	}
+
+	if ( !getByte(FACEBOOK_KEY_SYSTRAY_NOTIFY,DEFAULT_SYSTRAY_NOTIFY) ) {
+		if (ServiceExists(MS_POPUP_ADDPOPUP)) {
+			POPUPDATAT pd;
+			pd.colorBack = colorBack;
+			pd.colorText = colorText;
+			pd.iSeconds = timeout;
+			pd.lchContact = contact;
+			pd.lchIcon = GetIcon(1); // TODO: Icon test
+			pd.PluginData = szUrl;
+			pd.PluginWindowProc = (WNDPROC)PopupDlgProc;
+			lstrcpy(pd.lptzContactName, title);
+			lstrcpy(pd.lptzText, info);
+			ret = PUAddPopUpT(&pd);
+
+			if (ret == 0)
+				return EXIT_FAILURE;
+		}
+	} else {
+		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
+			MIRANDASYSTRAYNOTIFY err;
+			err.szProto = m_szModuleName;
+			err.cbSize = sizeof(err);
+			err.dwInfoFlags = NIIF_INTERN_TCHAR | flags;
+			err.tszInfoTitle = title;
+			err.tszInfo = info;
+			err.uTimeout = 1000 * timeout;
+			ret = CallService(MS_CLIST_SYSTRAY_NOTIFY, 0, (LPARAM) & err);
+
+			if (ret == 0)
+				return EXIT_FAILURE;
+		} 
+	}
+
+	if (FLAG_CONTAINS(flags, FACEBOOK_EVENT_CLIENT))
+		MessageBox(NULL, info, title, MB_OK | MB_ICONINFORMATION);
+
+	return EXIT_SUCCESS;
 }

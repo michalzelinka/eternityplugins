@@ -136,7 +136,7 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 
 			const String& type = objMember["type"];
 
-			if ( type.Value( ) == "msg" )
+			if ( type.Value( ) == "msg" ) // chat message
 			{
 				const Number& from = objMember["from"];
 				char was_id[32];
@@ -153,7 +153,7 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 
 				messages->push_back( message );
 			}
-			else if ( type.Value( ) == "app_msg" )
+			else if ( type.Value( ) == "app_msg" ) // event notification
 			{
 				const String& text = objMember["response"]["payload"]["title"];
 				const String& link = objMember["response"]["payload"]["link"];
@@ -167,7 +167,7 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 
 				notifications->push_back( notification );
 			}
-			else if ( type.Value( ) == "typ" )
+			else if ( type.Value( ) == "typ" ) // chat typing notification
 			{
 				const Number& from = objMember["from"];
 				char user_id[32];
@@ -187,11 +187,13 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 			}
 			else if ( type.Value( ) == "inbox" )
 			{
-/*				const Number& unseen = objMember["unseen"];
+				TCHAR info[512]; char num[32];
+				const Number& unseen = objMember["unseen"];
 
-				TCHAR* info = TranslateT("You have %d unseen messages");
-				proto->ShowEvent( TranslateT("Unseen messages"), TC );
-*/			}
+				lltoa( unseen.Value(), num, 10 );
+				mir_sntprintf(info, 500, TranslateT("You have %s unseen messages"), num);
+				proto->NotifyEvent(TranslateT("Unseen messages"), info, NULL, FACEBOOK_EVENT_OTHER, TEXT( FACEBOOK_URL_MESSAGES ) );
+			}
 			else
 				continue;
 		}

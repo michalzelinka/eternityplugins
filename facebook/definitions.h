@@ -39,6 +39,8 @@ Last change on : $Date$
 #define CODE_BLOCK_INFINITE     while( true ) {
 #define CODE_BLOCK_END          }
 
+#define FLAG_CONTAINS(x,y)      ( ( x | y ) == y )
+
 #define LOG Log
 
 #define LOG_NOTIFY              0
@@ -46,9 +48,6 @@ Last change on : $Date$
 #define LOG_ALERT               2
 #define LOG_FAILURE             3
 #define LOG_CRITICAL            4
-
-#define MS_CLIST_ADDSTATUSPROTOMENUITEM ( g_mirandaVersion >= 0x0009000A ? \
-        MS_CLIST_ADDPROTOMENUITEM : MS_CLIST_ADDSTATUSMENUITEM )
 
 #if defined( _UNICODE )
 #define NIIF_INTERN_TCHAR NIIF_INTERN_UNICODE // m_clist.h

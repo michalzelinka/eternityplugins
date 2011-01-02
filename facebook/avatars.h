@@ -33,3 +33,10 @@ struct update_avatar
 	HANDLE hContact;
 	std::string url;
 };
+
+static const char* extensions[] = {
+	".jpg",
+	".png",
+	".jpeg",
+	".gif"
+};

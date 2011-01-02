@@ -57,6 +57,9 @@ void FacebookProto::SignOn(void*)
 
 	if ( NegotiateConnection( ) )
 	{
+		if (!getByte(FACEBOOK_KEY_SHOW_OLD_FEEDS, DEFAULT_SHOW_OLD_FEEDS))
+			facy.last_feeds_update_ = ::time( NULL );
+
 		setDword( "LogonTS", (DWORD)time(NULL) );
 		m_hUpdLoop = ForkThreadEx( &FacebookProto::UpdateLoop,  this );
 		m_hMsgLoop = ForkThreadEx( &FacebookProto::MessageLoop, this );
@@ -75,7 +78,6 @@ void FacebookProto::SignOff(void*)
 	KillThreads( );
 
 	deleteSetting( "LogonTS" );
-	SetAllContactStatuses( ID_STATUS_OFFLINE );
 
 	facy.logout( );
 	facy.clear_cookies( );
@@ -86,6 +88,8 @@ void FacebookProto::SignOff(void*)
 
 	ProtoBroadcastAck(m_szModuleName,0,ACKTYPE_STATUS,ACKRESULT_SUCCESS,
 		(HANDLE)old_status,m_iStatus);
+
+	SetAllContactStatuses( ID_STATUS_OFFLINE );
 
 	ToggleStatusMenuItems(isOnline());
 
@@ -107,7 +111,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		NotifyEvent(m_tszUserName,TranslateT("Please enter a username."));
+		NotifyEvent(m_tszUserName,TranslateT("Please enter a username."),NULL,FACEBOOK_EVENT_CLIENT);
 		goto error;
 	}
 
@@ -120,7 +124,7 @@ bool FacebookProto::NegotiateConnection( )
 	}
 	else
 	{
-		NotifyEvent(m_tszUserName,TranslateT("Please enter a password."));
+		NotifyEvent(m_tszUserName,TranslateT("Please enter a password."),NULL,FACEBOOK_EVENT_CLIENT);
 		goto error;
 	}
 
@@ -162,51 +166,51 @@ error:
 
 void FacebookProto::UpdateLoop(void *)
 {
+	ScopedLock s(update_loop_lock_); // TODO: Required?
 	LOG( ">>>>> Entering Facebook::UpdateLoop" );
 
-	for ( DWORD i = 0; ; i++ )
+	for ( DWORD i = 0; ; i = ++i % 48 )
 	{
 		if ( !isOnline( ) )
-			goto exit;
+			break;
 		if ( i != 0 )
 			if ( !facy.buddy_list( ) )
-				goto exit;
+				break;
 		if ( !isOnline( ) )
-			goto exit;
-		if ( i % 6 == 3 && getByte( FACEBOOK_KEY_FEEDS_ENABLE, DEFAULT_FEEDS_ENABLE ) )
+			break;
+		if ( i % 6 == 3 && getByte( FACEBOOK_KEY_EVENT_FEEDS_ENABLE, DEFAULT_EVENT_FEEDS_ENABLE ) )
 			if ( !facy.feeds( ) )
-				goto exit;
+				break;
 		if ( !isOnline( ) )
-			goto exit;
-		if ( i % 8 == 7 )
+			break;
+		if ( i % 8 == 7 ) // TODO: More often? Another solution?
 			if ( !facy.keep_alive( ) )
-				goto exit;
+				break;
 		if ( !isOnline( ) )
-			goto exit;
+			break;
 		LOG( "***** FacebookProto::UpdateLoop going to sleep..." );
 		if ( SleepEx( GetPollRate( ) * 1000, true ) == WAIT_IO_COMPLETION )
-			goto exit;
+			break;
 		LOG( "***** FacebookProto::UpdateLoop waking up..." );
 	}
 
-exit:
 	LOG( "<<<<< Exiting FacebookProto::UpdateLoop" );
 }
 
 void FacebookProto::MessageLoop(void *)
 {
+	ScopedLock s(message_loop_lock_); // TODO: Required?
 	LOG( ">>>>> Entering Facebook::MessageLoop" );
 
-	for ( DWORD i = 0; ; i++ )
+	while ( true )
 	{
 		if ( !isOnline( ) )
-			goto exit;
+			break;
 		if ( !facy.channel( ) )
-			goto exit;
+			break;
 		LOG( "***** FacebookProto::MessageLoop refreshing..." );
 	}
 
-exit:
 	LOG( "<<<<< Exiting FacebookProto::MessageLoop" );
 }
 

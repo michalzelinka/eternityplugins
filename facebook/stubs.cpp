@@ -27,6 +27,11 @@ Last change on : $Date$
 
 #include "common.h"
 
+HANDLE FacebookProto::AddToList(int flags, PROTOSEARCHRESULT* psr)
+{
+	return 0;
+};
+
 HANDLE FacebookProto::AddToListByEvent(int flags,int iContact,HANDLE hDbEvent)
 {
 	return 0;
@@ -37,7 +42,7 @@ int FacebookProto::Authorize(HANDLE hContact)
 	return 0;
 }
 
-int FacebookProto::AuthDeny(HANDLE hContact,const char *reason)
+int FacebookProto::AuthDeny(HANDLE hContact,const PROTOCHAR *reason)
 {
 	return 0;
 }
@@ -47,7 +52,7 @@ int FacebookProto::AuthRecv(HANDLE hContact,PROTORECVEVENT *)
 	return 0;
 }
 
-int FacebookProto::AuthRequest(HANDLE hContact,const char *message)
+int FacebookProto::AuthRequest(HANDLE hContact,const PROTOCHAR *message)
 {
 	return 0;
 }
@@ -58,7 +63,7 @@ HANDLE FacebookProto::ChangeInfo(int type,void *info_data)
 	return 0;
 }
 
-HANDLE FacebookProto::FileAllow(HANDLE hContact,HANDLE hTransfer,const char *path)
+HANDLE FacebookProto::FileAllow(HANDLE hContact,HANDLE hTransfer,const PROTOCHAR *path)
 {
 	return 0;
 }
@@ -68,17 +73,35 @@ int FacebookProto::FileCancel(HANDLE hContact,HANDLE hTransfer)
 	return 0;
 }
 
-int FacebookProto::FileDeny(HANDLE hContact,HANDLE hTransfer,const char *reason)
+int FacebookProto::FileDeny(HANDLE hContact,HANDLE hTransfer,const PROTOCHAR *reason)
 {
 	return 0;
 }
 
-int FacebookProto::FileResume(HANDLE hTransfer,int *action,const char **filename)
+int FacebookProto::FileResume(HANDLE hTransfer,int *action,const PROTOCHAR **filename)
 {
 	return 0;
 }
 
-HANDLE FacebookProto::SearchByName(const char *nick,const char *first_name,const char *last_name)
+int FacebookProto::GetInfo( HANDLE hContact, int infoType )
+{
+	// TODO: Most probably some ProtoAck should be here instead
+	return 1;
+}
+
+
+
+HANDLE FacebookProto::SearchBasic( const PROTOCHAR* id )
+{
+	return 0;
+}
+
+HANDLE FacebookProto::SearchByEmail( const PROTOCHAR* email )
+{
+	return 0;
+}
+
+HANDLE FacebookProto::SearchByName( const PROTOCHAR* nick, const PROTOCHAR* firstName, const PROTOCHAR* lastName )
 {
 	return 0;
 }
@@ -98,7 +121,7 @@ int FacebookProto::RecvContacts(HANDLE hContact,PROTORECVEVENT *)
 	return 0;
 }
 
-int FacebookProto::RecvFile(HANDLE hContact,PROTORECVFILE *)
+int FacebookProto::RecvFile(HANDLE hContact,PROTORECVFILET *)
 {
 	return 0;
 }
@@ -113,7 +136,7 @@ int FacebookProto::SendContacts(HANDLE hContact,int flags,int nContacts,HANDLE *
 	return 0;
 }
 
-HANDLE FacebookProto::SendFile(HANDLE hContact,const char *desc, char **files)
+HANDLE FacebookProto::SendFile(HANDLE hContact,const PROTOCHAR *desc, PROTOCHAR **files)
 {
 	return 0;
 }
@@ -135,10 +158,5 @@ int FacebookProto::RecvAwayMsg(HANDLE hContact,int mode,PROTORECVEVENT *evt)
 
 int FacebookProto::SendAwayMsg(HANDLE hContact,HANDLE hProcess,const char *msg)
 {
-	return 0;
-}
-
-int FacebookProto::UserIsTyping(HANDLE hContact,int type)
-{ 
 	return 0;
 }

@@ -46,7 +46,7 @@ public:
 		chat_sequence_num_ = error_count_ = \
 		last_feeds_update_ = 0;
 
-		chat_first_touch_ = false;
+		chat_first_touch_ = idle_ = false;
 
 		buddies_lock_ = NULL;
 	}
@@ -67,6 +67,7 @@ public:
 	std::string chat_channel_host_;
 	unsigned int    chat_sequence_num_;
 	bool    chat_first_touch_;
+	bool    idle_;
 	time_t  last_feeds_update_;
 
 	bool api_check( );
@@ -75,7 +76,7 @@ public:
 
 	// Client vs protocol communication
 
-	void    client_notify( TCHAR* message, DWORD flag = NIIF_INFO );
+	void    client_notify( TCHAR* message );
 
 	////////////////////////////////////////////////////////////
 
@@ -142,6 +143,7 @@ public:
 
 	bool    channel( );
 	bool    send_message( std::string message_recipient, std::string message_text );
+	bool    close_chat( std::string message_recipient );
 
 	////////////////////////////////////////////////////////////
 

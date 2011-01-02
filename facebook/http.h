@@ -85,7 +85,7 @@ Last change on : $Date$
 #define HTTP_CODE_NOT_EXTENDED      510
 
 #define HTTP_CODE_FAKE_DISCONNECTED 0
-#define HTTP_CODE_FAKE_LOGGED_OUT   255
+#define HTTP_CODE_FAKE_ERROR        1
 
 namespace http
 {
@@ -97,8 +97,10 @@ namespace http
 
 	struct response
 	{
-		response() : code(0) {}
+		response() : code(0), error_number(0) {}
 		int code;
+		unsigned int error_number;
+		std::string error_text;
 		std::map< std::string, std::string > headers;
 		std::string data;
 	};
