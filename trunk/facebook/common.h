@@ -44,6 +44,7 @@ Last change on : $Date$
 #include <map>
 #include <vector>
 #include <ctime>
+#include <stdarg.h>
 #include <time.h>
 #include <assert.h>
 #include <io.h>

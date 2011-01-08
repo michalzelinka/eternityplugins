@@ -500,12 +500,9 @@ bool facebook_client::api_check( )
 	{
 
 	case HTTP_CODE_OK:
-		std::string key = "</h1><p><var>";
-		std::string::size_type start = resp.data.find( key ) + key.length( );
-		std::string::size_type end = resp.data.find( "</var>", start );
-		std::string api_version_latest = resp.data.substr( start, end - start );
+		std::string api_version_latest = utils::text::source_get_value( &resp.data, 2, "</h1><p><var>", "</var>" );
 
-		if ( start > 0 && end > 0 && std::string( __API_VERSION_STRING ) != api_version_latest )
+		if ( api_version_latest.length() && std::string( __API_VERSION_STRING ) != api_version_latest )
 			client_notify( TranslateT( "Facebook API version has changed, wait and watch for the Facebook protocol update." ) );
 
 	}
@@ -549,17 +546,10 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 	{
 
 	case HTTP_CODE_OK: { // OK page returned, but that is regular login page we don't want in fact
-		// TODO: Check the output message
-		std::string error_str = "Unknown login error";
-
 		// Get error message
-		std::string::size_type start = resp.data.find( "id=\"standard_error\"" );
-		if ( start != std::string::npos ) {
-			std::string::size_type end = resp.data.find( "</", start );
-			start = resp.data.rfind( "\">", end ) + 2;
-			error_str = resp.data.substr( start, end - start );
-		}
-
+		std::string error_str = utils::text::source_get_value( &resp.data, 2, "id=\"standard_error\">", "</h2>" );
+		if ( !error_str.length() )
+			error_str = "Unknown login error";
 		parent->Log(" ! !  Login error: %s", error_str.c_str());
 
 		TCHAR* message = TranslateT( "Login error: " );
@@ -678,20 +668,14 @@ bool facebook_client::home( )
 	case HTTP_CODE_OK:
 		if ( resp.data.find( "id=\"navAccountName\"" ) != std::string::npos )
 		{
-			std::string::size_type start, end;
-
 			// Get real_name
-			start = resp.data.find( "id=\"navAccountName\"" );
-			end = resp.data.find( "</a>", start );
-			start = resp.data.rfind( "\">", end ) + 2;
-			this->self_.real_name = resp.data.substr( start, end - start );
-			this->self_.real_name = utils::text::special_expressions_decode( this->self_.real_name );
+			this->self_.real_name = utils::text::special_expressions_decode( utils::text::source_get_value( &resp.data, 2, " id=\"navAccountName\">", "</a" ) );
 			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,FACEBOOK_KEY_NAME,this->self_.real_name.c_str());
 			DBWriteContactSettingUTF8String(NULL,parent->m_szModuleName,"Nick",this->self_.real_name.c_str());
 			parent->Log("      Got self real name: %s", this->self_.real_name.c_str());
 
 			// Get post_form_id
-			this->post_form_id_ = resp.data.substr( resp.data.find( "post_form_id:" ) + 14, 32 );
+			this->post_form_id_ = utils::text::source_get_value( &resp.data, 2, "post_form_id:\"", "\"" );
 			parent->Log("      Got self post form id: %s", this->post_form_id_.c_str());
 
 			// If something would go wrong:
@@ -699,43 +683,34 @@ bool facebook_client::home( )
 //			this->post_form_id_ = this->post_form_id_.substr( 0, this->post_form_id_.find( "\"" ) );
 
 			// Get dtsg
-			this->dtsg_ = resp.data.substr( resp.data.find( "fb_dtsg:" ) + 9, 48 );
-			this->dtsg_ = this->dtsg_.substr( 0, this->dtsg_.find( "\"" ) );
+			this->dtsg_ = utils::text::source_get_value( &resp.data, 2, ",fb_dtsg:\"", "\"" );
 			parent->Log("      Got self dtsg: %s", this->dtsg_.c_str());
 
 			// Get friend requests count and messages count and notify it
 			if ( DBGetContactSettingByte( NULL, parent->m_szModuleName, FACEBOOK_KEY_EVENT_OTHER_ENABLE, DEFAULT_EVENT_OTHER_ENABLE ) ) {
-				start = resp.data.find( "<span id=\"jewelRequestCount\">" );
-				if ( start != std::string::npos ) {
-					start += 29;
-					end = resp.data.find( "</span>", start );
-					std::string str_count = resp.data.substr(start, end-start);
-					if ( str_count != std::string( "0" ) ) {
-						TCHAR* message = TranslateT( "Got new friend requests: " );
-						TCHAR* count = mir_a2t_cp( str_count.c_str( ), CP_UTF8 );
-						TCHAR* info = ( TCHAR* )malloc( ( lstrlen( message ) + lstrlen( count ) ) * sizeof( TCHAR ) );
-						lstrcpy( info, message );
-						lstrcat( info, count );
-						parent->NotifyEvent( parent->m_tszUserName, info, NULL, FACEBOOK_EVENT_OTHER, TEXT(FACEBOOK_URL_REQUESTS) );
-						mir_free( message );
-						mir_free( count );
-						mir_free( info ); } }
+				std::string str_count = utils::text::source_get_value( &resp.data, 2, "<span id=\"jewelRequestCount\">", "</span>" );
+				if ( str_count.length() && str_count != std::string( "0" ) ) {
+					TCHAR* message = TranslateT( "Got new friend requests: " );
+					TCHAR* count = mir_a2t_cp( str_count.c_str( ), CP_UTF8 );
+					TCHAR* info = ( TCHAR* )malloc( ( lstrlen( message ) + lstrlen( count ) ) * sizeof( TCHAR ) );
+					lstrcpy( info, message );
+					lstrcat( info, count );
+					parent->NotifyEvent( parent->m_tszUserName, info, NULL, FACEBOOK_EVENT_OTHER, TEXT(FACEBOOK_URL_REQUESTS) );
+					mir_free( message );
+					mir_free( count );
+					mir_free( info ); }
 
-				start = resp.data.find( "<span id=\"jewelInnerUnseenCount\">" );
-				if ( start != std::string::npos ) {
-					start += 33;
-					end = resp.data.find( "</span>", start );
-					std::string str_count = resp.data.substr(start, end-start);
-					if ( str_count != std::string( "0" ) ) {
-						TCHAR* message = TranslateT( "Got new messages: " );
-						TCHAR* count = mir_a2t_cp( str_count.c_str( ), CP_UTF8 );
-						TCHAR* info = ( TCHAR* )malloc( ( lstrlen( message ) + lstrlen( count ) ) * sizeof( TCHAR ) );
-						lstrcpy( info, message );
-						lstrcat( info, count );
-						parent->NotifyEvent( parent->m_tszUserName, info, NULL, FACEBOOK_EVENT_OTHER, TEXT(FACEBOOK_URL_MESSAGES) );
-						mir_free( message );
-						mir_free( count );
-						mir_free( info ); } }
+				str_count = utils::text::source_get_value( &resp.data, 2, "<span id=\"jewelInnerUnseenCount\">", "</span>" );
+				if ( str_count.length() && str_count != std::string( "0" ) ) {
+					TCHAR* message = TranslateT( "Got new messages: " );
+					TCHAR* count = mir_a2t_cp( str_count.c_str( ), CP_UTF8 );
+					TCHAR* info = ( TCHAR* )malloc( ( lstrlen( message ) + lstrlen( count ) ) * sizeof( TCHAR ) );
+					lstrcpy( info, message );
+					lstrcat( info, count );
+					parent->NotifyEvent( parent->m_tszUserName, info, NULL, FACEBOOK_EVENT_OTHER, TEXT(FACEBOOK_URL_MESSAGES) );
+					mir_free( message );
+					mir_free( count );
+					mir_free( info ); }
 			}
 
 			// Set first touch flag
@@ -783,15 +758,10 @@ bool facebook_client::reconnect( )
 	{
 
 	case HTTP_CODE_OK: {
-		std::string channel_num = resp.data.substr( resp.data.find( "\"host\":" ) + 8, 16 );
-		std::string::size_type end = channel_num.find( "\"" );
-		this->chat_channel_host_ = channel_num.substr( 0, end );
+		this->chat_channel_host_ = utils::text::source_get_value( &resp.data, 2, "\"host\":\"", "\"" );
 		parent->Log("      Got self channel host: %s", this->chat_channel_host_.c_str());
 
-		std::string sequence_num = resp.data.substr( resp.data.find( "\"seq\":" ) + 6, 16 );
-		end = sequence_num.find( "," );
-		sequence_num = sequence_num.substr( 0, end );
-		this->chat_sequence_num_ = atoi( sequence_num.c_str( ) );
+		this->chat_sequence_num_ = atoi( utils::text::source_get_value( &resp.data, 2, "\"seq\":", "," ).c_str() );
 		parent->Log("      Got self sequence number: %d", this->chat_sequence_num_); }
 
 		return handle_success( "reconnect" );
@@ -1011,21 +981,12 @@ bool facebook_client::get_profile(facebook_user* fbu)
 
 	case HTTP_CODE_OK: {
 		// TODO: More items?
-		std::string::size_type start, end;
 		fbu->status = "";			
 
-		if (DBGetContactSettingByte(NULL,parent->m_szModuleName,FACEBOOK_KEY_FORCE_HTTPS, DEFAULT_FORCE_HTTPS))
-			start = resp.data.find( "url(https:\\/\\/fbcdn-profile-a.akamaihd.net" );
+		std::string image = utils::text::source_get_value( &resp.data, 2, "background-image: url(", ")" );
+		if ( image.length() )
+			fbu->image_url = utils::text::special_expressions_decode( image );
 		else
-			start = resp.data.find( "url(http:\\/\\/profile.ak.fbcdn.net" );
-
-		if ( start != std::string::npos ) {
-			start += 4;
-			end = resp.data.find( ")", start );
-			if ( end != std::string::npos ) {
-				fbu->image_url = utils::text::special_expressions_decode(
-				    resp.data.substr( start, end - start ) );
-		} } else
 			fbu->image_url = FACEBOOK_DEFAULT_AVATAR_URL;
 	}
 	case HTTP_CODE_FOUND:

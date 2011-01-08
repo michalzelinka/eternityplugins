@@ -134,7 +134,7 @@ void FacebookProto::ProcessMessages( void* data )
 			NotifyEvent( szTitle, szText, ContactIDToHContact(notifications[i]->user_id), FACEBOOK_EVENT_NOTIFICATION, szUrl );
 			mir_free( szTitle );
 			mir_free( szText );
-			mir_free( szUrl );
+//			mir_free( szUrl ); // URL is free'd in popup procedure
 		}
 		delete notifications[i];
 	}
@@ -168,47 +168,38 @@ void FacebookProto::ProcessFeeds( void* data )
 	std::vector< facebook_newsfeed* > news;
 
 	std::string::size_type pos = 0;
-	std::string::size_type inpos = 0;
-	std::string::size_type end = 0;
 	UINT limit = 0;
 
 	while ( ( pos = resp->find( "<h6", pos ) ) != std::string::npos && limit <= 25 )
 	{
+		std::string post_content = resp->substr( pos, resp->find( "</h6", pos ) - pos );
+		std::string rest_content = resp->substr( resp->find( "class=\"uiStreamSource\"", pos ), resp->find( "<abbr title=", pos ) );
+
 		facebook_newsfeed* nf = new facebook_newsfeed;
 
-		pos = resp->find( "uiStreamMessage", pos );
-		pos = resp->find( "\">", pos );
-		pos += 2;
-		end = resp->find( "<\\/a>", pos );
-		if ( end == std::string::npos ){
-			delete nf; break;}
-		nf->title = utils::text::trim(
-			utils::text::slashu_to_utf8(
-				utils::text::special_expressions_decode(
-					utils::text::remove_html( resp->substr( pos, end-pos ) ) ) ) );
+		nf->title = utils::text::source_get_value( &post_content, 3, "<a ", "\">", "</a" );
 
-		pos = end + 5;
-		end = resp->find( "<\\/h6>", pos );
-		if ( end == std::string::npos ){
-			delete nf; break;}
-		nf->text = utils::text::trim(
-			utils::text::slashu_to_utf8(
-				utils::text::special_expressions_decode(
-					utils::text::remove_html( resp->substr( pos, end-pos ) ) ) ) );
-
-		inpos = resp->find( "uiStreamSource", pos );
-		inpos = resp->find( "href=", inpos );
-		if ( inpos != std::string::npos ){
-			inpos += 7;
-			end = resp->find( "\">", inpos ) - 1;
-			nf->link = utils::text::special_expressions_decode(  resp->substr( inpos, end-inpos ) );
-		}
-
-		if ( nf->text.length( ) > 0 )
-			news.push_back( nf );
-		else
+		if ( !nf->title.length() || !nf->text.length() ) {
 			delete nf;
+			continue; }
 
+		nf->user_id = utils::text::source_get_value( &post_content, 2, "user.php?id=", "\"" );
+		nf->text = utils::text::source_get_value( &post_content, 2, "<span class=\"messageBody\">", "</span" );
+		nf->link = utils::text::source_get_value( &rest_content, 2, "href=\"", "\">" );
+
+		nf->title = utils::text::trim(
+		    utils::text::slashu_to_utf8(
+		        utils::text::special_expressions_decode(
+		            utils::text::remove_html( nf->title ) ) ) );
+		nf->text = utils::text::trim(
+		    utils::text::slashu_to_utf8(
+		        utils::text::special_expressions_decode(
+		            utils::text::remove_html( nf->text ) ) ) );
+		nf->link = utils::text::special_expressions_decode( nf->link );
+
+		if (nf->text.length() > 420) nf->text = nf->text.substr(0, 420);
+
+		news.push_back( nf );
 		pos++;
 		limit++;
 	}
@@ -222,7 +213,7 @@ void FacebookProto::ProcessFeeds( void* data )
 		NotifyEvent(szTitle,szText,this->ContactIDToHContact(news[i]->user_id),FACEBOOK_EVENT_NEWSFEED, szUrl);
 		mir_free(szTitle);
 		mir_free(szText);
-		mir_free(szUrl);
+//		mir_free(szUrl); // URL is free'd in popup procedure
 		delete news[i];
 	}
 	news.clear();
@@ -244,9 +235,6 @@ exit:
 
 void FacebookProto::ProcessAvatar(HANDLE hContact,const std::string* url,bool force)
 {
-	if ( !isOnline( ) )
-		return;
-
 	ForkThread(&FacebookProto::UpdateAvatarWorker, this,
 	    new update_avatar(hContact,(*url)));
 }

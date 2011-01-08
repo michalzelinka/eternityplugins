@@ -88,6 +88,7 @@ namespace utils
 		std::string remove_html( std::string data );
 		std::string slashu_to_utf8( std::string data );
 		std::string trim( std::string data );
+		std::string source_get_value( std::string* data, unsigned int argument_count, ... );
 	};
 
 	namespace conversion {
