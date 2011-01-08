@@ -3,7 +3,7 @@
 Facebook plugin for Miranda Instant Messenger
 _____________________________________________
 
-Copyright Â© 2009-10 Michal Zelinka
+Copyright © 2009-11 Michal Zelinka
 
 This program is free software: you can redistribute it and/or modify
 it under the terms of the GNU General Public License as published by
@@ -46,7 +46,7 @@ PLUGININFOEX pluginInfo = {
 	"Provides basic support for Facebook Chat protocol. [Built: "__DATE__" "__TIME__"]",
 	"Michal Zelinka",
 	"jarvis@jabber.cz",
-	"Â© 2009-10 Michal Zelinka",
+	"© 2009-11 Michal Zelinka",
 	"http://dev.miranda.im/~jarvis/",
 	UNICODE_AWARE, //not transient
 	0,             //doesn't replace anything built-in
