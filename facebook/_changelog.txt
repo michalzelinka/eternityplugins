@@ -203,8 +203,8 @@ Known issues:
 Known issues:
 
 - [FIXED] Status messages may contain HTML character entities for some specific characters
-- [FIXED] Protocol is signed off each time server times out — will be changed in next version, disconnecting only when connection is down (more exactly when reaching 3 time-outs, while error increments time-out counter, success decrements — cheap, but working solution)
-- [FIXED] Accounts linked with message servers 0.channel01—0.channel09 can't connect for more than just a few seconds followed by possible crash because of my beginner's bug in URL generation causing fake connection time-out
+- [FIXED] Protocol is signed off each time server times out ó will be changed in next version, disconnecting only when connection is down (more exactly when reaching 3 time-outs, while error increments time-out counter, success decrements ó cheap, but working solution)
+- [FIXED] Accounts linked with message servers 0.channel01--0.channel09 can't connect for more than just a few seconds followed by possible crash because of my beginner's bug in URL generation causing fake connection time-out
 
 0.0.0.3
 -------
