@@ -202,6 +202,33 @@ std::string utils::text::trim( std::string data )
 	return (begin != std::string::npos) ? data.substr( begin, end - begin ) : "";
 }
 
+std::string utils::text::source_get_value( std::string* data, unsigned int argument_count, ... )
+{
+	va_list arg;
+	std::string ret = "";
+	std::string::size_type start = 0, end = 0;
+	
+	va_start( arg, argument_count );
+	
+	for ( unsigned int i = argument_count; i > 0; i-- ) {
+		if ( i == 1 ) {
+			end = data->find( va_arg( arg, char* ), start );
+			if ( start == std::string::npos || end == std::string::npos )
+				break;
+			ret = data->substr( start, end - start );
+		} else {
+			std::string term = va_arg( arg, char* );
+			start = data->find( term, start );
+			if ( start == std::string::npos )
+				break;
+			start += term.length();
+		}
+	}
+	
+	va_end( arg );	
+	return ret;
+}
+
 int utils::number::random( )
 {
 	srand( ::time( NULL ) );

@@ -92,7 +92,7 @@ INT_PTR FacebookProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 		if ( !getString( FACEBOOK_KEY_ID,&dbv ) )
 		{
 			// Return whether exists or not
-			int ret = ( AvatarExists( dbv.pszVal ) == true ) ? 0 : -1;
+			int ret = ( AvatarExists( dbv.pszVal ) ) ? 0 : -1;
 			DBFreeVariant(&dbv);
 			return ret;
 		}
