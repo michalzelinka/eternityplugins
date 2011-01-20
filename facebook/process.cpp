@@ -104,7 +104,7 @@ void FacebookProto::ProcessMessages( void* data )
 			fbu.user_id = messages[i]->user_id;
 
 			HANDLE hContact = AddToContactList(&fbu);
-			DBWriteContactSettingDword(hContact,m_szModuleName,"Status",ID_STATUS_ONLINE);
+			DBWriteContactSettingWord(hContact,m_szModuleName,"Status",ID_STATUS_ONLINE);
 
 			PROTORECVEVENT recv = {};
 			CCSDATA ccs = {};

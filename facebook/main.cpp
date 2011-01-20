@@ -109,14 +109,14 @@ extern "C" __declspec(dllexport) const MUUID* MirandaPluginInterfaces(void)
 static PROTO_INTERFACE* protoInit(const char *proto_name,const TCHAR *username )
 {
 	FacebookProto *proto = new FacebookProto(proto_name,username);
-	g_Instances.insert(proto); // TODO: Why does it crash??
+	g_Instances.insert(proto);
 	return proto;
 }
 
-static int protoUninit(PROTO_INTERFACE *proto)
+static int protoUninit(PROTO_INTERFACE* proto)
 {
-	g_Instances.remove(static_cast<FacebookProto*>(proto));
-	return 0;
+	g_Instances.remove(( FacebookProto* )proto);
+	return EXIT_SUCCESS;
 }
 
 int OnModulesLoaded(WPARAM,LPARAM)
