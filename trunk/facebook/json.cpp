@@ -146,8 +146,8 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 				const String& text = messageContent["text"];
 
 				facebook_message* message = new facebook_message( );
-				message->message_text= utils::text::slashu_to_utf8(
-					utils::text::special_expressions_decode( text.Value( ) ) );
+				message->message_text= utils::text::special_expressions_decode(
+					utils::text::slashu_to_utf8( text.Value( ) ) );
 				message->time = ::time( NULL );
 				message->user_id = was_id;
 
@@ -159,9 +159,9 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 				const String& link = objMember["response"]["payload"]["link"];
 
 				facebook_notification* notification = new facebook_notification( );
-				notification->text = utils::text::slashu_to_utf8(
+				notification->text = utils::text::remove_html(
 					utils::text::special_expressions_decode(
-						utils::text::remove_html( text.Value( ) ) ) );
+						utils::text::slashu_to_utf8( text.Value( ) ) ) );
 
 				notification->link = utils::text::special_expressions_decode( link.Value( ) );
 
@@ -177,7 +177,7 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 				fbu.user_id = user_id;
 
 				HANDLE hContact = proto->AddToContactList(&fbu);
-				DBWriteContactSettingDword(hContact,proto->m_szModuleName,"Status",ID_STATUS_ONLINE);
+				DBWriteContactSettingWord(hContact,proto->m_szModuleName,"Status",ID_STATUS_ONLINE);
 
 				const Number& state = objMember["st"];
 				if (state.Value() == 1)

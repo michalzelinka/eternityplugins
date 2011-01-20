@@ -93,14 +93,8 @@ FacebookProto::FacebookProto(const char* proto_name,const TCHAR* username)
 
 FacebookProto::~FacebookProto( )
 {
-	// in case we have an active connection
-	// TODO: Needed? Doesn't Miranda do this automatically?
-	if ( !isOffline() )
-		SetStatus( ID_STATUS_OFFLINE );
-
-	Netlib_CloseHandle( m_hNetlibUser );
-
 	KillThreads( );
+	Netlib_CloseHandle( m_hNetlibUser );
 
 // TODO: Is this really explicitly needed?
 //	WaitForSingleObject( this->signon_lock_, IGNORE );
@@ -201,7 +195,7 @@ int FacebookProto::SetStatus( int new_status )
 
 int FacebookProto::SetAwayMsg( int status, const PROTOCHAR *msg )
 {
-	if ( !isOffline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, 0 ) )
+	if ( isOnline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, DEFAULT_SET_MIRANDA_STATUS ) )
 	{
 		TCHAR *wide  = mir_a2t((const char*)msg); // TODO: Why?
 		char *narrow = mir_t2a_cp((const TCHAR*)wide,CP_UTF8);

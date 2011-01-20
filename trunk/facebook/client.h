@@ -41,7 +41,7 @@ public:
 	{
 		username_ = password_ = \
 		post_form_id_ = dtsg_ = \
-		chat_channel_host_ = "";
+		chat_channel_host_ = logout_hash_ = "";
 
 		chat_sequence_num_ = error_count_ = \
 		last_feeds_update_ = 0;
@@ -64,6 +64,7 @@ public:
 
 	std::string post_form_id_;
 	std::string dtsg_;
+	std::string logout_hash_;
 	std::string chat_channel_host_;
 	unsigned int    chat_sequence_num_;
 	bool    chat_first_touch_;

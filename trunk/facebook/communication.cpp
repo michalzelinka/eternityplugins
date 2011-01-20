@@ -595,9 +595,9 @@ bool facebook_client::logout( )
 	data += ( this->post_form_id_.length( ) ) ? this->post_form_id_ : "0";
 	data += "&fb_dtsg=";
 	data += ( this->dtsg_.length( ) ) ? this->dtsg_ : "0";
-	data += "&ref=mb"; // jeste tam je &h=nejakyhash
+	data += "&ref=mb&h=";
+	data += this->logout_hash_;
 
-	// RM TODO: doopravit odhlasovaci proceduru - mozna ten hash, mozna je potreba jeste nacist ten dalsi index...
 	http::response resp = flap( FACEBOOK_REQUEST_LOGOUT, &data );
 
 
@@ -685,6 +685,10 @@ bool facebook_client::home( )
 			// Get dtsg
 			this->dtsg_ = utils::text::source_get_value( &resp.data, 2, ",fb_dtsg:\"", "\"" );
 			parent->Log("      Got self dtsg: %s", this->dtsg_.c_str());
+
+			// Get logout hash
+			this->logout_hash_ = utils::text::source_get_value( &resp.data, 2, "<input type=\"hidden\" autocomplete=\"off\" name=\"h\" value=\"", "\"" );
+			parent->Log("      Got self logout hash: %s", this->logout_hash_.c_str());
 
 			// Get friend requests count and messages count and notify it
 			if ( DBGetContactSettingByte( NULL, parent->m_szModuleName, FACEBOOK_KEY_EVENT_OTHER_ENABLE, DEFAULT_EVENT_OTHER_ENABLE ) ) {
