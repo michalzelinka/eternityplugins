@@ -195,7 +195,7 @@ int FacebookProto::SetStatus( int new_status )
 
 int FacebookProto::SetAwayMsg( int status, const PROTOCHAR *msg )
 {
-	if ( isOnline() && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, DEFAULT_SET_MIRANDA_STATUS ) )
+	if ( isOnline() && msg != NULL && getByte( FACEBOOK_KEY_SET_MIRANDA_STATUS, DEFAULT_SET_MIRANDA_STATUS ) )
 	{
 		TCHAR *wide  = mir_a2t((const char*)msg); // TODO: Why?
 		char *narrow = mir_t2a_cp((const TCHAR*)wide,CP_UTF8);
@@ -210,7 +210,6 @@ void FacebookProto::SetAwayMsgWorker(void * data)
 	std::string new_status = ( char* )data;
 	facy.set_status( new_status );
 	utils::mem::detract( ( void** )&data );
-	ForkThread(&FacebookProto::UpdateContactWorker, this, (void*)&facy.self_);
 }
 
 //////////////////////////////////////////////////////////////////////////////
