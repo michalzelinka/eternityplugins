@@ -97,6 +97,8 @@ int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD 
 	switch ( flags ) {
 
 	case FACEBOOK_EVENT_CLIENT:
+		if ( !getByte( FACEBOOK_KEY_EVENT_CLIENT_ENABLE, 0 ) )
+			return EXIT_SUCCESS;
 		if ( getByte( FACEBOOK_KEY_EVENT_CLIENT_DEFAULT, 0 ) != TRUE ) {
 			colorBack = getDword( FACEBOOK_KEY_EVENT_CLIENT_COLBACK, DEFAULT_EVENT_COLBACK );
 			colorText = getDword( FACEBOOK_KEY_EVENT_CLIENT_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
@@ -105,6 +107,8 @@ int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD 
 		break;
 
 	case FACEBOOK_EVENT_NEWSFEED:
+		if ( !getByte( FACEBOOK_KEY_EVENT_FEEDS_ENABLE, 0 ) )
+			return EXIT_SUCCESS;
 		if ( getByte( FACEBOOK_KEY_EVENT_FEEDS_DEFAULT, 0 ) != TRUE ) {
 			colorBack = getDword( FACEBOOK_KEY_EVENT_FEEDS_COLBACK, DEFAULT_EVENT_COLBACK );
 			colorText = getDword( FACEBOOK_KEY_EVENT_FEEDS_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
@@ -114,6 +118,8 @@ int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD 
 		break;
 
 	case FACEBOOK_EVENT_NOTIFICATION:
+		if ( !getByte( FACEBOOK_KEY_EVENT_NOTIFICATIONS_ENABLE, 0 ) )
+			return EXIT_SUCCESS;
 		if ( getByte( FACEBOOK_KEY_EVENT_NOTIFICATIONS_DEFAULT, 0 ) != TRUE ) {
 			colorBack = getDword( FACEBOOK_KEY_EVENT_NOTIFICATIONS_COLBACK, DEFAULT_EVENT_COLBACK );
 			colorText = getDword( FACEBOOK_KEY_EVENT_NOTIFICATIONS_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
@@ -123,6 +129,8 @@ int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD 
 		break;
 
 	case FACEBOOK_EVENT_OTHER:
+		if ( !getByte( FACEBOOK_KEY_EVENT_OTHER_ENABLE, 0 ) )
+			return EXIT_SUCCESS;
 		if ( getByte( FACEBOOK_KEY_EVENT_OTHER_DEFAULT, 0 ) != TRUE ) {
 			colorBack = getDword( FACEBOOK_KEY_EVENT_OTHER_COLBACK, DEFAULT_EVENT_COLBACK );
 			colorText = getDword( FACEBOOK_KEY_EVENT_OTHER_COLTEXT, DEFAULT_EVENT_COLTEXT ); }
@@ -153,9 +161,14 @@ int FacebookProto::NotifyEvent(TCHAR* title, TCHAR* info, HANDLE contact, DWORD 
 	} else {
 		if (ServiceExists(MS_CLIST_SYSTRAY_NOTIFY)) {
 			MIRANDASYSTRAYNOTIFY err;
+			int niif_flags = flags;
+			REMOVE_FLAG( niif_flags, FACEBOOK_EVENT_CLIENT |
+			                         FACEBOOK_EVENT_NEWSFEED |
+			                         FACEBOOK_EVENT_NOTIFICATION |
+			                         FACEBOOK_EVENT_OTHER );
 			err.szProto = m_szModuleName;
 			err.cbSize = sizeof(err);
-			err.dwInfoFlags = NIIF_INTERN_TCHAR | flags;
+			err.dwInfoFlags = NIIF_INTERN_TCHAR | niif_flags;
 			err.tszInfoTitle = title;
 			err.tszInfo = info;
 			err.uTimeout = 1000 * timeout;
