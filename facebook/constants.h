@@ -29,13 +29,13 @@ Last change on : $Date$
 
 // Version management
 #include "build.h"
-#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 3, 0)
+#define __VERSION_DWORD             PLUGIN_MAKE_VERSION(0, 1, 3, 1)
 #define __PRODUCT_DWORD             PLUGIN_MAKE_VERSION(0, 9, 14, 0)
-#define __VERSION_STRING            "0.1.3.0"
+#define __VERSION_STRING            "0.1.3.1"
 #define __PRODUCT_STRING            "0.9.14.0"
-#define __VERSION_VS_FILE           0,1,3,0
+#define __VERSION_VS_FILE           0,1,3,1
 #define __VERSION_VS_PROD           0,9,14,0
-#define __VERSION_VS_FILE_STRING    "0, 1, 3, 0"
+#define __VERSION_VS_FILE_STRING    "0, 1, 3, 1"
 #define __VERSION_VS_PROD_STRING    "0, 9, 14, 0"
 #define __API_VERSION_STRING        "3.1"
 
@@ -53,7 +53,7 @@ Last change on : $Date$
 #define FACEBOOK_NAME               "Facebook"
 #define FACEBOOK_URL_HOMEPAGE       "http://www.facebook.com/"
 #define FACEBOOK_URL_REQUESTS       "http://www.facebook.com/reqs.php"
-#define FACEBOOK_URL_MESSAGES       "http://www.facebook.com/?sk=messages"
+#define FACEBOOK_URL_MESSAGES       "http://www.facebook.com/n/?inbox"
 #define PLUGIN_HOSTING_URL          "http://code.google.com/p/eternityplugins/"
 
 // Connection
@@ -95,10 +95,10 @@ Last change on : $Date$
 #define FACEBOOK_DEFAULT_AVATAR_URL     "http://static.ak.fbcdn.net/pics/q_silhouette.gif"
 
 // Event flags
-#define FACEBOOK_EVENT_CLIENT          10 // Facebook error or info message
-#define FACEBOOK_EVENT_NEWSFEED        20 // Facebook newsfeed (wall) message
-#define FACEBOOK_EVENT_NOTIFICATION    30 // Facebook new notification
-#define FACEBOOK_EVENT_OTHER           40 // Facebook other event - friend requests/new messages
+#define FACEBOOK_EVENT_CLIENT          0x10000000 // Facebook error or info message
+#define FACEBOOK_EVENT_NEWSFEED        0x20000000 // Facebook newsfeed (wall) message
+#define FACEBOOK_EVENT_NOTIFICATION    0x40000000 // Facebook new notification
+#define FACEBOOK_EVENT_OTHER           0x80000000 // Facebook other event - friend requests/new messages
 
 // Facebook request types // TODO: Provide MS_ and release in FB plugin API?
 #define FACEBOOK_REQUEST_API_CHECK              50  // check latest API version

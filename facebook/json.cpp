@@ -187,12 +187,15 @@ int facebook_json_parser::parse_messages( void* data, std::vector< facebook_mess
 			}
 			else if ( type.Value( ) == "inbox" )
 			{
-				TCHAR info[512]; char num[32];
-				const Number& unseen = objMember["unseen"];
-
-				lltoa( unseen.Value(), num, 10 );
-				mir_sntprintf(info, 500, TranslateT("You have %s unseen messages"), num);
-				proto->NotifyEvent(TranslateT("Unseen messages"), info, NULL, FACEBOOK_EVENT_OTHER, TEXT( FACEBOOK_URL_MESSAGES ) );
+// Temporarily(?) disabled
+// due to new inbox
+//
+//				TCHAR info[512]; char num[32];
+//				const Number& unseen = objMember["unseen"];
+//
+//				lltoa( unseen.Value(), num, 10 );
+//				mir_sntprintf(info, 500, TranslateT("You have %s unseen messages"), num);
+//				proto->NotifyEvent(TranslateT("Unseen messages"), info, NULL, FACEBOOK_EVENT_OTHER, TEXT( FACEBOOK_URL_MESSAGES ) );
 			}
 			else
 				continue;

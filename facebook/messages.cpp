@@ -71,7 +71,8 @@ void FacebookProto::SendMsgWorker(void *p)
 		else
 			ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_MESSAGE,ACKRESULT_FAILED, (HANDLE)1,(LPARAM)Translate("Error with sending message."));
 
-		CloseChatWorker((void*)dbv.pszVal);
+		std::string data = std::string(dbv.pszVal);
+		CloseChatWorker((void*)&data);
 		DBFreeVariant(&dbv);
 	}
 
@@ -127,9 +128,6 @@ void FacebookProto::SendTypingWorker(void *p)
 		data += ( facy.post_form_id_.length( ) ) ? facy.post_form_id_ : "0";
 		data += "&post_form_id_source=AsyncRequest";
 
-		// RM TODO: pokud offline:1  ... user is offline...   ale spÌö asi ne, protoûe to Ëasto na fb jebe, û eto ¯ekne ûe je off ikdyû vlastnÏ nenÌ...
-		// for (;;);{"error":0,"errorSummary":"","errorDescription":"","errorIsWarning":false,"silentError":0,"payload":{"offline":1}}
-
 		http::response resp = facy.flap( FACEBOOK_REQUEST_TYPING_SEND, &data );
 
 		DBFreeVariant(&dbv);
@@ -140,13 +138,11 @@ void FacebookProto::SendTypingWorker(void *p)
 
 void FacebookProto::CloseChatWorker(void *p)
 {
-	if ( DBGetContactSettingByte(NULL, m_szModuleName, FACEBOOK_KEY_CLOSE_WINDOWS_ENABLE, DEFAULT_CLOSE_WINDOWS_ENABLE ) != TRUE )
-		return;
-
 	if (p == NULL)
 		return;
 
-	facy.close_chat( *(std::string*)p );
+	if ( DBGetContactSettingByte(NULL, m_szModuleName, FACEBOOK_KEY_CLOSE_WINDOWS_ENABLE, DEFAULT_CLOSE_WINDOWS_ENABLE ) == TRUE )
+		facy.close_chat( *(std::string*)p );
 
 	delete p;
 }

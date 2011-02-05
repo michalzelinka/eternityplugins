@@ -39,7 +39,8 @@ Last change on : $Date$
 #define CODE_BLOCK_INFINITE     while( true ) {
 #define CODE_BLOCK_END          }
 
-#define FLAG_CONTAINS(x,y)      ( ( x | y ) == y )
+#define FLAG_CONTAINS(x,y)      ( ( x & y ) == y )
+#define REMOVE_FLAG(x,y)        ( x = ( x & ~y ) )
 
 #define LOG Log
 
