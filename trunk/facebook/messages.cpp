@@ -47,7 +47,7 @@ int FacebookProto::RecvMsg(HANDLE hContact, PROTORECVEVENT *pre)
 
 	if( !DBGetContactSettingString(hContact,m_szModuleName,FACEBOOK_KEY_ID,&dbv) ) {
 		std::string* data = new std::string( dbv.pszVal );
-		ForkThread( &FacebookProto::CloseChatWorker, this, ( void *)data);		
+		ForkThread( &FacebookProto::CloseChatWorker, this, (void*)data );
 		DBFreeVariant(&dbv); }
 
 	CallService(MS_PROTO_CONTACTISTYPING, (WPARAM)hContact, (LPARAM)PROTOTYPE_CONTACTTYPING_OFF);
@@ -71,8 +71,8 @@ void FacebookProto::SendMsgWorker(void *p)
 		else
 			ProtoBroadcastAck(m_szModuleName,data->hContact,ACKTYPE_MESSAGE,ACKRESULT_FAILED, (HANDLE)1,(LPARAM)Translate("Error with sending message."));
 
-		std::string data = std::string(dbv.pszVal);
-		CloseChatWorker((void*)&data);
+		std::string* data = new std::string( dbv.pszVal );
+		CloseChatWorker( (void*)data );
 		DBFreeVariant(&dbv);
 	}
 
