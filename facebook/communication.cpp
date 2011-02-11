@@ -544,7 +544,7 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 	// Check whether setting Machine name is required
 	if ( resp.code == HTTP_CODE_FOUND && resp.headers.find("Location") != resp.headers.end() && resp.headers["Location"].find("loginnotify/setup_machine.php") != std::string::npos ) {
 		std::string inner_data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&machinename=";
-		inner_data += g_strUserAgent;
+		inner_data += "MirandaIM";
 		flap( FACEBOOK_REQUEST_SETUP_MACHINE, &inner_data ); }
 
 	switch ( resp.code )
