@@ -106,7 +106,7 @@ bool FacebookProto::AvatarExists(std::string user_id)
 
 	for ( BYTE i = 0; i < SIZEOF(extensions); i++ ) {
 		std::string file_name = base + extensions[i];
-		if (_access(file_name.c_str(), 0))
+		if (!_access(file_name.c_str(), 0))
 			return true; } // Avatar file exists, we doesn't need refresh
 
 	return false; // Avatar file doesn't exist, we need refresh
