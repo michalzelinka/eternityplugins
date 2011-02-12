@@ -268,7 +268,7 @@ std::string facebook_client::choose_action( int request_type, std::string* data 
 		return "/login.php?login_attempt=1";
 
 	case FACEBOOK_REQUEST_SETUP_MACHINE:
-		return "/loginnotify/setup_machine.php";
+		return "/loginnotify/setup_machine.php?persistent=1";
 
 	case FACEBOOK_REQUEST_LOGOUT:
 		return "/logout.php";
@@ -512,6 +512,9 @@ bool facebook_client::api_check( )
 
 	}
 
+	// Clear Google Code cookies
+	clear_cookies();
+
 	return handle_success( "api_check" );
 }
 
@@ -521,9 +524,6 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 
 	username_ = username;
 	password_ = password;
-
-	// Prepare validation data
-	clear_cookies( );
 
 	// Access homepage to get initial cookies
 	flap( FACEBOOK_REQUEST_HOME, NULL );
@@ -543,9 +543,13 @@ bool facebook_client::login(const std::string &username,const std::string &passw
 
 	// Check whether setting Machine name is required
 	if ( resp.code == HTTP_CODE_FOUND && resp.headers.find("Location") != resp.headers.end() && resp.headers["Location"].find("loginnotify/setup_machine.php") != std::string::npos ) {
-		std::string inner_data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&machinename=";
+		std::string inner_data = "charset_test=%e2%82%ac%2c%c2%b4%2c%e2%82%ac%2c%c2%b4%2c%e6%b0%b4%2c%d0%94%2c%d0%84&locale=en&remembercomputer=1&machinename=";
 		inner_data += "MirandaIM";
 		flap( FACEBOOK_REQUEST_SETUP_MACHINE, &inner_data ); }
+
+	// Check for Device ID
+	if ( cookies["datr"].length() )
+		DBWriteContactSettingString( NULL, parent->m_szModuleName, FACEBOOK_KEY_DEVICE_ID, cookies["datr"].c_str() );
 
 	switch ( resp.code )
 	{

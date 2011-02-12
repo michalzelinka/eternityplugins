@@ -27,10 +27,6 @@ Last change on : $Date$
 
 #include "common.h"
 
-//void CALLBACK FacebookProto::APC_callback(ULONG_PTR p)
-//{
-//}
-
 void FacebookProto::KillThreads( )
 {
 	// Kill the old threads if they are still around
@@ -127,10 +123,14 @@ bool FacebookProto::NegotiateConnection( )
 		NotifyEvent(m_tszUserName,TranslateT("Please enter a password."),NULL,FACEBOOK_EVENT_CLIENT);
 		goto error;
 	}
+	if( !DBGetContactSettingString(NULL,m_szModuleName,FACEBOOK_KEY_DEVICE_ID,&dbv) )
+	{
+		facy.cookies["datr"] = dbv.pszVal;
+		DBFreeVariant(&dbv);
+	}
 
 	bool success;
 	{
-		facy.api_check( );
 		success = facy.login( user, pass );
 		if (success) success = facy.home( );
 		if (success) success = facy.reconnect( );
