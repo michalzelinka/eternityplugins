@@ -1,4 +1,18 @@
 
+0.1.3.4
+-------
+
+- Fixed handling of personal avatar
+- Fixed Machine identification persistency
+- Updated list of User-Agents
+- Fixed processing News Feed
+
+0.1.3.3
+-------
+
+- Hotfix for logging in when Device naming security option enabled
+- Fix for loading avatars when avatars cache is deleted by user
+
 0.1.3.2
 -------
 

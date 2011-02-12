@@ -91,10 +91,15 @@ INT_PTR FacebookProto::GetMyAvatar(WPARAM wParam, LPARAM lParam)
 
 		if ( !getString( FACEBOOK_KEY_ID,&dbv ) )
 		{
-			// Return whether exists or not
-			int ret = ( AvatarExists( dbv.pszVal ) ) ? 0 : -1;
+			std::string ext = avatar_url.substr(avatar_url.rfind('.'));
+			std::string file_name = GetAvatarFolder() + '\\' + dbv.pszVal + ext;
 			DBFreeVariant(&dbv);
-			return ret;
+
+			if ( file_name.length() )
+				strncpy((char*)wParam, file_name.c_str(), (int)lParam);
+
+			if (!_access((char*)wParam, 0)) return 0; // Avatar file exists
+			return -1; // Avatar file doesn't exist
 		}
 	}
 	return -2; // No avatar set
