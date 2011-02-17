@@ -14,11 +14,11 @@
  * <font color="green">Updater plugin support // DONE</font>
  * <font color="green">Avatars // DONE</font>
  * <font color="orange">Users' info // CAPABLE</font>
- * <font color="red">64bit version adoption // TBD</font>
+ * <font color="green">64bit version adoption // DONE</font>
  * <font color="red">Threads & serialization revision // TBD</font>
  * <font color="red">Better Wall presentation // TBD</font>
  * <font color="red">Friends list synchronization // TBD</font>
- * <font color="red">Wall posts filtering (All/Status updates only) // TBD</font>
+ * <font color="green">Wall posts filtering (All/Status updates only) // DONE</font>
  * <font color="red">Setting avatar/info // Maybe TBD</font>
  * <font color="red">Authorizations (processing Friend requests) // Maybe TBD</font>
 
